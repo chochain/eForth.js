@@ -1,0 +1,22 @@
+﻿<HTML>
+<title>eForth in Javascript</title>
+<body>
+  <input id="tib" value="" size=50 style="font-size:18px"
+         onkeydown="if (13===event.keyCode) fortheval()"/>
+  <textarea id="txt" cols=55 rows=30 style="font-size:18px"></textarea>
+  <script src="jeforth_400.js"></script>
+  <script>
+  function fortheval() {
+    let tib=document.getElementById("tib");
+    to_text(tib.value);
+    try      { vm.exec(tib.value);      }
+    catch(e) { console.log(e.toString()+"\n"); }
+    finally  { tib.value=""; txt.scrollTop=txt.scrollHeight; }
+  }
+  function to_text(t) { txt.value+=t; }
+  
+  let vm = new ForthVM(to_text);
+  vm.init();
+  </script>
+</body>
+</HTML>

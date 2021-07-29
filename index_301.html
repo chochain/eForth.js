@@ -1,0 +1,25 @@
+﻿<HTML>
+<title>eForth in Javascript</title>
+<body>
+<textarea id="log" cols=62 rows=20></textarea><br/><br/>
+<input id="tib" value=": square dup * ; : quad square square ; : octet quad quad ; 8 octet . 4 octet . " 
+  size=60 onkeydown="if (13===event.keyCode) fortheval()"></input>
+
+<script src="jeforth_301.js"></script>
+<script>
+  var kvm=new KsanaVm();
+  var output=document.getElementById("output");
+  kvm.ticktype=ticktype;  
+  ticktype("jeforth 3.01\n");
+  
+  function fortheval() {
+    var tib=document.getElementById("tib");
+    ticktype(tib.value);
+    try{kvm.exec(tib.value);}
+    catch(err){ticktype(err.toString()+"\n");}
+    finally{tib.value="";log.scrollTop=log.scrollHeight;}
+  }
+  function ticktype(t) { log.value=log.value+t; }  // log
+</script>
+</body>
+</HTML>
