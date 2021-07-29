@@ -1,34 +1,36 @@
 'use strict';
 (function() {
     function ForthVM(output=console.log) {    /// ForthVM object template
-        this.print = output;                  /// setup output function
-        var ss = [], rs = [], dict = [];      /// internal variables
-        var tib= "", ntib=0, here=4;
+        this.log = output;                    /// setup output function
+		let ss = [], rs = [], dict = [];      /// internal variables
+		
+        let tib = "", ntib = 0, here = 4;
+		
         /// stack functions
-        const top    = ()=>ss[-1];
-        const push   = (v)=>ss.push(v);
+        const top    = ()=>ss.at(-1);
+        const push   = v=>ss.push(v);
         const pop    = ()=>ss.pop();
-        const remove = (n)=>{ let v=ss[n]; ss.splice(n,1); return v; }
-        const topR   = ()=>rs[-1];
-        const pushR  = (v)=>rs.push(v);
+        const remove = n=>{ let v=ss.at(n); ss.splice(n,1); return v; }
+        const topR   = ()=>rs.at(-1);
+        const pushR  = v=>rs.push(v);
         const popR   = ()=>rs.pop();
         /// primitives
         const prim   = {
-            "hi"    :c=>this.print("---->hi\n"),
+            "hi"    :c=>this.log("---->hi there\n"),
             "dup"   :c=>push(top()),
-            "over"  :c=>push(ss[-2]),
-            "2dup"  :c=>push(remove(-2)),
-            "2over" :c=>ss.concat(ss.splice(-4,2)),
-            "4dup"  :c=>ss.concat(ss.splice(-4,4)),
-            "swap"  :c=>ss.add(ssz(-2), pop()),
+            "over"  :c=>push(ss.at(-2)),
+            "2dup"  :c=>ss.concat(ss.slice(-2)),
+            "2over" :c=>ss.concat(ss.slice(-4,2)),
+            "4dup"  :c=>ss.concat(ss.slice(-4)),
+            "swap"  :c=>ss.push(remove(-2)),
             "rot"   :c=>push(remove(-3)),
             "-rot"  :c=>{ push(remove(-3)); push(remove(-3)); },
             "2swap" :c=>{ push(remove(-4)); push(remove(-4)); },
-            "pick"  :c=>{ let i=pop(), n=ss[-i-1];     push(n); },
+            "pick"  :c=>{ let i=pop(), n=ss.at(-i-1);  push(n); },
             "roll"  :c=>{ let i=pop(), n=remove(-i-1); push(n); },
             "drop"  :c=>pop(),
             "nip"   :c=>remove(-2),
-            "2drop" :c=>{ pop(); pop(); },
+            "2drop" :c=>ss.splice(-2),
             ">r"    :c=>pushR(pop()),
             "r>"    :c=>push(popR()),
             "r@"    :c=>push(topR()),
@@ -62,11 +64,15 @@
             "base!" :c=>base=pop(),
             "hex"   :c=>base=16,
             "decimal":c=>base=10,
-            "cr"    :c=>this.print("\n"),
-            "."     :c=>this.print(Integer.toString(pop(),base)+" "),
+            "cr"    :c=>this.log("\n"),
+            "."     :c=>this.log(Integer.toString(pop(),base)+" "),
         }
-        this.ok = ()=>this.print(ss.join('_')+"_ok ");
+        this.ok = ()=>{
+			for (let i in ss) this.log(ss[i]+"_");
+			this.log("ok ");
+		}
         this.init = ()=>{
+			this.log("jeforth 4.0\n");
             push(456);
             push(123);
             push(100);
