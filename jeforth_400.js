@@ -1,352 +1,342 @@
 'use strict';
 (function() {
-    function ForthVM(output=console.log) {    /// ForthVM object template
-        this.log = output;                    /// setup output function
-		let ss = [], rs = [], dict = [];      /// internal variables
-		
-        let tib = "", ntib = 0, here = 4, base = 10;
-		
-        /// stack functions
-        const top    = ()=>ss.at(-1);
-        const push   = v=>ss.push(v);
-        const pop    = ()=>ss.pop();
-        const remove = n=>{ let v=ss.at(n); ss.splice(n,1); return v; }
-        const topR   = ()=>rs.at(-1);
-        const pushR  = v=>rs.push(v);
-        const popR   = ()=>rs.pop();
-		
-        /// primitives
-        const prim   = {
-            "hi"    :c=>this.log("---->hi there\n"),
-            "dup"   :c=>push(top()),
-            "over"  :c=>push(ss.at(-2)),
-            "2dup"  :c=>ss.push(...ss.slice(-2)),
-            "2over" :c=>ss.push(...ss.slice(-4,-2)),
-            "4dup"  :c=>ss.push(...ss.slice(-4)),
-            "swap"  :c=>ss.push(remove(-2)),
-            "rot"   :c=>push(remove(-3)),
-            "-rot"  :c=>ss.splice(-2, 0, pop()),
-            "2swap" :c=>{ push(remove(-4)); push(remove(-4)); },
-            "pick"  :c=>{ let i=pop(), n=ss.at(-i-1);  push(n); },
-            "roll"  :c=>{ let i=pop(), n=remove(-i-1); push(n); },
-            "drop"  :c=>pop(),
-            "nip"   :c=>remove(-2),
-            "2drop" :c=>ss.splice(-2),
-            ">r"    :c=>pushR(pop()),
-            "r>"    :c=>push(popR()),
-            "r@"    :c=>push(topR()),
-            "push"  :c=>pushR(pop()),
-            "pop"   :c=>push(popR()),
-            // math
-            "+"     :c=>{ let n=pop(); push(pop()+n); },
-            "-"     :c=>{ let n=pop(); push(pop()-n); },
-            "*"     :c=>{ let n=pop(); push(pop()*n); },
-            "/"     :c=>{ let n=pop(); push(pop()/n); },
-            "*/"    :c=>{ let n=pop(); push(pop()*pop()/n); },
-            "*/mod" :c=>{ let n=pop(), m=pop()*pop(); push(m%n); push(m/n); },
-            "mod"   :c=>{ let n=pop(); push(pop()%n); },
-            "and"   :c=>push(pop()&pop()),
-            "or"    :c=>push(pop()|pop()),
-            "xor"   :c=>push(pop()^pop()),
-            "negate":c=>push(-pop()),
-            "abs"   :c=>push(Math.abs(pop())),
-            // logic
-            "0="    :c=>push((pop()==0)?-1:0),
-            "0<"    :c=>push((pop() <0)?-1:0),
-            "0>"    :c=>push((pop() >0)?-1:0),
-            "="     :c=>{ let n=pop(); push((pop()==n)?-1:0); },
-            ">"     :c=>{ let n=pop(); push((pop()>n )?-1:0); },
-            "<"     :c=>{ let n=pop(); push((pop()<n )?-1:0); },
-            "<>"    :c=>{ let n=pop(); push((pop()!=n)?-1:0); },
-            ">="    :c=>{ let n=pop(); push((pop()>=n)?-1:0); },
-            "<="    :c=>{ let n=pop(); push((pop()<=n)?-1:0); },
-            // output
-            "base@" :c=>push(base),
-            "base!" :c=>base=pop(),
-            "hex"   :c=>base=16,
-            "decimal":c=>base=10,
-            "cr"    :c=>this.log("\n"),
-            "."     :c=>this.log(Integer.toString(pop(), base)+" "),
-        }
-        this.ok = ()=>this.log(ss.join('_')+"_ok ");
-        this.init = ()=>{
-			this.log("jeforth 4.0\n");
-            push(456);
-            push(123);
-            push(100);
-            push(12);
-        }
-        this.exec = (cmd)=>{
-            tib=cmd; ntib=0;
-            prim[cmd](null);
-            this.ok();
+    let fence = 0
+    let Prim  = class {
+        constructor(name, xt) {
+            this.name=name; this.xt=xt; this.token=fence++; this.immd=0;
         }
     }
-    window.ForthVM = ForthVM;
-})();
-/*
-            { name:".r",   xt:c=>{
-              let n=pop();
-              String s=Integer.toString(pop(), base);
-              for(i=0; i+s.length()<n; i++) output.append(" ");
-              output.append(s+" "); }},
-              { name:"u.r",  xt:c=>{
-              let n=pop();
-              String s=Integer.toString(pop()&0x7fffffff, base);
-              for(i=0; i+s.length()<n; i++) output.append(" ");
-              output.append(s+" "); }},
-            { name:"key",  xt:c=>push(in.next().charAt(0)) },
-            { name:"emit", xt:c=>output.append((char)pop()) },
-            { name:"space",xt:c=>output.append(" "); },
-            { name:"spaces",xt:c=>{ let n=pop(); for (i=0; i<n; i++) output.append(" "); }},
+    let Code  = class {
+        constructor(name, n=null) {
+            this.name=name; this.immd=0; this.stage=0
+            if (n==null) this.token=fence++
+            this.pf=[]; this.pf1=[]; this.pf2=[]; this.qf=[]
+        }
+        addcode(w) { this.pf.push(w) }
+    }
+    function ForthVM(output=console.log) {    /// ForthVM object template
+		let ss=[456,123,100,12], rs=[]        /// stacks
+        let tib="", ntib=0, here=4, base=10   /// internal variables
+        let cmpl=true
+        
+        /// IO functions
+        const nxtok  = ()=>input.next()
+        const log    = (s)=>output(s)
+        const NA     = (s)=>s+" not found"
+        const token  = (w)=>{for (let i in dict) if (w.name==dict[i].name) return i; }
+        
+        /// stack functions
+        const top    = (n=1)=>ss[ss.length-n]
+        const push   = v=>ss.push(v)
+        const pop    = ()=>ss.pop()
+        const remove = n=>{ let v=top(n); ss.splice(length-n,1); return v }
+        const topR   = (n=1)=>rs[ss.length-n]
+        const pushR  = v=>rs.push(v)
+        const popR   = ()=>rs.pop()
+
+        /// primitives
+        const dict   = [
+            new Prim("hi",    c=>log("---->hi there\n")),
+            new Prim("dup",   c=>push(top())),
+            new Prim("over",  c=>push(top(2))),
+            new Prim("2dup",  c=>push(...ss.slice(-2))),
+            new Prim("2over", c=>push(...ss.slice(-4,-2))),
+            new Prim("4dup",  c=>push(...ss.slice(-4))),
+            new Prim("swap",  c=>push(remove(2))),
+            new Prim("rot",   c=>push(remove(3))),
+            new Prim("-rot",  c=>ss.splice(-2, 0, pop())),
+            new Prim("2swap", c=>{ push(remove(4)); push(remove(4)) }),
+            new Prim("pick",  c=>{ let i=pop(), n=top(i+1);    push(n) }),
+            new Prim("roll",  c=>{ let i=pop(), n=remove(i+1); push(n) }),
+            new Prim("drop",  c=>pop()),
+            new Prim("nip",   c=>remove(2)),
+            new Prim("2drop", c=>ss.splice(-2)),
+            new Prim(">r",    c=>pushR(pop())),
+            new Prim("r>",    c=>push(popR())),
+            new Prim("r@",    c=>push(topR())),
+            new Prim("push",  c=>pushR(pop())),
+            new Prim("pop",   c=>push(popR())),
+            // math
+            new Prim("+",     c=>{ let n=pop(); push(pop()+n) }),
+            new Prim("-",     c=>{ let n=pop(); push(pop()-n) }),
+            new Prim("*",     c=>{ let n=pop(); push(pop()*n) }),
+            new Prim("/",     c=>{ let n=pop(); push(pop()/n) }),
+            new Prim("*/",    c=>{ let n=pop(); push(pop()*pop()/n) }),
+            new Prim("*/mod", c=>{ let n=pop(), m=pop()*pop(); push(m%n); push(m/n) }),
+            new Prim("mod",   c=>{ let n=pop(); push(pop()%n) }),
+            new Prim("and",   c=>push(pop()&pop())),
+            new Prim("or",    c=>push(pop()|pop())),
+            new Prim("xor",   c=>push(pop()^pop())),
+            new Prim("negate",c=>push(-pop())),
+            new Prim("abs",   c=>push(Math.abs(pop()))),
+            // logic
+            new Prim("0=",    c=>push((pop()==0)?-1:0)),
+            new Prim("0<",    c=>push((pop() <0)?-1:0)),
+            new Prim("0>",    c=>push((pop() >0)?-1:0)),
+            new Prim("=",     c=>{ let n=pop(); push((pop()==n)?-1:0) }),
+            new Prim(">",     c=>{ let n=pop(); push((pop()>n )?-1:0) }),
+            new Prim("<",     c=>{ let n=pop(); push((pop()<n )?-1:0) }),
+            new Prim("<>",    c=>{ let n=pop(); push((pop()!=n)?-1:0) }),
+            new Prim(">=",    c=>{ let n=pop(); push((pop()>=n)?-1:0) }),
+            new Prim("<=",    c=>{ let n=pop(); push((pop()<=n)?-1:0) }),
+            // output
+            new Prim("base@", c=>push(base)),
+            new Prim("base!", c=>base=pop()),
+            new Prim("hex",   c=>base=16 ),
+            new Prim("decimal",c=>base=10 ),
+            new Prim("cr",    c=>log("\n")),
+            new Prim(".",     c=>log(pop().toString(base)+", ")),
+            new Prim(".r",    c=>{
+                let n=pop(), s=pop().toString(base);
+                for(let i=0; i+s.length<n; i++) log(" ");
+                log(s+" "); }),
+            new Prim("u.r", c=>{
+                let n=pop(), s=(pop()&0x7fffffff).toString(base);
+                for(let i=0; i+s.length()<n; i++) log(" ");
+                log(s+" "); }),
+            new Prim("key", c=>push(nxtok()[0])),
+            new Prim("emit", c=>log(String.fromCharCode(pop()))),
+            new Prim("space", c=>log(" ")),
+            new Prim("spaces", c=>{
+                let n=pop();
+                for (let i=0; i<n; i++) log(" "); }),
             // literals
-            { name:"[",    xt:c=>compiling=false },
-            { name:"]",    xt:c=>compiling=true },
-            { name:"'",    xt:c=>{
-                String s=in.next();
-                Code w = dict.find(s, wx->s.equals(wx.name));
-                if (w==null) throw new  NumberFormatException();
-                push(w.token); }},
-            { name:"dolit",xt:c=>push(c.qf.head()) },            // integer literal
-            { name:"dostr",xt:c=>push(c.token) },                // string literal
-            { name:"$\"", xt:c=>{ // -- w a
-                let d=in.delimiter();
-                    in.useDelimiter("\"");          
-                String s=in.next();
-                Code last=dict.tail().addCode(new Code("dostr",s)); // literal=s, 
-                    in.useDelimiter(d);in.next();
-                push(last.token);push(last.pf.size()-1); }},
-            { name:"dotstr",xt:c=>{output.append(c.literal); }},
-            { name:".\"", xt:c=>{
-                let d=in.delimiter();
-                    in.useDelimiter("\"");      
-                String s=in.next();
-                dict.tail().addCode(new Code("dotstr",s));    // literal=s, 
-                    in.useDelimiter(d);in.next(); }},
-            { name:"(", xt:c=>{
-                let d=in.delimiter();
-                    in.useDelimiter("\\)");
-                String s=in.next();
-                    in.useDelimiter(d);in.next(); }},
-            { name:".(", xt:c=>{
-                let d=in.delimiter();
-                    in.useDelimiter("\\)");output.append(in.next() },
-                    in.useDelimiter(d);in.next(); }},
-            { name:"\\", xt:c=>{
-                let d=in.delimiter();
-                    in.useDelimiter("\n");in.next();
-                    in.useDelimiter(d);in.next(); }},
+            new Prim("[", c=>cmpl=false ),
+            new Prim("]", c=>cmpl=true ),
+            new Prim("'", c=>{
+                let s=nxtok();
+                let w=dict.find(wx=>s==wx.name); if (w==null) throw NA(s)
+                push(w.token); }),
+            new Prim("dolit", c=>push(c.qf[0])),                // integer literal
+            new Prim("dostr", c=>push(c.token)),                // string literal
+            new Prim("$\"", c=>{                                // -- w a
+                let d=this.in.delimiter(); this.in.useDelimiter("\"")
+                let s=nxtok()
+                let w=new Code("dostr", s)
+                if (dict[-1].pf==null) dict[-1].pf=[]
+                dict[-1].pf.push(w)
+                    this.in.useDelimiter(d); nxtok()
+                push(last.token)
+                push(last.pf[-1]) }),
+            new Prim("dotstr",c=>log(c.literal)),
+            new Prim(".\"", c=>{
+                let d=this.in.delimiter(); this.in.useDelimiter("\"")
+                let s=nxtok()
+                dict[-1].addcode(new Code("dotstr", s))
+                    this.in.useDelimiter(d); nxtok() }),
+            new Prim("(", c=>{
+                let d=this.in.delimiter(); this.in.useDelimiter("\\)")
+                let s=nxtok(); this.in.useDelimiter(d); nxtok() }),
+            new Prim(".(", c=>{
+                let d=this.in.delimiter(); this.in.useDelimiter("\\)")
+                log(nxtok())
+                    this.in.useDelimiter(d); nxtok() }),
+            new Prim("\\", c=>{
+                let d=this.in.delimiter(); this.in.useDelimiter("\n");
+                    nxtok(); this.in.useDelimiter(d); nxtok() }),
             // structure: if else then
-            { name:"branch",xt:c=>{
-                if(!(pop()==0)) {for(var w:c.pf) w.xt();}
-                else {for(var w:c.pf1) w.xt();} }},
-            { name:"if", xt:c=>{
-                dict.tail().addCode(new Code("branch", false));   
-                dict.add(new Code("temp", false)); }},
-            { name:"else", xt:c=>{
-                Code last=dict.tail(2).pf.tail();                 
-                Code temp=dict.tail();
-                last.pf.addAll(temp.pf);
-                temp.pf.clear();
-                last.struct=1; }},
-            { name:"then", xt:c=>{
-                Code last=dict.tail(2).pf.tail();                 
-                Code temp=dict.tail();
-                if (last.struct==0) {
-                    last.pf.addAll(temp.pf);
-                    dict.remove_tail();                           
+            new Prim("branch",c=>(pop()==0 ? c.pf1 : c.pf).forEach(w=>w.xt(c))),
+            new Prim("if", c=>{
+                dict[-1].addcode(new Code("branch"))
+                dict.add(new Code("temp") }),
+            new Prim("else", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                last.pf.addAll(temp.pf)
+                temp.pf.clear()
+                last.stage=1 }),
+            new Prim("then", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                if (last.stage==0) {
+                    last.pf.addAll(temp.pf)
+                    dict.pop()
                 } else {
-                    last.pf1.addAll(temp.pf);
-                    if (last.struct==1) { dict.remove_tail();}        
-                    else temp.pf.clear();
-                } }},
+                    last.pf1.addAll(temp.pf)
+                    if (last.stage==1) dict.pop()
+                    else temp.pf.clear()
+                } }),
             // loops
-            { name:"loops", xt:c=>{
-                if (c.struct==1) {                          // again
-                    while(true) {for(var w:c.pf) w.xt();}}
-                if (c.struct==2) {                          // while repeat
+            new Prim("loops", c=>{
+                if (c.stage==1) {                          // again
+                    while (true) { c.pf.forEach(w=>w.xt(c)) }
+                } else if (c.stage==2) {                   // while repeat
                     while (true) {
-                        for(var w:c.pf) w.xt();
+                        c.pf.forEach(w=>w.xt(c))
                         if (pop()==0) break;
-                        for(var w:c.pf1) w.xt();}
+                        c.pf1.forEach(w=>w.xt(c))
+                    }
                 } else {
-                    while(true) {                           // until
-                        for(var w:c.pf) w.xt();
-                        if(pop()!=0) break;}
-                } }},
-            { name:"begin", xt:c=>{
-                dict.tail().addCode(new Code("loops", false));    
-                dict.add(new Code("temp", false)); }},
-            { name:"while", xt:c=>{
-                Code last=dict.tail(2).pf.tail();                 
-                Code temp=dict.tail();                            
-                last.pf.addAll(temp.pf);
-                temp.pf.clear();
-                last.struct=2; }},
-            { name:"repeat", xt:c=>{
-                Code last=dict.tail(2).pf.tail();                 
-                Code temp=dict.tail();
-                last.pf1.addAll(temp.pf);
-                dict.remove_tail(); }},
-            { name:"again", xt:c=>{
-                Code last=dict.tail(2).pf.tail();                 
-                Code temp=dict.tail();
-                last.pf.addAll(temp.pf);
-                last.struct=1;
-                dict.remove_tail(); }},
-            { name:"until", xt:c=>{
-                Code last=dict.tail(2).pf.tail();                 
-                Code temp=dict.tail();
-                last.pf.addAll(temp.pf);
-                dict.remove_tail(); }},
+                    while (true) {                          // until
+                        c.pf.forEach(w=>w.xt(c))
+                        if(pop()!=0) break;
+                    }
+                } }),
+            new Prim("begin", c=>{
+                dict[-1].addcode(new Code("loops", false))
+                dict.push(new Code("temp", false)) }),
+            new Prim("while", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                last.pf.addAll(temp.pf)
+                temp.pf.clear()
+                last.stage=2 }),
+            new Prim("repeat", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                last.pf1.addAll(temp.pf)
+                dict.pop() }),
+            new Prim("again", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                last.pf.addAll(temp.pf)
+                last.stage=1
+                dict.pop }),
+            new Prim("until", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                last.pf.addAll(temp.pf)
+                dict.pop }),
             // for next
-            { name:"cycles", xt:c=>{
+            new Prim("cycles", c=>{
                 let i=0;
-                if (c.struct==0) {
+                if (c.stage==0) {
                     while(true){
-                        for (w in c.pf) w.xt();
+                        c.pf.forEach(w=>w.xt(c))
                         i = popR()-1;
                         if (i<0) break;
                         pushR(i);
                     }
                 } else {
-                    if (c.struct>0) {
-                        for (w in c.pf) w.xt();
+                    if (c.stage>0) {
+                        c.pf.forEach(w=>w.xt(c))
                         while(true){
-                            for (w in c.pf2) w.xt();
+                            c.pf2.forEach(w=>w.xt(c))
                             i=popR()-1;
                             if (i<0) break;
                             pushR(i);
-                            for (w in c.pf1) w.xt();
+                            c.pf1.forEach(w=>w.xt(c))
                         }
                     }
-                } }},
-            { name:"for", xt:c=>{
-                dict.tail()                                   
-                    .addCode(new Code(">r", false))                 
-                    .addCode(new Code("cycles", false));            
-                dict.add(new Code("temp", false)); }},
-            { name:"aft", xt:c=>{
-                Code last=dict.tail(2).pf.tail();             
-                Code temp=dict.tail();
-                last.pf.addAll(temp.pf);
-                temp.pf.clear();
-                last.struct=3; }},
-            { name:"next", xt:c=>{
-                Code last=dict.tail(2).pf.tail();             
-                Code temp=dict.tail();
-                if (last.struct==0) last.pf.addAll(temp.pf);
-                else last.pf2.addAll(temp.pf);
-                dict.remove_tail(); }},
+                } }),
+            new Prim("for", c=>{
+                dict[-1]
+                    .addcode(new Code(">r", false))
+                    .addcode(new Code("cycles", false))
+                dict.add(new Code("temp", false)) }),
+            new Prim("aft", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                last.pf.addAll(temp.pf)
+                temp.pf = []
+                last.stage=3 }),
+            new Prim("next", c=>{
+                let last=dict[-2].pf[-1]
+                let temp=dict[-1]
+                if (last.stage==0) last.pf.addAll(temp.pf)
+                else last.pf2.addAll(temp.pf)
+                dict.pop() }),
             // defining words
-            { name:"exit", xt:c=>{throw new ArithmeticException(); }},     // exit interpreter
-            { name:"exec", xt:c=>{int let n=pop();dict.get(n).xt(); }},
-            { name:":", xt:c=>{                                            // colon
-                String s=in.next();
-                dict.add(new Code(s) },
-                compiling=true; }},
-            { name:";", xt:c=>compiling=false },                           // semicolon
-            { name:"docon", xt:c=>push(c.qf.head()) },                  // integer literal
-            { name:"dovar", xt:c=>push(c.token) },                      // string literal
-            { name:"create", xt:c=>{
-                String s=in.next();
-                dict.add(new Code(s) },
-                Code last=dict.tail().addCode(new Code("dovar",0));   
-                last.pf.head().token=last.token;
-                last.pf.head().qf.remove_head(); }},
-            { name:"variable", xt:c=>{ 
-                String s=in.next();
-                dict.add(new Code(s) },
-                Code last=dict.tail().addCode(new Code("dovar",0));   
-                last.pf.head().token=last.token; }},
-            { name:"constant", xt:c=>{  // n --
-                String s=in.next();
-                dict.add(new Code(s) },
-                Code last=dict.tail().addCode(new Code("docon",pop())); 
-                last.pf.head().token=last.token; }},
-            { name:"@", xt:c=>{  // w -- n
-                Code last=dict.get(pop() },
-                push(last.pf.head().qf.head()); }},
-            { name:"!", xt:c=>{  // n w -- 
-                Code last=dict.get(pop() },
-                last.pf.head().qf.set_head(pop()); }},
-            { name:"+!", xt:c=>{  // n w -- 
-                Code last=dict.get(pop() },
-                let n=last.pf.head().qf.head(); n+=pop();     
-                last.pf.head().qf.set_head(n); }},
-            { name:"?", xt:c=>{  // w -- 
-                Code last=dict.get(pop());
-                output.append(Integer.toString(last.pf.head().qf.head())); }},
-            { name:"array@", xt:c=>{  // w a -- n
-                let a=pop();
-                Code last=dict.get(pop() },
-                push(last.pf.head().qf.get(a)); }},
-            { name:"array!", xt:c=>{  // n w a -- 
-                let a=pop();
-                Code last=dict.get(pop() },
-                last.pf.head().qf.set(a,pop()); }},
-            { name:",", xt:c=>{ // n --
-                Code last=dict.tail();                        
-                last.pf.head().qf.add(pop()); }},
-            { name:"allot", xt:c=>{  // n --
-                let n=pop(); 
-                Code last=dict.tail();                        
-                for (let i=0;i<n;i++) last.pf.head().qf.head(); }},
-            { name:"does", xt:c=>{ // n --
-                Code last=dict.tail();                        
-                Code source=dict.get(wp);
-                last.pf.addAll(source.pf.subList(ip+2,source.pf.size())); }},
-            { name:"to", xt:c=>{                                               // n -- , compile only 
-                Code last=dict.get(wp);
+            new Prim("exit", c=>{ throw "close the app" }),      // exit interpreter
+            new Prim("exec", c=>dict[pop()].xt(c)),
+            new Prim(":", c=>{                                   // colon
+                let s=nxtok()
+                dict.push(new Code(s))
+                cmpl=true }),
+            new Prim(";", c=>cmpl=false),                        // semicolon
+            new Prim("docon", c=>push(c.qf[0])),                 // integer literal
+            new Prim("dovar", c=>push(c.token)),                 // string literal
+            new Prim("create", c=>{
+                let s=nxtok(); dict.push(new Code(s))
+                let last=dict[-1].addcode(new Code("dovar",0))
+                last.pf[0].token=last.token
+                last.pf[0].qf.remove_head() }),
+            new Prim("variable", c=>{ 
+                let s=nxtok(); dict.push(new Code(s))
+                let last=dict[-1].addcode(new Code("dovar",0));
+                last.pf[0].token=last.token }),
+            new Prim("constant", c=>{  // n --
+                let s=nxtok(); dict.push(new Code(s))
+                let last=dict[-1].addcode(new Code("docon",pop())); 
+                last.pf[0].token=last.token; }),
+            new Prim("@", c=>{ let last=dict[pop()]; push(last.pf[0].qf[0]) }),
+            new Prim("!", c=>{ let last=dict[pop()]; last.pf[0].qf[0]=pop() }),
+            new Prim("+!",c=>{ let last=dict[pop()]; last.pf[0].qf[0]+=pop() }),
+            new Prim("?", c=>{ let last=dict[pop()], n=last.pf[0].qf[0]; log(n.toString(base)) }),
+            new Prim("array@", c=>{ let a=pop(), last=dict[pop()];  push(last.pf[0].qf[a]) }),
+            new Prim("array!", c=>{ let a=pop(), last=dict[pop()];  last.pf[0].qf[a]=pop() }),
+            new Prim(",", c=>{ let last=dict[-1]; last.pf[0].qf.push(pop()) }),
+            new Prim("allot", c=>{  // n --
+                let n=pop(), last=dict[-1]
+                for (let i=0; i<n; i++) last.pf[0].qf[0] }),
+            new Prim("does", c=>{ // n --
+                let last=dict[-1], source=dict[wp]
+                last.pf.addAll(source.pf.subList(ip+2,source.pf.size())); }),
+            new Prim("to", c=>{                                               // n -- , compile only 
+                let last=dict[wp]
                 ip++;                                                         // current colon word
-                last.pf.get(ip++).pf.head().qf.set_head(pop()); }},        // next constant
-            { name:"is", xt:c=>{                                               // w -- , execute only
-                Code source=dict.get(pop());                               // source word
-                String s=in.next();
-                Code w = dict.find(s, wx->s.equals(wx.name)); 
-                if (w==null) throw new  NumberFormatException();                
-                dict.get(w.token).pf = source.pf; }},
+                last.pf[ip++].pf[0].qf[0]=pop() }),                           // next constant
+            new Prim("is", c=>{                                               // w -- , execute only
+                let source=dict[pop()]                                        // source word
+                let s=nxtok();
+                let w = dict.find(wx=>s==wx.name); if (w==null) throw NA(s)
+                dict[w.token].pf = source.pf }),
             // tools
-            { name:"here", xt:c=>push(dict.tail().token) },
-            { name:"boot", xt:c=>for (int i=dict.tail().token;i>104;i--) dict.remove_tail() },
-            { name:"forget", xt:c=>{
-                String s=in.next();
-                Code w = dict.find(s, wx->s.equals(wx.name)); 
-                if (w==null) throw new  NumberFormatException();                
-                for (int i=dict.tail().token;i>=Math.max(w.token,104);i--) dict.remove_tail(); }},
-            { name:"words", xt:c=>{
-                for (int i=0, j=1; j<=dict.tail().token+1; j++, i++) {
-                    var w = dict.tail(j);
-                    output.append(w.name+" "+w.token+" ");
-                    if (i>9) { output.append("\n"); i=0; }
-                } }},
-            { name:".s", xt:c=>for(int n:stack) output.append(Integer.toString(n,base)+" ") },
-            { name:"see", xt:c=>{
-                String s=in.next();
-                Code w = dict.find(s, wx->s.equals(wx.name)); 
-                if (w==null) throw new  NumberFormatException();                
-                output.append(w.name+", "+w.token+", "+w.qf.toString() },
-                for(var wx:w.pf) output.append(wx.name+", "+wx.token+", "+wx.qf.toString()+"| "); }},
-            { name:"time", xt:c=>{
-                LocalTime now=LocalTime.now();
-                output.append(now.toString()); }},
-            { name:"ms", xt:c=>{ // n --
-                try { Thread.sleep(pop());} 
-                catch (Exception e) { output.append(e.toString());} }}
+            new Prim("here", c=>push(dict[-1].token)),
+            new Prim("boot", c=>dict.splice(104, dict.length)),
+            new Prim("forget", c=>{
+                let s=nxtok();
+                let w = dict.find(wx=>s==w.name); if (w==null) throw NA(s)
+                for (let i=dict[-1].token; i>=Math.max(w.token,104); i--) dict.pop() }),
+            new Prim("words", c=>{
+                for (let i=0, j=1; j<=dict[-1].token+1; j++, i++) {
+                    var w = dict[-j]
+                    log(w.name+" "+w.token+" ")
+                    if (i>9) { log("\n"); i=0; }
+                } }),
+            new Prim(".s", c=>ss.forEach(s=>log(s.toString(base)+" "))),
+            new Prim("see", c=>{
+                let s=nxtok()
+                let w = dict.find(wx=>s==wx.name); if (w==null) throw NA(s)
+                log(w.name+", "+w.token+", "+w.qf.toString())
+                w.pf.forEach(wx=>log(wx.name+", "+wx.token+", "+wx.qf.toString()+"| ")) }),
+            new Prim("time", c=>{
+                let now=LocalTime.now()
+                log(now.toString()) }),
+            new Prim("ms", c=>{ // n --
+                try   { Thread.sleep(pop()) }
+                catch (e) { log(e.toString()) }})
+        ]
+        this.ok = ()=>log(ss.join('_')+"_ok ")
+        this.init = ()=>{
+			log("jeforth 4.0\n")
+            console.log(dict)
+        }
+        this.exec = (cmd)=>{
+            tib=cmd, ntib=0
+            let w = dict.find(w=>cmd==w.name)
+            if (w!=null) w.xt(null)
+            else         log(cmd+"?\n")
+            this.ok()
+        }
+    }
+    window.ForthVM = ForthVM
+})();
+/*
 
 public class EforthTing {    // ooeforth 2.04
     static Scanner in; 
     static Stack<Integer> ss=new Stack<>();
     static Stack<Integer> rs=new Stack<>();
     static ForthList<Code> dict=new ForthList<>();        
-    static boolean compiling=false;
+    static boolean cmpl=false;
     static int base=10;
     static int wp,ip;
     static Frame frame = new Frame("ooeForth");
     static TextArea input = new TextArea("words",10,50);
     static TextArea output = new TextArea("ooeForth 2.04\n",10,80);
     function setup_dict() {
-        lookUp.forEach((k,v)->dict.add(new Code(k))); // create primitive words
+        lookUp.forEach((k,v)->dict.add(new Prim(k))); // create primitive words
         final String immd[]= {
                 ";","(","$\"","\\",".(",".\"",
                 "aft","again","begin","else","for","if",
@@ -385,25 +375,25 @@ public class EforthTing {    // ooeforth 2.04
     // outer interpreter
     public static void outerInterpreter() {                 // ooeforth 2.01
         while(in.hasNext()) {                               // parse input
-            String idiom=in.next();
+            String idiom=nxtok();
             Code newWordObject=dict.find(idiom,w->idiom.equals(w.name));     
             if(newWordObject !=null) {                      // word found
-                if((!compiling) || newWordObject.immediate) {
+                if((!cmpl) || newWordObject.immediate) {
                     try {newWordObject.xt(); }              // execute
-                    catch (Exception e) {output.append(e.toString());}}
+                    catch (Exception e) {log(e.toString());}}
                 else {                                      // or compile
                     dict.tail().addCode(newWordObject);}}                     
             else { 
                 try {int n=Integer.parseInt(idiom, base);   // not word, try number
-                if (compiling) {                            // compile integer literal
-                    dict.tail().addCode(new Code("dolit",n));}                
+                if (cmpl) {                            // compile integer literal
+                    dict.tail().addCode(new Prim("dolit",n));}                
                 else { push(n);}}                     // or push number on stack
                 catch (NumberFormatException  ex) {         // catch number errors
-                    output.append(idiom + "? ");
-                    compiling=false; ss.clear();}
+                    log(idiom + "? ");
+                    cmpl=false; ss.clear();}
             }}
-        for(int n:stack) output.append(Integer.toString(n,base)+" ");
-        output.append(">ok\n");
+        for(int n:stack) log(Integer.toString(n,base)+" ");
+        log(">ok\n");
     }
     static public class ForthList<T> extends ArrayList<T> { 
         T head()           { return get(0);               }
