@@ -9,7 +9,7 @@
   function fortheval() {
     let tib=document.getElementById("tib");
     to_text(tib.value+"\n");
-    try      { vm.exec(tib.value); }
+    try      { vm.exec(tib.value+" "); }
     catch(e) { console.log(e.toString()+"\n"); }
     finally  { tib.value=""; txt.scrollTop=txt.scrollHeight; }
   }
