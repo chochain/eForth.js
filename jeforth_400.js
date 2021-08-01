@@ -19,7 +19,7 @@
             pushR(wp); pushR(ip)                                // run colon word
             wp=token; ip=0                                      // point to current object
 			this.pf.forEach(w=>{
-				try   { w.exec(this); ip++; }                   // inner interpreter
+				try   { w.exec(); ip++; }                       // inner interpreter
                 catch (e) {}
 			})
 			ip=popR(); wp=popR()
@@ -27,15 +27,18 @@
         addcode(w) { this.pf.push(w); return this }
     }
     function ForthVM(output=console.log) {    /// ForthVM object template
-		let ss=[456,123,100,12], rs=[]        /// stacks
-        let tib="", ntib=0, here=4, base=10   /// internal variables
+		let ss=[], rs=[]                      /// stacks
+        let tib="", ntib=0, base=10           /// internal variables
         let cmpl=false
         
         /// IO functions
-        const nxtok  = ()=>input.next()
         const log    = (s)=>output(s)
         const NA     = (s)=>s+" not found"
-        const token  = (w)=>dict.length-1-dict.reverse().findIndex(wx=>w.name==wx.name)
+        const ntok   = (d=' ')=>{
+            let i = tib.indexOf(d, ntib)
+            if (i<0) { ntib=0; return null }
+            let s = tib.substring(ntib, i); ntib=i+1; return s
+        }            
         
         /// stack functions
         const top    = (n=1)=>ss[ss.length-n]
@@ -45,6 +48,31 @@
         const topR   = (n=1)=>rs[ss.length-n]
         const pushR  = v=>rs.push(v)
         const popR   = ()=>rs.pop()
+        
+        /// utilities
+        const find   = (s)=>{
+            for (let i=dict.length-1; i>=0; --i) {       // search reversely
+                if (s==dict[i].name) return dict[i]
+            }
+            return null
+        }
+        const tok2w  = ()=>{
+            let s=ntok(), w=find(s)
+            if (w==null) throw NA(s);
+            return w
+        }
+        const see    = (c, dp)=>{
+            const tab = (i)=>{ log("\n"); while(i--) log("  ") }
+            const qf  = (v)=>{ log("=");  v.forEach(i=>log(i+" ")) }
+            tab(dp); log("[ "); log(c.to_s())
+            c.pf.forEach(w=>see(w, dp+1))
+            if (c.pf.length>0) {
+                tab(dp); log("---")
+                c.pf1.forEach(w=>see(w, dp+1))
+            }
+            if (c.qf.length>0) qf(c.qf)
+            log("]")
+        }
 
         /// primitives
         const dict   = [
@@ -104,28 +132,24 @@
                 log(s+" "); }),
             new Prim("u.r", c=>{
                 let n=pop(), s=(pop()&0x7fffffff).toString(base);
-                for(let i=0; i+s.length()<n; i++) log(" ");
+                for(let i=0; i+s.length<n; i++) log(" ");
                 log(s+" "); }),
-            new Prim("key", c=>push(nxtok()[0])),
+            new Prim("key", c=>push(ntok()[0])),
             new Prim("emit", c=>log(String.fromCharCode(pop()))),
             new Prim("space", c=>log(" ")),
             new Prim("spaces", c=>{
-                let n=pop();
-                for (let i=0; i<n; i++) log(" "); }),
+                for (let i=0, n=pop(); i<n; i++) log(" ") }),
             // literals
             new Prim("[", c=>cmpl=false ),
             new Prim("]", c=>cmpl=true ),
-            new Prim("'", c=>{
-                let s=nxtok();
-                let w=dict.find(wx=>s==wx.name); if (w==null) throw NA(s)
-                push(w.token); }),
+            new Prim("'", c=>{ let w=tok2w(); push(w.token) }),
             new Prim("dolit", c=>push(c.qf[0])),                // integer literal
             new Prim("dostr", c=>push(c.token)),                // string literal
             new Prim("$\"", c=>{                                // -- w a
                 let d=this.in.delimiter(); this.in.useDelimiter("\"")
-                let s=nxtok()
+                let s=ntok()
                 dict[-1].pf.push(new Code("dostr", s))
-                this.in.useDelimiter(d); nxtok()
+                this.in.useDelimiter(d); ntok()
                 push(last.token)
                 push(last.pf[-1]) }, true),
             new Prim("dotstr",c=>log(c.literal)),
@@ -133,21 +157,21 @@
                 let d=this.in.delimiter(); this.in.useDelimiter("\"")
                 let s=nxtok()
                 dict[-1].addcode(new Code("dotstr", s))
-                this.in.useDelimiter(d); nxtok() }, true),
+                this.in.useDelimiter(d); ntok() }, true),
             new Prim("(", c=>{
                 let d=this.in.delimiter(); this.in.useDelimiter("\\)")
-                let s=nxtok(); this.in.useDelimiter(d); nxtok() }, true),
+                let s=ntok(); this.in.useDelimiter(d); ntok() }, true),
             new Prim(".(", c=>{
                 let d=this.in.delimiter(); this.in.useDelimiter("\\)")
-                log(nxtok())
-                this.in.useDelimiter(d); nxtok() }, true),
+                log(ntok())
+                this.in.useDelimiter(d); ntok() }, true),
             new Prim("\\", c=>{
                 let d=this.in.delimiter(); this.in.useDelimiter("\n");
-                nxtok(); this.in.useDelimiter(d); nxtok() }, true),
+                ntok(); this.in.useDelimiter(d); ntok() }, true),
             // structure: if else then
-            new Prim("branch",c=>(pop()==0 ? c.pf1 : c.pf).forEach(w=>w.exec(this))),
+            new Prim("bran",c=>(pop()==0 ? c.pf1 : c.pf).forEach(w=>w.exec(this))),
             new Prim("if", c=>{
-                dict[-1].addcode(new Code("branch"))
+                dict[-1].addcode(new Code("bran"))
                 dict.push(new Code("temp")) }, true),
             new Prim("else", c=>{
                 let temp=dict[-1]
@@ -250,23 +274,23 @@
             new Prim("exit", c=>{ throw "close the app" }),      // exit interpreter
             new Prim("exec", c=>dict[pop()].exec(this)),
             new Prim(":", c=>{                                   // colon
-                let s=nxtok()
+                let s=ntok()
                 dict.push(new Code(s,true))
                 cmpl=true }),
             new Prim(";", c=>cmpl=false, true),                        // semicolon
             new Prim("docon", c=>push(c.qf[0])),                 // integer literal
             new Prim("dovar", c=>push(c.token)),                 // string literal
             new Prim("create", c=>{
-                let s=nxtok(); dict.push(new Code(s),true)
+                let s=ntok(); dict.push(new Code(s),true)
                 let last=dict[-1].addcode(new Code("dovar",0))
                 last.pf[0].token=last.token
                 last.pf[0].qf.shift() }),
             new Prim("variable", c=>{ 
-                let s=nxtok(); dict.push(new Code(s),true)
+                let s=ntok(); dict.push(new Code(s),true)
                 let last=dict[-1].addcode(new Code("dovar",0));
                 last.pf[0].token=last.token }),
             new Prim("constant", c=>{  // n --
-                let s=nxtok(); dict.push(new Code(s,true))
+                let s=ntok(); dict.push(new Code(s,true))
                 let last=dict[-1].addcode(new Code("docon",pop()));
                 last.pf[0].token=last.token; }),
             new Prim("@", c=>{ let last=dict[pop()]; push(last.pf[0].qf[0]) }),
@@ -287,29 +311,19 @@
                 ip++;                                                         // current colon word
                 last.pf[ip++].pf[0].qf[0]=pop() }),                           // next constant
             new Prim("is", c=>{                                               // w -- , execute only
-                let source=dict[pop()]                                        // source word
-                let s=nxtok();
-                let w = dict.find(wx=>s==wx.name); if (w==null) throw NA(s)
-                dict[w.token].pf = source.pf }),
+                let src=dict[pop()], w=tok2w()                                // source word
+                dict[w.token].pf = src.pf }),
             // tools
             new Prim("here", c=>push(dict[-1].token)),
             new Prim("boot", c=>dict.splice(104, dict.length)),
             new Prim("forget", c=>{
-                let s=nxtok();
-                let w = dict.reverse.find(wx=>s==w.name); if (w==null) throw NA(s)
+                let w=tok2w()
                 for (let i=dict[-1].token; i>=Math.max(w.token,104); i--) dict.pop() }),
             new Prim("words", c=>{
-                for (let i=0, j=1; j<=dict[-1].token+1; j++, i++) {
-                    var w = dict[-j]
-                    log(w.name+" "+w.token+" ")
-                    if (i>9) { log("\n"); i=0; }
-                } }),
-            new Prim(".s", c=>ss.forEach(s=>log(s.toString(base)+" "))),
-            new Prim("see", c=>{
-                let s=nxtok()
-                let w = dict.find(wx=>s==wx.name); if (w==null) throw NA(s)
-                log(w.name+", "+w.token+", "+w.qf.toString())
-                w.pf.forEach(wx=>log(wx.name+", "+wx.token+", "+wx.qf.toString()+"| ")) }),
+                dict.forEach((w,i)=>log(((i%5)==0 ? "\n" : " ")+w.name+" "+w.token))
+                }),
+            new Prim(".s",   c=>log(ss.join(" "))),
+            new Prim("see",  c=>{ let w=tok2w(); see(w,0); log("\n")}),
             new Prim("time", c=>{
                 let now=LocalTime.now()
                 log(now.toString()) }),
@@ -320,17 +334,13 @@
         this.ok = ()=>log(ss.join('_')+"_ok ")
         this.init = ()=>{
 			log("jeforth 4.0\n")
-            console.log(dict)
         }
 		this.exec = (cmd)=>{                                // outer interpreter
-			let w = dict.find(wx=>cmd==wx.name)
-			w.exec(null)
-			this.ok()
-			return
-			while(this.in.hasNext()) {                      // parse input
-				let s=nxtok();                              // get next token
-				let w=dict.reverse.find(wx=>s==wx.name)     // search dictionary
+            tib = cmd
+            for (let s=ntok(); s!=null; s=ntok()) {
+				let w = find(s)                             // search dictionary
 				if (w!=null) {                              // word found
+                    console.log(s+"=>"+w.token)
 					if((!cmpl) || w.immd) {
 						try       { w.exec() }              // execute
 						catch (e) { log(e) }
@@ -340,6 +350,7 @@
 				else {
 					try {
 						let n=parseInt(s, base)             // not word, try number
+                        console.log(s+"=>"+n.toString())
 						if (cmpl) {                         // compile integer literal
 							dict[-1].addcode(new Code("dolit",n))
 						}                
@@ -350,8 +361,8 @@
 						cmpl=false
 					}
 				}
-				this.ok()
 			}
+			this.ok()
 		}
     }
     window.ForthVM = ForthVM
