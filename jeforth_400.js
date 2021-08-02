@@ -14,22 +14,24 @@
         }
         class Code {                          /// colon word class
             constructor(name, n=false) {
-                this.name=name; this.immd=0; this.stage=0; this.pf=[]
+                this.name=name; this.xt=null; this.immd=0; this.pf=[]
                 let w = find(name); if (w!=null) this.xt = w.xt
 			    if (typeof(n)=="boolean" && n) this.token=fence++
 			    else if (typeof(n)=="string")  this.literal=n
 			    else if (typeof(n)=="number")  this.qf = [ n ]
                 this.pf.tail = function(i=1) { return this[this.length-i] }
             }
-            exec() {                          /// run colon word
-			    this.pf.forEach((w,i)=>{
-				    try   { w.exec() }        /// inner interpreter
+            exec() {                                          /// run colon word
+                if (this.xt!=null) { this.xt(this); return }  /// dolit, dostr,...
+			    this.pf.forEach((w,i)=>{                      /// inner interpreter
+				    try   { w.exec() }        
                     catch (e) {}
 			    })
 		    }
-            to_s() { return this.name+" "+this.token+(this.immd ? "~" : "") }
             addcode(w) { this.pf.push(w); return this }
+            to_s()     { return this.name+" "+this.token+(this.immd ? "~" : "") }
         }
+        
         /// virtual machine internal variables
 		let ss=[], rs=[]                      /// stacks
         let tib="", ntib=0, base=10           /// internal variables
@@ -41,7 +43,9 @@
             let i = tib.indexOf(d, ntib)
             if (i<0) { ntib=0; return null }
             let s = tib.substring(ntib, i); ntib=i+1; return s
-        }            
+        }
+        const see    = (w)=>console.log(JSON.stringify(w))
+        
         /// stack functions
         const top    = (n=1)=>ss[ss.length-n]
         const push   = v=>ss.push(v)
@@ -51,9 +55,11 @@
         const pushR  = v=>rs.push(v)
         const popR   = ()=>rs.pop()
         const decR   = ()=>rs[rs.length-1]-=1
+        
         /// utilities functions
         const nword  = ()=>{
-            dict.push(new Code(ntok(), true))
+            let s=ntok(); if (s==null) { cmpl=false; throw "more input" }
+            dict.push(new Code(s, true))
             return dict.tail()
         }
         const find   = (s)=>{
@@ -66,18 +72,6 @@
             let s=ntok(), w=find(s)
             if (w==null) throw NA(s);
             return w
-        }
-        const see    = (c, dp)=>{                       /// debug (JSON possible)
-            const tab = (i)=>{ log("\n"); while(i--) log("  ") }
-            const qf  = (v)=>{ log("=");  v.forEach(i=>log(i+" ")) }
-            tab(dp); log("[ "); log(c.to_s())
-            c.pf.forEach(w=>see(w, dp+1))
-            if (c.pf.length>0) {
-                tab(dp); log("---")
-                c.pf1.forEach(w=>see(w, dp+1))
-            }
-            if (c.qf.length>0) qf(c.qf)
-            log("]")
         }
         const sleep  = (ms)=>{
             return new Promise(rst=>setTimeout(rst,ms))
@@ -172,7 +166,8 @@
             new Prim("bran",c=>(pop()==0 ? c.pf1 : c.pf).forEach(w=>w.exec())),
             new Immd("if",  c=>{
                 dict.tail().addcode(new Code("bran"))
-                dict.push(new Code("temp")) }),
+                dict.push(new Code("temp"))
+                dict.lastpf().stage=0 }),
             new Immd("else",c=>{
                 let last=dict.lastpf(), temp=dict.tail()
                 last.pf.push(...temp.pf)
@@ -206,7 +201,8 @@
                 } }),
             new Immd("begin", c=>{
                 dict.tail().addcode(new Code("loop"))
-                dict.push(new Code("temp")) }),
+                dict.push(new Code("temp"))
+                dict.lastpf().stage=0 }),
             new Immd("while", c=>{
                 let last=dict.lastpf(), temp=dict.tail()
                 last.pf.push(...temp.pf)
@@ -307,7 +303,7 @@
                 dict.forEach((w,i)=>log(((i%5)==0 ? "\n" : " ")+w.to_s()))
                 }),
             new Prim(".s",   c=>console.log(ss)),
-            new Prim("see",  c=>{ let w=tok2w(); console.log(w) }),
+            new Prim("see",  c=>{ let w=tok2w(); console.log(JSON.stringify(w)) }),
             new Prim("boot", c=>dict.splice(find("boot").token+1))
         ]
         //
