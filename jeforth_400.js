@@ -15,14 +15,14 @@
         class Code {                          /// colon word class
             constructor(name, n=false) {
                 this.name=name; this.immd=0; this.stage=0; this.pf=[]
-                if (name!="temp") this.xt = find(name).xt
+                let w = find(name); if (w!=null) this.xt = w.xt
 			    if (typeof(n)=="boolean" && n) this.token=fence++
 			    else if (typeof(n)=="string")  this.literal=n
-			    else if (typeof(n)=="number")  this.qf = { n }
+			    else if (typeof(n)=="number")  this.qf = [ n ]
                 this.pf.tail = function(i=1) { return this[this.length-i] }
             }
             exec() {                          /// run colon word
-			    this.pf.forEach(w=>{
+			    this.pf.forEach((w,i)=>{
 				    try   { w.exec() }        /// inner interpreter
                     catch (e) {}
 			    })
@@ -30,10 +30,10 @@
             to_s() { return this.name+" "+this.token+(this.immd ? "~" : "") }
             addcode(w) { this.pf.push(w); return this }
         }
+        /// virtual machine internal variables
 		let ss=[], rs=[]                      /// stacks
         let tib="", ntib=0, base=10           /// internal variables
         let cmpl=false
-        
         /// IO functions
         const log    = (s)=>output(s)
         const NA     = (s)=>s+" not found"
@@ -42,23 +42,19 @@
             if (i<0) { ntib=0; return null }
             let s = tib.substring(ntib, i); ntib=i+1; return s
         }            
-        
         /// stack functions
         const top    = (n=1)=>ss[ss.length-n]
         const push   = v=>ss.push(v)
         const pop    = ()=>ss.pop()
         const remove = n=>{ let v=top(n); ss.splice(length-n,1); return v }
-        const topR   = (n=1)=>rs[ss.length-n]
+        const topR   = (n=1)=>rs[rs.length-n]
         const pushR  = v=>rs.push(v)
         const popR   = ()=>rs.pop()
-        
+        const decR   = ()=>rs[rs.length-1]-=1
         /// utilities functions
         const nword  = ()=>{
             dict.push(new Code(ntok(), true))
             return dict.tail()
-        }
-        const sleep  = (ms)=>{
-            return new Promise(rst=>setTimeout(rst,ms))
         }
         const find   = (s)=>{
             for (let i=dict.length-1; i>=0; --i) {      /// search reversely
@@ -83,7 +79,9 @@
             if (c.qf.length>0) qf(c.qf)
             log("]")
         }
-
+        const sleep  = (ms)=>{
+            return new Promise(rst=>setTimeout(rst,ms))
+        }
         /// primitive words
         let dict = [
             new Prim("hi",    c=>log("---->hi there\n")),
@@ -132,46 +130,50 @@
             // output
             new Prim("base@", c=>push(base)),
             new Prim("base!", c=>base=pop()),
-            new Prim("hex",   c=>base=16 ),
-            new Prim("decimal",c=>base=10 ),
+            new Prim("hex",   c=>base=16),
+            new Prim("decimal",c=>base=10),
             new Prim("cr",    c=>log("\n")),
-            new Prim(".",     c=>log(pop().toString(base)+", ")),
+            new Prim(".",     c=>log(pop().toString(base))),
             new Prim(".r",    c=>{
-                let n=pop(), s=pop().toString(base);
-                for(let i=0; i+s.length<n; i++) log(" ");
-                log(s+" "); }),
+                let n=pop(), s=pop().toString(base)
+                for(let i=0; i+s.length<n; i++) log(" ")
+                log(s+" ") }),
+            new Prim(".r",    c=>{
+                let n=pop(), s=pop().toString(base)
+                for(let i=0; i+s.length<n; i++) log(" ")
+                log(s+" ") }),
             new Prim("u.r", c=>{
-                let n=pop(), s=(pop()&0x7fffffff).toString(base);
-                for(let i=0; i+s.length<n; i++) log(" ");
-                log(s+" "); }),
+                let n=pop(), s=(pop()&0x7fffffff).toString(base)
+                for(let i=0; i+s.length<n; i++) log(" ")
+                log(s+" ") }),
             new Prim("key", c=>push(ntok()[0])),
             new Prim("emit", c=>log(String.fromCharCode(pop()))),
             new Prim("space", c=>log(" ")),
-            new Prim("spaces", c=>{ for (let i=0, n=pop(); i<n; i++) log(" ")}),
+            new Prim("spaces", c=>{ for (let i=0, n=pop(); i<n; i++) log(" ") }),
             // literals
             new Prim("[", c=>cmpl=false ),
             new Prim("]", c=>cmpl=true ),
             new Prim("'", c=>{ let w=tok2w(); push(w.token) }),
-            new Prim("dolit", c=>push(c.qf[0])),                // integer literal
-            new Prim("dostr", c=>push(c.token)),                // string literal
-            new Immd("$\"", c=>{                                // -- w a
+            new Prim("dolit", c=>push(c.qf[0])),         // integer literal
+            new Prim("dostr", c=>push(c.token)),         // string literal
+            new Immd("$\"", c=>{                         // -- w a
                 let s=ntok('"'), last=dict.tail()
                 last.addcode(new Code("dostr", s))
                 push(last.token)
                 push(dict.pf.tail()) }),
             new Prim("dotstr",c=>log(c.literal)),
             new Immd(".\"", c=>{
-                let s=ntok('"'), x=ntok()
-                dict.tail().addcode(new Code("dotstr", s))}),
-            new Prim("(",  c=>{ let s=ntok(')'), x=ntok()}, true),
-            new Immd(".(", c=>{ let s=ntok(')'), x=ntok(); log(s) }),
-            new Immd("\\", c=>{ let x=ntok('\n') }),
+                let s = ntok('"')
+                dict.tail().addcode(new Code("dotstr", s)); ntok() }),
+            new Prim("(",   c=>{ let s=ntok(')'); ntok() }),
+            new Immd(".(",  c=>{ let s=ntok(')'); ntok(); log(s) }),
+            new Immd("\\",  c=>ntib=tib.length),
             // branching: if else then
             new Prim("bran",c=>(pop()==0 ? c.pf1 : c.pf).forEach(w=>w.exec())),
-            new Immd("if", c=>{
+            new Immd("if",  c=>{
                 dict.tail().addcode(new Code("bran"))
                 dict.push(new Code("temp")) }),
-            new Immd("else", c=>{
+            new Immd("else",c=>{
                 let last=dict.lastpf(), temp=dict.tail()
                 last.pf.push(...temp.pf)
                 temp.pf = []
@@ -181,7 +183,8 @@
                 if (last.stage==0) {
                     last.pf.push(...temp.pf)
                     dict.pop()                           // drop temp
-                } else {
+                }
+                else {
                     if (last.pf1==null) last.pf1=[]
                     last.pf1.push(...temp.pf)
                     if (last.stage==1) dict.pop()
@@ -189,21 +192,17 @@
                 } }),
             // loop
             new Prim("loop", c=>{
-                if (c.stage==1) {                        // again
-                    while (true) { c.pf.forEach(w=>w.exec()) }
+                while (c.state==1) {             // again
+                    c.pf.forEach(w=>w.exec())
                 }
-                else if (c.stage==2) {                   // while repeat
-                    while (true) {
-                        c.pf.forEach(w=>w.exec())
-                        if (pop()==0) break;
-                        c.pf1.forEach(w=>w.exec())
-                    }
+                while (c.stage==2) {             // repeat
+                    c.pf.forEach(w=>w.exec())
+                    if (pop()==0) break
+                    c.pf1.forEach(w=>w.exec())
                 }
-                else {
-                    while (true) {                       // until
-                        c.pf.forEach(w=>w.exec())
-                        if(pop()!=0) break;
-                    }
+                while (c.stage!=2) {             // until
+                    c.pf.forEach(w=>w.exec())
+                    if (pop()!=0) break
                 } }),
             new Immd("begin", c=>{
                 dict.tail().addcode(new Code("loop"))
@@ -228,30 +227,22 @@
                 dict.pop() }),
             // for next
             new Prim("cycle", c=>{
-                let i=0;
-                if (c.stage==0) {
+                while (c.stage==0) {
+                    c.pf.forEach(w=>w.exec())
+                    if (decR()<0) { popR(); break }
+                }
+                if (c.stage > 0) {
+                    c.pf.forEach(w=>w.exec())
                     while (true) {
-                        c.pf.forEach(w=>w.exec())
-                        i = popR()-1;
-                        if (i<0) break;
-                        pushR(i);
-                    }
-                } else {
-                    if (c.stage>0) {
-                        c.pf.forEach(w=>w.exec())
-                        while (true) {
-                            c.pf2.forEach(w=>w.exec())
-                            i=popR()-1;
-                            if (i<0) break;
-                            pushR(i);
-                            c.pf1.forEach(w=>w.exec())
-                        }
+                        c.pf2.forEach(w=>w.exec())
+                        if (decR()<0) { popR(); break }
+                        c.pf1.forEach(w=>w.exec())
                     }
                 } }),
             new Immd("for", c=>{
-                dict[-1]
+                dict.tail()
 					.addcode(new Code(">r"))
-                    .addcode(new Code("cycles"))
+                    .addcode(new Code("cycle"))
                 dict.add(new Code("temp")) }),
             new Immd("aft", c=>{
                 let last=dict.lastpf(), temp=dict.tail()
@@ -260,19 +251,21 @@
                 last.stage=3 }),
             new Immd("next", c=>{
                 let last=dict.lastpf(), temp=dict.tail()
-                if (last.stage==0) last.pf.push(...temp.pf)
+                if (last.stage==0) {
+                    last.pf.push(...temp.pf)
+                }
                 else {
                     if (last.pf2==null) last.pf2=[]
                     last.pf2.push(...temp.pf)
                 }
                 dict.pop() }),
             // defining words
-            new Prim("exec", c=>dict[pop()].exec()),
-            new Prim(":", c=>{ nword(); cmpl=true }),           // new colon word
-            new Immd(";", c=>cmpl=false),                        // semicolon
-            new Prim("docon", c=>push(c.qf[0])),                 // integer literal
-            new Prim("dovar", c=>push(c.token)),                 // string literal
-            new Prim("create", c=>{
+            new Prim("exec",  c=>dict[pop()].exec()),
+            new Prim(":",     c=>{ nword(); cmpl=true }),    // new colon word
+            new Immd(";",     c=>cmpl=false),                // semicolon
+            new Prim("docon", c=>push(c.qf[0])),
+            new Prim("dovar", c=>push(c.token)),
+            new Prim("create",c=>{
                 let last=nword().addcode(new Code("dovar",0))
                 last.pf[0].token=last.token
                 last.pf[0].qf.shift() }),
@@ -280,7 +273,7 @@
                 let last=nword().addcode(new Code("dovar",0))
                 last.pf[0].token=last.token }),
             new Immd("constant", c=>{
-                let last=nword().addcode(new Code("docon",pop()))
+                let last=nword().addcode(new Code("docon", pop()))
                 last.pf[0].token=last.token }),
             // memory access functions
             new Prim("@", c=>{ let last=dict[pop()]; push(last.pf[0].qf[0]) }),
@@ -320,8 +313,8 @@
         //
         // add dictionary access methods
         //
-        dict.tail   = function(i=1) { return this[this.length-i] }
-        dict.lastpf = function()    { return this[this.length-2].pf.tail() }
+        dict.tail   = function(i=1) { return this[this.length-i]    }
+        dict.lastpf = function()    { return this.tail(2).pf.tail() }
         //
         // main interface
         //
@@ -333,6 +326,7 @@
             for (let s=ntok(); s!=null; s=ntok()) {
 				let w = find(s)                             // search dictionary
 				if (w!=null) {                              // word found
+                    console.log(s+"=>"+w.token)
 					if((!cmpl) || w.immd) {
 						try       { w.exec() }              // execute
 						catch (e) { log(e) }
@@ -342,6 +336,7 @@
 				else {
 					try {
 						let n=parseInt(s, base)             // not word, try number
+                        console.log(s+"=>"+n.toString(base))
 						if (cmpl) {                         // compile integer literal
 							dict.tail().addcode(new Code("dolit",n))
 						}                
@@ -353,7 +348,7 @@
 					}
 				}
 			}
-			log(ss.join('_')+"_ok ")
+			log(" "+ss.join('_')+"_ok ")
 		}
     }
     window.ForthVM = ForthVM
