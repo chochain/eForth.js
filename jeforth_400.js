@@ -190,23 +190,27 @@
                 } }),
             // loop
             new Prim("loop", c=>{
-                while (c.state==1) {             // again
-                    c.pf.forEach(w=>w.exec())
-                }
-                while (c.stage==2) {             // repeat
-                    c.pf.forEach(w=>w.exec())
-                    if (pop()==0) break
-                    c.pf1.forEach(w=>w.exec())
-                }
-                while (c.stage!=2) {             // until
-                    c.pf.forEach(w=>w.exec())
-                    if (pop()!=0) break
-                } }),
+				while (true) {
+					c.pf.forEach(w=>w.exec())
+					if (c.stage==0 && pop()!=0) break // until
+					if (c.stage!=2) continue          // again
+					if (pop()==0) break               // repeat
+					c.pf1.forEach(w=>w.exec())
+				} }),
             new Immd("begin", c=>{
                 dict.tail().addcode(new Code("loop"))
                 dict.push(new Code("temp"))
                 dict.lastpf().stage=0 }),
-            new Immd("while", c=>{
+            new Immd("again", c=>{               // begin...again
+                let last=dict.lastpf(), temp=dict.tail()
+                last.pf.push(...temp.pf)
+                last.stage=1
+                dict.pop() }),
+            new Immd("until", c=>{               // begin...f.until
+                let last=dict.lastpf(), temp=dict.tail()
+                last.pf.push(...temp.pf)
+                dict.pop() }),
+            new Immd("while", c=>{               // begin...f.while...repeat
                 let last=dict.lastpf(), temp=dict.tail()
                 last.pf.push(...temp.pf)
                 temp.pf = []
@@ -214,15 +218,6 @@
             new Immd("repeat", c=>{
                 let last=dict.lastpf(), temp=dict.tail()
                 last.pf1.push(...temp.pf)
-                dict.pop() }),
-            new Immd("again", c=>{
-                let last=dict.lastpf(), temp=dict.tail()
-                last.pf.push(...temp.pf)
-                last.stage=1
-                dict.pop() }),
-            new Immd("until", c=>{
-                let last=dict.lastpf(), temp=dict.tail()
-                last.pf.push(...temp.pf)
                 dict.pop() }),
             // for next
             /*
