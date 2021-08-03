@@ -1,6 +1,5 @@
 'use strict';
-(function() {
-    function ForthVM(output=console.log) {    /// ForthVM factory function
+window.ForthVM = function(output=console.log) {    /// ForthVM factory function
         let fence = 0
 
         class Prim {                          /// primitive word class
@@ -81,7 +80,7 @@
 
         /// dictionary intialized with primitive words
         let dict = [
-            new Prim("hi",    c=>log("---->hi there\n")),
+            // stack ops
             new Prim("dup",   c=>push(top())),
             new Prim("over",  c=>push(top(2))),
             new Prim("2dup",  c=>push(...ss.slice(-2))),
@@ -101,7 +100,7 @@
             new Prim("r@",    c=>push(topR())),
             new Prim("push",  c=>pushR(pop())),
             new Prim("pop",   c=>push(popR())),
-            // math
+            // arithmetic
             new Prim("+",     c=>{ let n=pop(); push(pop()+n) }),
             new Prim("-",     c=>{ let n=pop(); push(pop()-n) }),
             new Prim("*",     c=>{ let n=pop(); push(pop()*n) }),
@@ -124,7 +123,7 @@
             new Prim("<>",    c=>{ let n=pop(); push((pop()!=n)?-1:0) }),
             new Prim(">=",    c=>{ let n=pop(); push((pop()>=n)?-1:0) }),
             new Prim("<=",    c=>{ let n=pop(); push((pop()<=n)?-1:0) }),
-            // output
+            // IO
             new Prim("base@", c=>push(base)),
             new Prim("base!", c=>base=pop()),
             new Prim("hex",   c=>base=16),
@@ -222,10 +221,11 @@
                 last.pf1.push(...temp.pf)
                 dict.pop() }),
             // for next
+            new Prim("i",     c=>push(topR())),
             new Prim("cycle", c=>{
                 do {
                     c.pf.forEach(w=>w.exec())
-                    if (c.stage==0 && decR()==0) { popR(); break }
+                    if (c.stage==0 || decR()==0) { popR(); break }
                 } while (c.stage==0)                           // for...next
                 while (c.stage>0) {
                     c.pf2.forEach(w=>w.exec())                 // then...
@@ -281,17 +281,18 @@
             new Immd("does", c=>{ // n --
                 let last=dict.tail(), src=dict[wp]
                 last.pf.push(...src.pf.subList(ip+2,src.pf.length)) }),
-            new Immd("to", c=>{                                             // n -- , compile only 
+            new Immd("to", c=>{                              // n -- , compile only 
                 let last=dict[wp]
-                ip++;                                                         // current colon word
-                last.pf[ip++].pf[0].qf[0]=pop() }),                           // next constant
+                ip++;                                        // current colon word
+                last.pf[ip++].pf[0].qf[0]=pop() }),          // next constant
             new Prim("is", c=>{ let w=tok2w(); dict[w.token].pf = dict[pop()].pf }),
             */
             // system functions
-            new Prim("exit",  c=>{ throw "close app" }),          // exit interpreter
+            new Prim("exit",  c=>{ throw "close app" }),     // exit interpreter
             new Prim("time",  c=>push(Date.getTime())),
             new Prim("delay", c=>sleep(pop()).then(()=>{})),
             // debug functions
+            new Prim("hi",   c=>log("jeforth 4.0\n")),
             new Prim("here",  c=>push(dict.tail().token)),
             new Prim("forget",c=>dict.splice(tok2w().token)),
             new Prim("words", c=>{
@@ -342,5 +343,3 @@
             log(ss_ok())
         }
     }
-    window.ForthVM = ForthVM
-})();
