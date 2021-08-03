@@ -1,7 +1,8 @@
 'use strict';
 (function() {
-    function ForthVM(output=console.log) {    /// ForthVM object template
+    function ForthVM(output=console.log) {    /// ForthVM factory function
 	    let fence = 0
+        
         class Prim {                          /// primitive word class
             constructor(name, xt) {
                 this.name=name; this.xt=xt; this.token=fence++; this.immd=false
@@ -31,20 +32,21 @@
             addcode(w) { this.pf.push(w); return this }
             to_s()     { return this.name+" "+this.token+(this.immd ? "~" : "") }
         }
-        
+
         /// virtual machine internal variables
 		let ss=[], rs=[]                      /// stacks
         let tib="", ntib=0, base=10           /// internal variables
         let cmpl=false
+        
         /// IO functions
         const log    = (s)=>output(s)
         const NA     = (s)=>s+" not found"
+        const ss_ok  = ()=>" "+ss.map(v=>v.toString(base)).join("_")+"_ok "
         const ntok   = (d=' ')=>{
             let i = tib.indexOf(d, ntib)
             if (i<0) { ntib=0; return null }
             let s = tib.substring(ntib, i); ntib=i+1; return s
         }
-        const see    = (w)=>console.log(JSON.stringify(w))
         
         /// stack functions
         const top    = (n=1)=>ss[ss.length-n]
@@ -76,7 +78,8 @@
         const sleep  = (ms)=>{
             return new Promise(rst=>setTimeout(rst,ms))
         }
-        /// primitive words
+        
+        /// dictionary intialized with primitive words
         let dict = [
             new Prim("hi",    c=>log("---->hi there\n")),
             new Prim("dup",   c=>push(top())),
@@ -222,6 +225,7 @@
                 last.pf.push(...temp.pf)
                 dict.pop() }),
             // for next
+            /*
             new Prim("cycle", c=>{
                 while (c.stage==0) {
                     c.pf.forEach(w=>w.exec())
@@ -255,6 +259,7 @@
                     last.pf2.push(...temp.pf)
                 }
                 dict.pop() }),
+            */
             // defining words
             new Prim("exec",  c=>dict[pop()].exec()),
             new Prim(":",     c=>{ nword(); cmpl=true }),    // new colon word
@@ -263,8 +268,7 @@
             new Prim("dovar", c=>push(c.token)),
             new Prim("create",c=>{
                 let last=nword().addcode(new Code("dovar",0))
-                last.pf[0].token=last.token
-                last.pf[0].qf.shift() }),
+                last.pf[0].token=last.token; last.pf[0].qf.shift() }),
             new Immd("variable", c=>{ 
                 let last=nword().addcode(new Code("dovar",0))
                 last.pf[0].token=last.token }),
@@ -272,38 +276,38 @@
                 let last=nword().addcode(new Code("docon", pop()))
                 last.pf[0].token=last.token }),
             // memory access functions
-            new Prim("@", c=>{ let last=dict[pop()]; push(last.pf[0].qf[0]) }),
-            new Prim("!", c=>{ let last=dict[pop()]; last.pf[0].qf[0]=pop() }),
-            new Prim("+!",c=>{ let last=dict[pop()]; last.pf[0].qf[0]+=pop() }),
-            new Prim("?", c=>{ let last=dict[pop()], n=last.pf[0].qf[0]; log(n.toString(base)) }),
-            new Prim("array@", c=>{ let a=pop(), last=dict[pop()];  push(last.pf[0].qf[a]) }),
-            new Prim("array!", c=>{ let a=pop(), last=dict[pop()];  last.pf[0].qf[a]=pop() }),
-            new Prim(",", c=>{ let last=dict[-1]; last.pf[0].qf.push(pop()) }),
-            new Prim("allot", c=>{  // n --
-                let n=pop(), last=dict[-1]
-                for (let i=0; i<n; i++) last.pf[0].qf[0] }),
-            new Prim("does", c=>{ // n --
-                let last=dict[-1], src=dict[wp]
+            new Prim("?", c=>log(dict[pop()].pf[0].qf[0].toString(base))),
+            new Prim("@", c=>push(dict[pop()].pf[0].qf[0])),
+            new Prim("!", c=>{ let i=pop(); dict[i].pf[0].qf[0]=pop() }),
+            new Prim("+!",c=>{ let i=pop(); dict[i].pf[0].qf[0]+=pop() }),
+            new Prim("array@", c=>{ let a=pop(); push(dict[pop()].pf[0].qf[a]) }),
+            new Prim("array!", c=>{ let a=pop(); dict[pop()].pf[0].qf[a]=pop() }),
+            new Prim(",", c=>dict.tail().pf[0].qf.push(pop())),
+            new Prim("allot", c=>{
+                let n=pop(), qf=dict.tail().pf[0].qf
+                for (let i=0; i<n; i++) qf[i]=0  }),
+            /*
+            new Immd("does", c=>{ // n --
+                let last=dict.tail(), src=dict[wp]
                 last.pf.push(...src.pf.subList(ip+2,src.pf.length)) }),
-            new Prim("to", c=>{                                               // n -- , compile only 
+            new Immd("to", c=>{                                             // n -- , compile only 
                 let last=dict[wp]
                 ip++;                                                         // current colon word
                 last.pf[ip++].pf[0].qf[0]=pop() }),                           // next constant
-            new Prim("is", c=>{                                               // w -- , execute only
-                let src=dict[pop()], w=tok2w()                                // source word
-                dict[w.token].pf = src.pf }),
+            new Prim("is", c=>{ let w=tok2w(); dict[w.token].pf = dict[pop()].pf }),
+            */
             // system functions
-            new Prim("exit", c=>{ throw "close app" }),          // exit interpreter
-            new Prim("time", c=>log(Date.now.toString())),
-            new Prim("ms",   c=>sleep(pop()).then(()=>{})),
+            new Prim("exit",  c=>{ throw "close app" }),          // exit interpreter
+            new Prim("time",  c=>push(Date.getTime())),
+            new Prim("delay", c=>sleep(pop()).then(()=>{})),
             // debug functions
-            new Prim("here", c=>push(dict.tail().token)),
-            new Prim("forget", c=>dict.splice(tok2w().token)),
+            new Prim("here",  c=>push(dict.tail().token)),
+            new Prim("forget",c=>dict.splice(tok2w().token)),
             new Prim("words", c=>{
                 dict.forEach((w,i)=>log(((i%5)==0 ? "\n" : " ")+w.to_s()))
                 }),
             new Prim(".s",   c=>console.log(ss)),
-            new Prim("see",  c=>{ let w=tok2w(); console.log(JSON.stringify(w)) }),
+            new Prim("see",  c=>console.log(tok2w())),
             new Prim("boot", c=>dict.splice(find("boot").token+1))
         ]
         //
@@ -344,7 +348,7 @@
 					}
 				}
 			}
-			log(" "+ss.join('_')+"_ok ")
+			log(ss_ok())
 		}
     }
     window.ForthVM = ForthVM
