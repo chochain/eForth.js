@@ -58,7 +58,6 @@ window.ForthVM = function(output=console.log) {
         let i = tib.indexOf(d, ntib)
         let s = i<0 ? null : tib.substring(ntib, i)
         ntib = (s==null) ? 0 : i+1        /// advance or reset ntib
-        if (s!=null) alert("<"+d+">"+s+">"+tib.slice(ntib)+"<")
         return s
     }
     /// @}
@@ -327,7 +326,7 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("here",  c=>push(dict.tail().token)),
         new Prim("words", c=>
-                 dict.forEach((w,i)=>log(((i%5)==0 ? "\n" : " ")+w.name))),
+                 dict.forEach((w,i)=>log(((i%10)==0 ? "\n" : " ")+w.name))),
         new Prim(".s",   c=>console.log(ss)),
         new Prim("see",  c=>console.log(tok2w())),
         new Prim("forget",c=>dict.splice(tok2w().token)),
@@ -350,10 +349,9 @@ window.ForthVM = function(output=console.log) {
     /// @param row one line of input
     ///
     this.outer = (row)=>{
-        tib=row+" "; ntib=0                             /// capture into TIB
+        tib=row; ntib=0                                 /// capture into TIB
         for (let s=ntok(); s!=null; s=ntok()) {         /// * loop through tokens
             let w=find(s)                               /// * search throug dictionary
-            console.log(s+"=>"+w.token)
             if (w!=null) {                              /// * word found?
                 if((!cmpl) || w.immd) {                 /// * in interpret mode?
                     try       { w.exec() }              ///> execute word
