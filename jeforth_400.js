@@ -368,7 +368,7 @@ window.ForthVM = function(output=console.log) {
                 else push(n)                             ///>> or, push number onto stack top
             }
         }
-        log(" ok")     /// dump stack and display ok prompt
+        log("ok")     /// dump stack and display ok prompt
     }
     this.data = (d)=>{
         switch (d) {
