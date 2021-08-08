@@ -23,21 +23,17 @@ window.ForthVM = function(output=console.log) {
     /// Colon word class
     ///
     class Code {
-        constructor(name, n=false) {
+        constructor(name, v=false) {
             this.name=name; this.xt=null; this.immd=0; this.pf=[]
             let w = find(name); if (w!=null) this.xt = w.xt
-            if (typeof(n)=="boolean" && n) this.token=fence++
-            else if (typeof(n)=="string")  this.literal=n
-            else if (typeof(n)=="number")  this.qf = [ n ]
-            this.pf.tail = function(i=1) { return this[this.length-i] }
+            if (typeof(v)=="boolean" && v) this.token=fence++
+            else if (typeof(v)=="string")  this.literal=v
+            else if (typeof(v)=="number")  this.qf = [ v ]
+            this.pf.tail = function(i=1) { return this[this.length-1]; }
         }
         exec() {                                          /// run colon word
             if (this.xt!=null) { this.xt(this); return }  /// dolit, dostr,...
-            this.pf.forEach(w=>{                          /// inner interpreter
-                w.exec();
-//                try   { w.exec() }
-//                catch (e) {}
-            })
+            this.pf.forEach(w=>w.exec())                  /// inner interpreter
         }
         addcode(w) { this.pf.push(w); return this }
     }
@@ -47,17 +43,17 @@ window.ForthVM = function(output=console.log) {
     let ss=[], rs=[]                      /// stacks
     let tib="", ntib=0, base=10           /// internal variables
     let cmpl=false
+    let SPC ="&nbsp;"
     /// @}
     /// @defgroup IO functions
     /// @{
     const log    = (s)=>output(s)
     const NA     = (s)=>s+" not found"
-    const ss_ok  = ()=>" "+ss.map(v=>v.toString(base)).join("_")+"_ok "
     const ntok   = (d=" ")=>{             /// assumes tib ends with a blank
-        while (d==" " && tib.charAt(ntib)==" ") ntib++;   // skip leading blanks
+        while (d==" " &&
+               (tib[ntib]==" " || tib[ntib]=="\t")) ntib++ // skip leading blanks and tabs
         let i = tib.indexOf(d, ntib)
-        let s = i<0 ? null : tib.substring(ntib, i)
-        ntib = (s==null) ? 0 : i+1        /// advance or reset ntib
+        let s = (i==-1) ? null : tib.substring(ntib, i); ntib=i+1
         return s
     }
     /// @}
@@ -100,24 +96,23 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Stack ops
         /// @{
         new Prim("dup",   c=>push(top())),
+        new Prim("drop",  c=>pop()),
         new Prim("over",  c=>push(top(2))),
-        new Prim("2dup",  c=>push(...ss.slice(-2))),
-        new Prim("2over", c=>push(...ss.slice(-4,-2))),
-        new Prim("4dup",  c=>push(...ss.slice(-4))),
         new Prim("swap",  c=>push(remove(2))),
         new Prim("rot",   c=>push(remove(3))),
         new Prim("-rot",  c=>ss.splice(-2, 0, pop())),
-        new Prim("2swap", c=>{ push(remove(4)); push(remove(4)) }),
         new Prim("pick",  c=>{ let i=pop(), n=top(i+1);    push(n) }),
         new Prim("roll",  c=>{ let i=pop(), n=remove(i+1); push(n) }),
-        new Prim("drop",  c=>pop()),
         new Prim("nip",   c=>remove(2)),
-        new Prim("2drop", c=>ss.splice(-2)),
         new Prim(">r",    c=>pushR(pop())),
         new Prim("r>",    c=>push(popR())),
         new Prim("r@",    c=>push(topR())),
         new Prim("push",  c=>pushR(pop())),
         new Prim("pop",   c=>push(popR())),
+        new Prim("2dup",  c=>{ push(top(2)); push(top(2)) }),
+        new Prim("2drop", c=>ss.splice(-2)),
+        new Prim("2over", c=>{ push(top(4)); push(top(4)) }),
+        new Prim("2swap", c=>{ push(remove(4)); push(remove(4)) }),
         /// @}
         /// @defgroup Arithmetic ops
         /// @{
@@ -126,7 +121,8 @@ window.ForthVM = function(output=console.log) {
         new Prim("*",     c=>{ let n=pop(); push(pop()*n) }),
         new Prim("/",     c=>{ let n=pop(); push(pop()/n) }),
         new Prim("*/",    c=>{ let n=pop(); push(pop()*pop()/n) }),
-        new Prim("*/mod", c=>{ let n=pop(), m=pop()*pop(); push(m%n); push(m/n) }),
+        new Prim("*/mod", c=>{ let n=pop(), m=pop()*pop();
+                               push(m%n); push(Math.floor(m/n)) }),
         new Prim("mod",   c=>{ let n=pop(); push(pop()%n) }),
         new Prim("and",   c=>push(pop()&pop())),
         new Prim("or",    c=>push(pop()|pop())),
@@ -152,24 +148,24 @@ window.ForthVM = function(output=console.log) {
         new Prim("base!", c=>base=pop()),
         new Prim("hex",   c=>base=16),
         new Prim("decimal",c=>base=10),
-        new Prim("cr",    c=>log("\n")),
+        new Prim("cr",    c=>log("<br/>")),
         new Prim(".",     c=>log(pop().toString(base))),
         new Prim(".r",    c=>{
             let n=pop(), s=pop().toString(base)
-            for(let i=0; i+s.length<n; i++) log(" ")
+            for(let i=0; i+s.length<n; i++) log(SPC)
             log(s+" ") }),
         new Prim(".r",    c=>{
             let n=pop(), s=pop().toString(base)
-            for(let i=0; i+s.length<n; i++) log(" ")
+            for(let i=0; i+s.length<n; i++) log(SPC)
             log(s+" ") }),
         new Prim("u.r",   c=>{
             let n=pop(), s=(pop()&0x7fffffff).toString(base)
-            for(let i=0; i+s.length<n; i++) log(" ")
+            for(let i=0; i+s.length<n; i++) log(SPC)
             log(s+" ") }),
         new Prim("key",   c=>push(ntok()[0])),
         new Prim("emit",  c=>log(String.fromCharCode(pop()))),
-        new Prim("space", c=>log(" ")),
-        new Prim("spaces",c=>{ for (let i=0, n=pop(); i<n; i++) log(" ") }),
+        new Prim("space", c=>log(SPC)),
+        new Prim("spaces",c=>{ for (let i=0, n=pop(); i<n; i++) log(SPC) }),
         /// @}
         /// @defgroup Literal ops
         /// @{
@@ -178,39 +174,40 @@ window.ForthVM = function(output=console.log) {
         new Prim("'",     c=>{ let w=tok2w(); push(w.token) }),
         new Prim("dolit", c=>push(c.qf[0])),         // integer literal
         new Prim("dostr", c=>push(c.token)),         // string literal
-        new Immd("$\"",   c=>{                         // -- w a
+        new Immd("$\"",   c=>{                       // -- w a
             let last=dict.tail()
-            last.addcode(new Code("dostr", ntok('"')))
+            last.addcode(new Code("dostr", ntok("\"")))
             push(last.token)
             push(dict.pf.tail()) }),
         new Prim("dotstr",c=>log(c.literal)),
         new Immd(".\"",   c=>dict.tail().addcode(new Code("dotstr", ntok("\"")))),
         new Immd("(",     c=>ntok(")")),
         new Immd(".(",    c=>log(ntok(")"))),
-        new Prim("\\",    c=>ntib=tib.length),
+        new Immd("\\",    c=>ntib=tib.length),
         /// @}
         /// @defgroup Branching - if else then
         /// @{
-        new Prim("bran",  c=>(pop()==0 ? c.pf1 : c.pf).forEach(w=>w.exec())),
+        new Prim("bran", c=>(pop()!=0 ? c.pf : c.pf1).forEach(w=>w.exec())),
         new Immd("if",    c=>{
             dict.tail().addcode(new Code("bran"))
             dict.push(new Code("temp"))
-            dict.lastpf().stage=0 }),
+            let last=dict.lastpf();
+            last.pf1=[]; last.stage=0 }),
         new Immd("else",  c=>{
             let last=dict.lastpf(), temp=dict.tail()
             last.pf.push(...temp.pf)
-            temp.pf = []
-            last.stage=1; last.pf1=[] }),
+            temp.pf.length = 0
+            last.stage=1 }),
         new Immd("then",  c=>{
             let last=dict.lastpf(), temp=dict.tail()
             if (last.stage==0) {
-                last.pf.push(...temp.pf)
-                dict.pop()                         // drop temp
+                last.pf.push(...temp.pf);
+                dict.pop()                            // drop temp
             }
             else {
                 last.pf1.push(...temp.pf)
                 if (last.stage==1) dict.pop()
-                else temp.pf=[]                    // for...aft...then
+                else temp.pf.length=0                 // for...aft...then
             } }),
         /// @}
         /// @defgroup Loop ops
@@ -219,8 +216,8 @@ window.ForthVM = function(output=console.log) {
         new Prim("loop", c=>{
             while (true) {
                 c.pf.forEach(w=>w.exec())
-                if (c.stage==0) continue           // again
-                if (c.stage==1 && pop()!=0) break  // until
+                if (c.stage==0 && pop()!=0) break  // until
+                if (c.stage==1) continue           // again
                 if (c.stage==2 && pop()==0) break  // while
                 c.pf1.forEach(w=>w.exec())
             } }),
@@ -228,23 +225,23 @@ window.ForthVM = function(output=console.log) {
             dict.tail().addcode(new Code("loop"))
             dict.push(new Code("temp"))
             let last = dict.lastpf(); last.pf1=[]; last.stage=0 }),
-        new Immd("again", c=>{                     // begin...again
-            let last=dict.lastpf(), temp=dict.tail()
-            last.pf.push(...temp.pf)
-            dict.pop() }),
-        new Immd("until", c=>{                     // begin...f.until
-            let last=dict.lastpf(), temp=dict.tail()
-            last.pf.push(...temp.pf)
-            last.stage=1
-            dict.pop() }),
         new Immd("while", c=>{                     // begin...f.while...repeat
             let last=dict.lastpf(), temp=dict.tail()
             last.pf.push(...temp.pf)
-            temp.pf = []
+            temp.pf.length = 0
             last.stage=2 }),
         new Immd("repeat", c=>{
             let last=dict.lastpf(), temp=dict.tail()
             last.pf1.push(...temp.pf)
+            dict.pop() }),
+        new Immd("again", c=>{                     // begin...again
+            let last=dict.lastpf(), temp=dict.tail()
+            last.pf.push(...temp.pf)
+            last.stage=1
+            dict.pop() }),
+        new Immd("until", c=>{                     // begin...f.until
+            let last=dict.lastpf(), temp=dict.tail()
+            last.pf.push(...temp.pf)
             dict.pop() }),
         /// @}
         /// @defgroup Loop ops
@@ -268,7 +265,7 @@ window.ForthVM = function(output=console.log) {
             let last=dict.lastpf(); last.stage=0; last.pf1=[] }),
         new Immd("aft", c=>{
             let last=dict.lastpf(), temp=dict.tail()
-            last.pf.push(...temp.pf); temp.pf=[]         // for...aft
+            last.pf.push(...temp.pf); temp.pf.length=0   // for...aft
             last.stage=3; last.pf2=[] }),
         new Immd("next", c=>{
             let last=dict.lastpf(), temp=dict.tail()
@@ -305,16 +302,14 @@ window.ForthVM = function(output=console.log) {
         new Prim("allot", c=>{
             let n=pop(), qf=dict.tail().pf[0].qf
             for (let i=0; i<n; i++) qf[i]=0  }),
-        /*
-          new Immd("does", c=>{ // n --
-          let last=dict.tail(), src=dict[wp]
-          last.pf.push(...src.pf.subList(ip+2,src.pf.length)) }),
-          new Immd("to", c=>{                              // n -- , compile only 
-          let last=dict[wp]
-          ip++;                                        // current colon word
-          last.pf[ip++].pf[0].qf[0]=pop() }),          // next constant
-          new Prim("is", c=>{ let w=tok2w(); dict[w.token].pf = dict[pop()].pf }),
-        */
+        new Immd("does", c=>{ // n --
+            let last=dict.tail(), src=dict[wp]
+            last.pf.push(...src.pf.slice(ip+2)) }),
+        new Immd("to", c=>{                              // n -- , compile only 
+            let last=dict[wp]; ip++;                     // current colon word
+            last.pf[ip++].pf[0].qf[0]=pop() }),          // next constant
+        new Prim("is", c=>{
+            let w=tok2w(); dict[w.token].pf = dict[pop()].pf }),
         /// @}
         /// @defgroup System ops
         /// @{
@@ -326,11 +321,12 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("here",  c=>push(dict.tail().token)),
         new Prim("words", c=>
-                 dict.forEach((w,i)=>log(((i%10)==0 ? "\n" : " ")+w.name))),
-        new Prim(".s",   c=>console.log(ss)),
+                 dict.forEach((w,i)=>log(((i%10)==0 ? "<br/>" : SPC)+w.name))),
         new Prim("see",  c=>console.log(tok2w())),
-        new Prim("forget",c=>dict.splice(tok2w().token)),
-        new Prim("boot", c=>dict.splice(find("boot").token+1))
+        new Prim("forget",c=>{
+            fence=Math.max(find("boot").token+1, tok2w().token)
+            dict.splice(fence) }),
+        new Prim("boot", c=>dict.splice(fence=find("boot").token+1))
         /// @}
     ]
     //
@@ -342,7 +338,7 @@ window.ForthVM = function(output=console.log) {
     /// initializer method
     ///
     this.init = ()=>{
-        log("jeforth 4.0\n")
+        //log("jeforth 4.0\n")
     }
     ///
     /// outer interpreter method - main loop
@@ -360,7 +356,7 @@ window.ForthVM = function(output=console.log) {
                 else dict.tail().addcode(w)              ///> or compile word 
             }
             else {                                       /// * word not found
-                let n=parseInt(s, base)                  ///> not word, try number
+                let n=base!=10 ? parseInt(s, base) : parseFloat(s)  ///> not word, try number
                 if (isNaN(n)) {                          ///> * not a number?
                     log(s + "? ")                        ///>> display prompt
                     cmpl=false                           ///>> restore interpret mode
@@ -371,9 +367,16 @@ window.ForthVM = function(output=console.log) {
                 else push(n)                             ///>> or, push number onto stack top
             }
         }
-        log(ss_ok())     /// dump stack and display ok prompt
+        log(" ok")     /// dump stack and display ok prompt
     }
-    this.exec = (cmd)=>{
+    this.data = (d)=>{
+        switch (d) {
+        case "dc": return dict.map(v=>v.name+" "+v.token)
+        case "ss": return ss.map(v=>v.toString(base))
+        case "rs": return rs.map(v=>v.toString(base))
+        }
+    }
+    this.exec   = (cmd)=>{
         cmd.split("\n").forEach(r=>this.outer(r+" "));
     }
 }
