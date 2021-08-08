@@ -36,14 +36,14 @@ window.ForthVM = function(output=console.log) {
             this.pf.forEach(w=>w.exec())                  /// inner interpreter
         }
         addcode(w) { this.pf.push(w); return this }
-    }
+   }
     ///
     /// @defgroup Virtual Machine Internal variables
     /// @{
     let ss=[], rs=[]                      /// stacks
     let tib="", ntib=0, base=10           /// internal variables
     let cmpl=false
-    let SPC ="&nbsp;"
+    let SPC="&nbsp;"
     /// @}
     /// @defgroup IO functions
     /// @{
@@ -153,15 +153,15 @@ window.ForthVM = function(output=console.log) {
         new Prim(".r",    c=>{
             let n=pop(), s=pop().toString(base)
             for(let i=0; i+s.length<n; i++) log(SPC)
-            log(s+" ") }),
+            log(s+SPC) }),
         new Prim(".r",    c=>{
             let n=pop(), s=pop().toString(base)
             for(let i=0; i+s.length<n; i++) log(SPC)
-            log(s+" ") }),
+            log(s+SPC) }),
         new Prim("u.r",   c=>{
             let n=pop(), s=(pop()&0x7fffffff).toString(base)
             for(let i=0; i+s.length<n; i++) log(SPC)
-            log(s+" ") }),
+            log(s+SPC) }),
         new Prim("key",   c=>push(ntok()[0])),
         new Prim("emit",  c=>log(String.fromCharCode(pop()))),
         new Prim("space", c=>log(SPC)),
@@ -321,8 +321,9 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("here",  c=>push(dict.tail().token)),
         new Prim("words", c=>
-                 dict.forEach((w,i)=>log(((i%10)==0 ? "<br/>" : SPC)+w.name))),
-        new Prim("see",  c=>console.log(tok2w())),
+                 dict.forEach((w,i)=>log(w.name+((i%20)==19 ? "\n" : SPC)))),
+        new Prim("see",   c=>{
+            let w = tok2w(); console.log(w); log(w) }),   // pass object directly to browser console
         new Prim("forget",c=>{
             fence=Math.max(find("boot").token+1, tok2w().token)
             dict.splice(fence) }),
@@ -338,7 +339,7 @@ window.ForthVM = function(output=console.log) {
     /// initializer method
     ///
     this.init = ()=>{
-        //log("jeforth 4.0\n")
+        log("<h2>jeforth 4.0</h2><h3>...eForth with Javascript</h3>")
     }
     ///
     /// outer interpreter method - main loop
@@ -371,7 +372,7 @@ window.ForthVM = function(output=console.log) {
     }
     this.data = (d)=>{
         switch (d) {
-        case "dc": return dict.map(v=>v.name+" "+v.token)
+        case "dc": return dict.map(v=>v.name+SPC+v.token)
         case "ss": return ss.map(v=>v.toString(base))
         case "rs": return rs.map(v=>v.toString(base))
         }
