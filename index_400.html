@@ -1,24 +1,65 @@
 ﻿<HTML>
-  <title>eForth in Javascript</title>
+  <title>jeForth 4.0</title>
+  <style>
+    .box  { display:flex; font-size:18px; font-family:monospace; width:100%; height:100%; }
+    .lbox { display:flex; flex-direction:column; width:20%; height:100%; }
+    .rbox { display:flex; flex-direction:column; width:80%; height:100%; }
+    .tic  { display:flex; justify-content: space-evenly; }
+    .tac  { width:30%; }
+    .dat  { width:90%; text-align:right; color:#484; }
+    .tib  { width:100%; }
+    .txt  { width:100%; height:85%; overflow-y:scroll; }
+    .cmd  { color:#48f; }
+  </style>
   <body>
-    <div width=100% height=100%>
-      <input id="tib" value="" style="font-size:18px; width:100%"
-             onkeydown="if (13===event.keyCode) eval()"/>
-      <textarea id="txt" style="font-size:18px; width:100%; height:90%"></textarea>
+    <div class="box">
+      <div class="lbox">
+        <div class="tic">
+          <input id="dtype" size="1" style="display:none"/>
+          <button id="dc" class='tac' onclick="set_data('dc')">dict</button>
+          <button id="ss" class='tac' onclick="set_data('ss')">ss</button>
+          <button id="rs" class='tac' onclick="set_data('rs')">rs</button>
+        </div>
+        <div id="dat" class="dat"></div>
+      </div>
+      <div class="rbox">
+        <input id="tib" class="tib" value="" onkeydown="if (13===event.keyCode) eval()"/>
+        <div id="txt" class="txt"></div>
+      </div>
     </div>
   <script src="jeforth_400.js"></script>
   <script>
     function eval() {
-      let tib=document.getElementById("tib");
-      to_text(tib.value+"\n");
-      try      { vm.exec(tib.value); }
-      catch(e) { console.log(e.toString()+"\n"); }
-      finally  { tib.value=""; txt.scrollTop=txt.scrollHeight; }
+      let tib=document.getElementById("tib")
+      to_txt("<div class='cmd'><em>"+tib.value+"</em></div>")
+      try {
+        vm.exec(tib.value)
+        show_data()
+      }
+      catch(e) { console.log(e.toString()+"\n") }
+      finally  { tib.value="" }
     }
-    function to_text(t) { txt.value+=t; }
-  
-    let vm = new ForthVM(to_text);
-    vm.init();
+    function set_data(t) {
+      document.getElementById("dtype").value = t
+      let ba = document.getElementsByClassName('tac')
+      for (let i=0; i<ba.length; i++) ba[i].style.color = 'black'
+      show_data()
+    }
+    function show_data() {
+      let t = dtype.value
+      document.getElementById(t).style.color = 'red'                           
+      let v = vm.data(dtype.value)
+      let d = v.reverse().join('<br/>')
+      document.getElementById('dat').innerHTML = v.length==0 ? "--empty--" : d
+    }
+    function to_txt(t) {
+      let e = document.getElementById("txt")
+      e.innerHTML += t
+      e.scrollTop = e.scrollHeight
+    }
+    let vm = new ForthVM(to_txt)
+    set_data("dc")
+    vm.init()
   </script>
 </body>
 </HTML>
