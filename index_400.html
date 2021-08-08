@@ -20,7 +20,7 @@
           <button id="ss" class='tac' onclick="set_data('ss')">ss</button>
           <button id="rs" class='tac' onclick="set_data('rs')">rs</button>
         </div>
-        <div id="dat" class="dat"></div>
+        <pre id="dat" class="dat"></pre>
       </div>
       <div class="rbox">
         <input id="tib" class="tib" value="" onkeydown="if (13===event.keyCode) eval()"/>
@@ -54,12 +54,12 @@
     }
     function to_txt(t) {
       let e = document.getElementById("txt")
-      e.innerHTML += t
+      e.innerHTML += (typeof(t)=="object") ? JSON.stringify(t,null,2) : t
       e.scrollTop = e.scrollHeight
     }
-    let vm = new ForthVM(to_txt)
-    set_data("dc")
-    vm.init()
+    let vm = new ForthVM(to_txt)       // create Forth VM object
+    set_data("dc")                     // select showing dictionary first
+    vm.init()                          // initialize the VM
   </script>
 </body>
 </HTML>
