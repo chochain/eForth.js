@@ -32,11 +32,11 @@
             <input id='tib' style='width:90%' value=''
                onkeydown='if (13===event.keyCode) forth_eval()'/>
           </div>
-          <textarea id='cm'>words</textarea>
+          <textarea id='cm'>copy and paste lesson402.txt here...</textarea>
         </div>
       </div>
     </div>
-    <script src='jeforth_400.js'></script>
+    <script src='jeforth_40.js'></script>
     <script>
     let tib = document.getElementById('tib')
     let txt = document.getElementById('txt')
@@ -109,6 +109,6 @@
     let vm = new ForthVM(to_txt)       // create Forth VM object
     show_data()                        // select showing dictionary first
     vm.init()                          // initialize the VM
-</script>
-</body>
+    </script>
+  </body>
 </html>
