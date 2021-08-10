@@ -1,85 +1,114 @@
 ﻿<html>
+  <head>    
   <title>jeForth 4.0</title>
   <style>
     h2    { color: #c44; margin: 0; }
     h3    { color: #fc4; margin: 0; }
-    .box  { display:flex; font-size:18px; font-family:monospace; width:100%; height:100%; }
-    .lbox { display:flex; flex-direction:column; width:20%; height:100%; }
-    .rbox { display:flex; flex-direction:column; width:80%; height:100%; }
-    .tic  { display:flex; justify-content: space-evenly; }
-    .tac  { width:30%; }
-    .dat  { width:90%; text-align:right; color:#484; margin: 4px; }
-    .tib  { width:95%; }
-    .clr  { width:5%; }
-    .txt  { width:100%; height:85%; overflow-y:scroll; margin: 4px; }
+    .tic  { width:100%; text-align:center; background-color:#eee; margin:2px; padding: 5px 0 5px 0; }
+    .tac  { width:90%; text-align:right; color:#484; margin:4px; }
+    .txt  { width:50%; height:100%; margin:4px; display:flex; flex-direction:column; overflow-x:scroll; }
+    .sep  { width:4px; height:100%; border:1px solid gray; cursor:col-resize; }
     .cmd  { color:#48f; margin: 2px; }
+    .CodeMirror { width:100%; border:1px solid #444; height:auto; }
   </style>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js'></script>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script>
+  </head>
   <body>
-    <div class="box">
-      <div class="lbox">
-        <div class="tic">
-          <input id="dtype" size="1" style="display:none"/>
-          <button id="dc" class='tac' onclick="set_data('dc')">dict</button>
-          <button id="ss" class='tac' onclick="set_data('ss')">ss</button>
-          <button id="rs" class='tac' onclick="set_data('rs')">rs</button>
-        </div>
-        <pre id="dat" class="dat"></pre>
+    <div style='display:flex; font-size:18px; font-family:monospace; width:100%; height:100%'>
+      <div style='display:flex; flex-direction:column; width:15%; height:100%'>
+        <pre class='tic'>ss</pre>
+        <pre id='ss' class='tac'></pre>
+        <pre class='tic'>dict</pre>
+        <pre id='dc' class='tac'></pre>
       </div>
-      <div class="rbox">
-        <div style="display:flex">
-          <input id="tib" class="tib" value="" onkeydown="if (13===event.keyCode) eval()"/>
-          <button class="clr" onclick="clear_txt()">clear</button>
+      <div style='display:flex; flex-direction:row; width:85%; height:100%'>
+        <pre id='txt' class='txt'></pre>
+        <div id='sep' class='sep'></div>
+        <div id='edt' class='txt'>
+          <div style='display:flex; width=100%'>
+            <button style='width:10%' onclick='clear_txt()'>clear</button>
+            <input id='tib' style='width:90%' value=''
+               onkeydown='if (13===event.keyCode) forth_eval()'/>
+          </div>
+          <textarea id='cm'>words</textarea>
         </div>
-        <pre id="txt" class="txt"></pre>
       </div>
     </div>
-  <script src="jeforth_400.js"></script>
-  <script>
-    function eval() {
-        let tib=document.getElementById("tib")
-        let cmd=tib.value.replace(/:/g,"<br/>:")
-        if (cmd.indexOf("<br/>")==0) cmd.replace("<br/>","")
-        to_txt("<pre class='cmd'><em>"+cmd+"</em></pre>", false)
+    <script src='jeforth_400.js'></script>
+    <script>
+    let tib = document.getElementById('tib')
+    let txt = document.getElementById('txt')
+    let edt = document.getElementById('edt')
+    let cm  = CodeMirror.fromTextArea(document.getElementById('cm'), {
+        lineNumbers: true,
+        styleActiveLine: true,
+        mode: 'forth'
+    })
+    cm.setSize("100%","100%")
+    cm.on('copy', (doc)=>{
+        let cmd=doc.getSelection()
+        tib.value = cmd.replace(/[\t|\n]/g,' ')
+        tib.style.backgroundColor = '#fe0'
+        document.activeElement.blur()
+        tib.focus()
+    })
+    // dragger section
+    function drag(p0, sep, p1) {
+        sep.onmousedown = (e)=>{
+            // console.log("mouse down: " + e.clientX);
+            let m = { mx:e.clientX, my:e.clientY, x:e.offsetLeft, y:e.offsetTop, w0:p0.offsetWidth, w1:p1.offsetWidth }
+            document.onmousemove = (e)=>{
+                // console.log("mouse move: " + e.clientX);
+                let d = { x:e.clientX - m.mx, y:e.clientY - m.my }
+                d.x = Math.min(Math.max(d.x, -m.w0), m.w1)  // no negative offset
+
+                sep.style.left = m.offsetLeft + d.x + "px"
+                p0.style.width = (m.w0 + d.x) + "px"
+                p1.style.width = (m.w1 - d.x) + "px"
+            }
+            document.onmouseup = ()=>{
+                // console.log("mouse up");
+                document.onmousemove = document.onmouseup = null;
+            }
+        }
+    }
+    drag(txt, document.getElementById("sep"), edt)
+    // forth section
+    function forth_eval() {
+        let cmd=tib.value.replace(/:/g,'<br/>:')
+        if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')
+        to_txt('<pre class="cmd"><em>'+cmd+'</em></pre>', false)
         try {
             vm.exec(tib.value)
             show_data()
         }
-        catch(e) { console.log(e.toString()+"\n") }
-        finally  { tib.value="" }
-    }
-    function set_data(t) {
-        document.getElementById("dtype").value = t
-        let ba = document.getElementsByClassName('tac')
-        for (let i=0; i<ba.length; i++) ba[i].style.color = 'black'
-        show_data()
+        catch(e) { console.log(e.toString()+'\n') }
+        finally  { tib.value=''; tib.style.backgroundColor='white' }
     }
     function show_data() {
-        let t = dtype.value
-        document.getElementById(t).style.color = 'red'
-        let v = vm.data(dtype.value)
-        let d = v.reverse().join('<br/>')
-        document.getElementById('dat').innerHTML = v.length==0 ? "--empty--" : d
+        [ 'ss', 'dc' ].forEach(x=>{
+            let v = vm.data(x)
+            document.getElementById(x).innerHTML = v.reverse().join('<br/>')
+        })
     }
-    function clear_txt() { document.getElementById("txt").innerHTML="" }
+    function clear_txt() { txt.innerHTML='' }
     function to_txt(t, esc=true) {
-        let e = document.getElementById("txt")
-        e.innerHTML += (typeof(t)==="object") ? json(t) : (esc ? escape(t) : t)
-        e.scrollTop = e.scrollHeight
+        txt.innerHTML += (typeof(t)==='object') ? json(t) : (esc ? escape(t) : t)
+        txt.scrollTop = txt.scrollHeight
     }
     function json(t) {
         // object also been sent to brower console for detail
-        let f = (k,v)=>k.match(/[pf|qf]/)!=null ? "["+v.map(x=>x.name).join(',')+"]" : v
+        let f = (k,v)=>k.match(/[pf|qf]/)!=null ? '['+v.map(x=>x.name).join(',')+']' : v
         return JSON.stringify(t,f,2)
     }
     function escape(s) {
-        return s.replace(/ /g, "&nbsp;").replace(/\n/g, "<br/>")
-        //.replace(/&/g, "&amp;")
-        //.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-        // .replace(/"/g, "&quot;").replace(/'/g, "&#039;")
+        return s.replace(/ /g, '&nbsp;').replace(/\n/g, '<br/>')
     }
     let vm = new ForthVM(to_txt)       // create Forth VM object
-    set_data("dc")                     // select showing dictionary first
+    show_data()                        // select showing dictionary first
     vm.init()                          // initialize the VM
-  </script>
+</script>
 </body>
 </html>
