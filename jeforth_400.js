@@ -321,7 +321,7 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("here",  c=>push(dict.tail().token)),
         new Prim("words", c=>
-                 dict.forEach((w,i)=>log(w.name+((i%20)==19 ? "\n" : SPC)))),
+                 dict.forEach((w,i)=>log(w.name+((i%10)==9 ? "\n" : SPC)))),
         new Prim("see",   c=>{
             let w = tok2w(); console.log(w); log(w) }),   // pass object directly to browser console
         new Prim("forget",c=>{
@@ -368,7 +368,6 @@ window.ForthVM = function(output=console.log) {
                 else push(n)                             ///>> or, push number onto stack top
             }
         }
-        log("ok")     /// dump stack and display ok prompt
     }
     this.data = (d)=>{
         switch (d) {
@@ -378,6 +377,6 @@ window.ForthVM = function(output=console.log) {
         }
     }
     this.exec   = (cmd)=>{
-        cmd.split("\n").forEach(r=>this.outer(r+" "));
+        cmd.split("\n").forEach(r=>{ this.outer(r+" "); log("\nok") })
     }
 }
