@@ -100,7 +100,7 @@
     }
     function json(t) {
         // object also been sent to brower console for detail
-        let f = (k,v)=>k.match(/[pf|qf]/)!=null ? '['+v.map(x=>x.name).join(',')+']' : v
+        let f = (k,v)=>k.match(/[pf|qf]/)!=null ? '['+v.map(x=>x.name).join(' ')+']' : v
         return JSON.stringify(t,f,2)
     }
     function escape(s) {

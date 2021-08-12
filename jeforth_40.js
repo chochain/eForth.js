@@ -3,13 +3,13 @@
 /// jeForth Virtual Machine factory function
 ///
 window.ForthVM = function(output=console.log) {
-    let fence = 0
+    let code_fence = 0                         // static variables
     ///
     /// Primitive word class
     ///
     class Prim {
         constructor(name, xt) {
-            this.name=name; this.xt=xt; this.token=fence++; this.immd=false
+            this.name=name; this.xt=xt; this.token=code_fence++; this.immd=false
         }
         exec() { this.xt(this) }
     }
@@ -26,22 +26,25 @@ window.ForthVM = function(output=console.log) {
         constructor(name, v=false) {
             this.name=name; this.xt=null; this.immd=0; this.pf=[]
             let w = find(name); if (w!=null) this.xt = w.xt
-            if (typeof(v)=="boolean" && v) this.token=fence++
+            if (typeof(v)=="boolean" && v) this.token=code_fence++
             else if (typeof(v)=="string")  this.literal=v
             else if (typeof(v)=="number")  this.qf = [ v ]
             this.pf.tail = function(i=1) { return this[this.length-1]; }
         }
         exec() {                                          /// run colon word
             if (this.xt!=null) { this.xt(this); return }  /// dolit, dostr,...
+            rs.push(wp)
+            wp = this.token
             this.pf.forEach(w=>w.exec())                  /// inner interpreter
+            wp = rs.pop();
         }
         addcode(w) { this.pf.push(w); return this }
    }
     ///
-    /// @defgroup Virtual Machine Internal variables
+    /// @defgroup Virtual Machine instance variables
     /// @{
     let ss=[], rs=[]                      /// stacks
-    let tib="", ntib=0, base=10           /// internal variables
+    let tib="", ntib=0, base=10, wp=0
     let cmpl=false
     let SPC="&nbsp;"
     /// @}
@@ -280,9 +283,6 @@ window.ForthVM = function(output=console.log) {
         new Immd(";",     c=>cmpl=false),                // semicolon
         new Prim("docon", c=>push(c.qf[0])),
         new Prim("dovar", c=>push(c.token)),
-        new Immd("create",c=>{
-            let last=nword().addcode(new Code("dovar",0))
-            last.pf[0].token=last.token; last.pf[0].qf.shift() }),
         new Immd("variable", c=>{
             let last=nword().addcode(new Code("dovar",0))
             last.pf[0].token=last.token }),
@@ -302,14 +302,18 @@ window.ForthVM = function(output=console.log) {
         new Prim("allot", c=>{
             let n=pop(), qf=dict.tail().pf[0].qf
             for (let i=0; i<n; i++) qf[i]=0  }),
-        new Immd("does", c=>{ // n --
-            let last=dict.tail(), src=dict[wp]
-            last.pf.push(...src.pf.slice(ip+2)) }),
-        new Immd("to", c=>{                              // n -- , compile only 
-            let last=dict[wp]; ip++;                     // current colon word
-            last.pf[ip++].pf[0].qf[0]=pop() }),          // next constant
-        new Prim("is", c=>{
-            let w=tok2w(); dict[w.token].pf = dict[pop()].pf }),
+        /// @}
+        /// @defgroup metacompiler
+        /// @{
+        new Prim("create",c=>{
+            let last=nword().addcode(new Code("dovar",0))
+            last.pf[0].token=last.token; last.pf[0].qf.length=0 }),
+        new Prim("does", c=>{
+            let i=0, last=dict.tail(), src=dict[wp].pf
+            while (i<src.length && src[i].name!="does") i++;
+            if (++i<src.length) last.pf.push(...src.slice(i)) }),
+        new Prim("to", c=>tok2w().pf[0].qf[0]=pop()),    // update constant
+        new Prim("is", c=>tok2w().pf = dict[pop()].pf),  // alias a word
         /// @}
         /// @defgroup System ops
         /// @{
@@ -325,9 +329,9 @@ window.ForthVM = function(output=console.log) {
         new Prim("see",   c=>{
             let w = tok2w(); console.log(w); log(w) }),   // pass object directly to browser console
         new Prim("forget",c=>{
-            fence=Math.max(find("boot").token+1, tok2w().token)
-            dict.splice(fence) }),
-        new Prim("boot", c=>dict.splice(fence=find("boot").token+1))
+            code_fence=Math.max(tok2w().token, find("boot").token+1)
+            dict.splice(code_fence) }),
+        new Prim("boot", c=>dict.splice(code_fence=find("boot").token+1))
         /// @}
     ]
     //
