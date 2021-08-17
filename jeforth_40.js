@@ -33,10 +33,10 @@ window.ForthVM = function(output=console.log) {
         }
         exec() {                                          /// run colon word
             if (this.xt!=null) { this.xt(this); return }  /// dolit, dostr,...
-            rs.push(wp)
+            let tmp = wp
             wp = this.token
             this.pf.forEach(w=>w.exec())                  /// inner interpreter
-            wp = rs.pop();
+            wp = tmp
         }
         addcode(w) { this.pf.push(w); return this }
    }
@@ -293,11 +293,11 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Memory Access ops
         /// @{
         new Prim("?", c=>log(dict[pop()].pf[0].qf[0].toString(base))),
-        new Prim("@", c=>push(dict[pop()].pf[0].qf[0])),
-        new Prim("!", c=>{ let i=pop(); dict[i].pf[0].qf[0]=pop() }),
-        new Prim("+!",c=>{ let i=pop(); dict[i].pf[0].qf[0]+=pop() }),
-        new Prim("array@", c=>{ let a=pop(); push(dict[pop()].pf[0].qf[a]) }),
-        new Prim("array!", c=>{ let a=pop(); dict[pop()].pf[0].qf[a]=pop() }),
+        new Prim("@", c=>push(dict[pop()].pf[0].qf[0])),                       // w -- n
+        new Prim("!", c=>{ let w=pop(); dict[i].pf[0].qf[0]=pop() }),          // n w  --
+        new Prim("+!",c=>{ let w=pop(); dict[i].pf[0].qf[0]+=pop() }),         // n w --
+        new Prim("array@", c=>{ let a=pop(); push(dict[pop()].pf[0].qf[a]) }), // w a --
+        new Prim("array!", c=>{ let a=pop(); dict[pop()].pf[0].qf[a]=pop() }), // n w a --
         new Prim(",", c=>dict.tail().pf[0].qf.push(pop())),
         new Prim("allot", c=>{
             let n=pop(), qf=dict.tail().pf[0].qf
