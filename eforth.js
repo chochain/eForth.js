@@ -1,6 +1,6 @@
 'use strict';
 ///
-/// jeForth Virtual Machine factory function
+/// eForth.js Virtual Machine factory function
 ///
 window.ForthVM = function(output=console.log) {
     let code_fence = 0                         // static variables
@@ -343,7 +343,7 @@ window.ForthVM = function(output=console.log) {
     /// initializer method
     ///
     this.init = ()=>{
-        log("<h2>jeforth 4.0</h2><h3>...eForth with Javascript</h3>")
+        log("<h2>eForth.js 4.0</h2><h3>...eForth with Javascript</h3>")
     }
     ///
     /// outer interpreter method - main loop
