@@ -9,22 +9,25 @@
 2011/12/23 initial version by Cheahshen Yap and Sam Chen */
 window.ForthVM = function(output=console.log) {
     let fence=0
-    let compile=false
+    let compiling=false
     let ss=[],rs=[]              // array allows push and pop
     let tib="",ntib=0,base=10
     let ip=0,wp=0,wx=0           // instruction and word pointers
-    let SPC="&nbsp;"
-    // 
+    let SPC="&nbsp;", CR="<br/>"
+    // classes for Code and Immedate words
     class Code {
         constructor(name, xt) {
-            this.name=name; this.xt=xt; this.immd=false; this.pf=[]
-        }
-    }
-    class Immd extends Code {
-        constructor(name, xt) { super(name, xt); this.immd=true; }
-    }
+            this.name=name; this.xt=xt; this.immd=false; this.pf=[] }}
+    class Immd extends Code {    // calls Code constructor and set immd flag
+        constructor(name, xt) { super(name, xt); this.immd=true; }}
+    //
     // ** ES6 encourages block-scoped immutable function definition
-    // parser and search functions
+    // i.e. const fname = function(n) {...}  /* if 'this' is needed     */
+    // or   const fname = (n)=>{...}         /* fat arrow style, if 'this' is not needed */
+    // or   const fname = n=>...             /* for single statement    */
+    //
+    // parser functions
+    // @return parsed token or "" (advance ntib index against tib string)
     const parse = function(delim=" ") {
         let tok=""
         while (tib.charCodeAt(ntib)<=32) ntib++
@@ -34,51 +37,48 @@ window.ForthVM = function(output=console.log) {
         if (delim!=" ") ntib++
         return tok
 	}
+    // dictionary scanner for word by given name
     const find = function(name) {
         for (let i=dict.length-1; i>=0; i--) {
-            if (dict[i].name===name) return i }
+            if (dict[i].name===name) return i
+        }
         return -1
     }
     // compiler functions
-    const tmp = ()=>dict[dict.length-1].pf
-    const dictcompile = n=>tmp().push(n)
-    const compilecode = function(nword) {
+    const comma   = function(n) { dict.tail().pf.push(n) }
+    const compile = function(nword) {
 		let n=(typeof(nword)==="string") ? find(nword) : nword
-        if (n>-1) dictcompile(n);
+        if (n>-1) comma(n);
         else {ss=[]; throw(SPC+nword+" ? ");}}
     // interpreter functions
-    const exec = n=>{ wx=n; dict[n].xt() }
-    const exit = ()=>ip=-1
-    const nest = function() {          // inner interpreter
-        rs.push(wp); rs.push(ip); wp=wx; ip=0;
+    const exit = ()=>ip=-1                    // exit nest() loop, fat arrow style
+    const nest = function() {                 // inner interpreter
+        rs.push(wp); rs.push(ip); wp=wx; ip=0;// setup call frame
         while (ip>=0) {
             wx=dict[wp].pf[ip++];
-            console.log("\nwp="+wp.toString()+",ip="+ip.toString()+"=>"+wx.toString())
+            console.log("\nwp="+wp.toString()+",ip="+ip.toString())
             console.log(dict[wx])
             dict[wx].xt()
         }
-        ip=rs.pop(); wp=rs.pop()
+        ip=rs.pop(); wp=rs.pop()              // restore call frame
 	}
     const eval = function(idiom) {     // interpreter/compiler
         let nword=find(idiom)
         if (nword>-1) {                // is an existing word
-            if (compile && !dict[nword].immd) dictcompile(nword)
-            else exec(nword)
+            if (compiling && !dict[nword].immd) comma(nword)
+            else dict[wx=nword].xt()
             return
 		}
         // try as a number
         let n=(base==10) ? parseFloat(idiom) : parseInt(idiom, base)
         if (isNaN(n)) {                 // not a number
-            if (compile) dict.pop()     // delete defective word
-            compile=false; ss=[]; ntib=tib.length
+            if (compiling) dict.pop()   // delete defective word
+            compiling=false; ss=[]; ntib=tib.length
             log(SPC+idiom+" ? ")
             return
         }
         // is a number
-        if (compile) {    
-            compilecode("dolit")        // compile an literal
-            dictcompile(n)
-		}
+        if (compiling) { compile("dolit"); comma(n) } // compile an literal
         else ss.push(n)
 	} 
     const tick = function() {
@@ -86,13 +86,13 @@ window.ForthVM = function(output=console.log) {
         if (i>=0) return i
         else throw(SPC+w+" ? ")
 	}
-    const words = function() {
-    }
     // functions serve as macro to reduce verbosity
+    // using blocked-scoped immutable function definition (use fat arrow style)
 	const PUSH = v=>ss.push(v)
 	const POP  = ()=>ss.pop()
     const TOS  = (n=1)=>ss[ss.length-n]
     const log  = s=>output(s)
+    const xip  = ()=>dict.tail().pf.length
 
 // dictionary
     var dict = [
@@ -141,7 +141,7 @@ window.ForthVM = function(output=console.log) {
         new Code("base!" ,c=>base=POP()),
         new Code("hex"   ,c=>base=16),
         new Code("decimal",c=>base=10),
-        new Code("cr"    ,c=>log("<br/>")),
+        new Code("cr"    ,c=>log(CR)),
         new Code("."     ,c=>log(POP().toString(base)+" ")),
         new Code("emit"  ,c=>log(String.fromCharCode(POP()))),
         new Code("space" ,c=>log(SPC)),
@@ -151,71 +151,68 @@ window.ForthVM = function(output=console.log) {
             for(let i=0; i+s.length<n; i++) log(SPC)
             log(s+SPC) }),
 // strings
-        new Immd("["     ,c=>compile=false),
-        new Code("]"     ,c=>compile=true),
+        new Immd("["     ,c=>compiling=false),
+        new Code("]"     ,c=>compiling=true),
         new Code("find"  ,c=>PUSH(find(parse()))),
         new Code("'"     ,c=>PUSH(tick())),
         new Code("(')"   ,c=>PUSH(dict[wx].pf[ip++])),
-        new Immd("[']"   ,c=>{ compilecode("(')"); compilecode(tick())}),
+        new Immd("[']"   ,c=>{ compile("(')"); compile(tick())}),
         new Code("dolit" ,c=>PUSH(dict[wp].pf[ip++])),
         new Code("dostr" ,c=>PUSH(dict[wx].pf[ip++])),
         new Immd('s"'    ,c=>{
             let s=parse('"');
-            if (compile) {compilecode("dostr"); dictcompile(s)}
+            if (compiling) { compile("dostr"); comma(s) }
             else PUSH(s) }),
-        new Code("dotstr",c=>{n=dict[wp].pf[ip++]; log(n)}),
+        new Code("dotstr",c=>log(dict[wp].pf[ip++])),
         new Immd('."'    ,c=>{
             let s=parse('"');
             console.log(s)
-            if (compile) {compilecode("dotstr"); dictcompile(s)}
-            else {log(s)}}),
+            if (compiling) { compile("dotstr"); comma(s) }
+            else log(s)}),
         new Immd('('     ,c=>s=parse(')')),
         new Immd('.('    ,c=>log(parse(')'))),
         new Immd('\\'    ,c=>log(parse('\n'))),
-
 // structures
         new Code("exit"   ,c=>exit()),
-        new Code("0branch",c=>{
-            if (POP()) ip++;
-            else ip=dict[wp].pf[ip]}),
+        new Code("branch" ,c=>ip=dict[wp].pf[ip]),
+        new Code("0branch",c=>ip=POP() ? ip+1 : dict[wp].pf[ip]),
         new Code("donext" ,c=>{
             let i=rs.pop()-1
             if (i>=0) { ip=dict[wp].pf[ip]; rs.push(i)} else { ip++ }}),
         new Immd("if"  ,c=>{    // if    ( -- here ) 
-            compilecode("0branch");
-            PUSH(tmp().length); dictcompile(0)}),
+            compile("0branch");
+            PUSH(xip()); comma(0)}),
         new Immd("else",c=>{    // else ( here -- there )
-            compilecode("branch");
-            let h=tmp().length
-            dictcompile(0)
-            dict.tmp(POP()) = tmp().length; PUSH(h)}),
-        new Immd("then",c=>{    // then    ( there -- ) 
-            dict.tmp(POP()) = tmp().length}),
-        new Immd("begin",c=>PUSH(tmp().length)),
+            compile("branch");
+            let h=xip()
+            comma(0)
+            dict.tail().pf[POP()]=xip(); PUSH(h)}),
+        new Immd("then", c=>dict.tail().pf[POP()]=xip()),
+        new Immd("begin",c=>PUSH(xip())),
         new Immd("again",c=>{   // again    ( there -- ) 
-            compilecode("branch"); compilecode(POP())}),
+            compile("branch"); compile(POP())}),
         new Immd("until",c=>{   // until    ( there -- ) 
-            compilecode("0branch"); compilecode(POP())}),
+            compile("0branch"); compile(POP())}),
         new Immd("while",c=>{   // while    ( there -- there here ) 
-            compilecode("0branch");
-            PUSH(tmp().length); dictcompile(0)}),
+            compile("0branch");
+            PUSH(xip()); comma(0)}),
         new Immd("repeat",c=>{  // repeat    ( there1 there2 -- ) 
-            compilecode("branch");
-            let t=POP(); compilecode(POP());
-            dict.tmp(t)=tmp().length}),
+            compile("branch");
+            let t=POP(); compile(POP());
+            dict.tail().pf[t]=xip()}),
         new Immd("for" ,c=>{    // for ( -- here )
-            compilecode(">r"); PUSH(tmp().length)}),
+            compile(">r"); PUSH(xip())}),
         new Immd("next",c=>{    // next ( here -- )
-            compilecode("donext"); compilecode(POP())}),
+            compile("donext"); compile(POP())}),
         new Immd("aft" ,c=>{    // aft ( here -- here there )
-            POP(); compilecode("branch");
-            let h=tmp().length;
-            dictcompile(0); PUSH(tmp().length);PUSH(h)}),
+            POP(); compile("branch");
+            let h=xip();
+            comma(0); PUSH(xip()); PUSH(h)}),
 // defining dict
         new Code(":", c=>{
-            compile=true
+            compiling=true
             dict.push(new Code(parse(), c=>nest()))}),
-        new Immd(";", c=>{ compile=false; compilecode("exit")}),
+        new Immd(";", c=>{ compiling=false; compile("exit")}),
         new Code("create",  c=>dict.push(new Code(wx, c=>ss.push(wx)))),
         new Code("variable",c=>dict.push(new Code(parse(), c=>ss.push(wx)))),
         new Code("constant",c=>{
@@ -232,21 +229,17 @@ window.ForthVM = function(output=console.log) {
 // tools
         new Code("here"  ,c=>PUSH(dict.length)),
         new Code("words" ,c=>
-             dict.forEach((w,i)=>log(w.name+((i%10)==9 ? "<br/>" : SPC)))),
+             dict.forEach((w,i)=>log(w.name+((i%10)==9 ? CR : SPC)))),
         new Code("dump"  ,c=>{
-            log('dict[<br/>')
+            log("dict["+CR)
             for(let i=0;i<dict.length;i++){
                 log('{name:"'+dict[i].name+'", xt:'+dict[i].xt.toString(base));
                 if (dict[i].pf)   log(', pf:['+dict[i].pf.toString(base)+']');
                 if (dict[i].qf)   log(', qf:['+dict[i].qf.toString(base)+']');
                 if (dict[i].immd) log(' ,immd:'+dict[i].immd);
-                log('}},<br/>')}
-            log(']<br/>')}),
-        new Code("forget",c=>{
-            let n=tick();
-            if (n < fence) {ss=[]; throw(" "+dict[i].name+" below fence" )}
-            for(let i=dict.length-1;i>=n;i--) dict.pop()}),
-        new Code("boot"  ,c=>{for(let i=dict.length-1;i>=fence;i--) dict.pop()}),
+                log("}},"+CR)}
+            log("]"+CR)}),
+        new Code("forget",c=>dict.splice(fence=Math.max(fence, tick()))),
         new Code("see"   ,c=>{
             let n=tick(), p=dict[n].pf, s=""
             for(let i=0;i<p.length;i++){
@@ -254,7 +247,7 @@ window.ForthVM = function(output=console.log) {
                     ||s=="donext"||s=="dostr"||s=="dotstr") {
                     s=" ";log(p[i].toString(base)+" ")}
                 else {s=dict[p[i]].name;log(s+" ")}}}),
-        new Code("date"  ,c=>{log(new Date()); log("<br/>")}),
+        new Code("date"  ,c=>{log(new Date()); log(CR)}),
         new Code("@"     ,c=>{let a=POP(); PUSH(dict[a].qf[0])}),
         new Code("!"     ,c=>{let a=POP(); dict[a].qf[0]=POP()}),
         new Code("+!"    ,c=>{let a=POP(); dict[a].qf[0]+=POP()}),
@@ -286,11 +279,11 @@ window.ForthVM = function(output=console.log) {
         new Code("max"   ,c=>{let b=POP();PUSH(Math.max(POP(),b))}),
         new Code("min"   ,c=>{let b=POP();PUSH(Math.min(POP(),b))}),
         new Code("atan2" ,c=>{let b=POP();PUSH(Math.atan2(POP(),b))}),
-        new Code("pow"   ,c=>{let b=POP();PUSH(Math.pow(POP(),b))})
+        new Code("pow"   ,c=>{let b=POP();PUSH(Math.pow(POP(),b))}),
+        new Code("boot"  ,c=>dict.splice(fence=find("boot")+1))
     ]
     // add access functions to dictionary object
 	dict.tail = function(i=1) { return this[this.length-i] }
-	dict.tmp  = function()    { this.tail(1).pf }
 	
     fence=dict.length
 	
@@ -299,6 +292,6 @@ window.ForthVM = function(output=console.log) {
         for (let idiom=parse(); idiom!=""; idiom=parse()) {
             eval(idiom)
         }
-        log(" < "+ss.join(" ")+" >ok<br/>")
+        if (!compiling) log(" < "+ss.join(" ")+" >ok"+CR)
 	}
 }
