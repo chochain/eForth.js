@@ -56,7 +56,7 @@ window.ForthVM = function(output=console.log) {
         rs.push(wp); rs.push(ip); wp=wx; ip=0;// setup call frame
         while (ip>=0) {
             wx=dict[wp].pf[ip++];
-            console.log("\nwp="+wp.toString()+",ip="+ip.toString())
+            //console.log("\nwp="+wp.toString()+",ip="+ip.toString()+"=>"+wx)
             console.log(dict[wx])
             dict[wx].xt()
         }
@@ -213,19 +213,36 @@ window.ForthVM = function(output=console.log) {
             compiling=true
             dict.push(new Code(parse(), c=>nest()))}),
         new Immd(";", c=>{ compiling=false; compile("exit")}),
-        new Code("create",  c=>dict.push(new Code(wx, c=>ss.push(wx)))),
-        new Code("variable",c=>dict.push(new Code(parse(), c=>ss.push(wx)))),
+        new Code("create",  c=>{
+            dict.push(new Code(parse(), c=>ss.push(wx)))
+            dict.tail().qf = []}),
+        new Code("variable",c=>{
+            dict.push(new Code(parse(), c=>ss.push(wx)))
+            dict.tail().qf = [ 0 ]}),
         new Code("constant",c=>{
             dict.push(new Code(parse(), c=>ss.push(dict[wx].qf[0])))
-            dict.tail().qf[0] = POP()}),
+            dict.tail().qf = [ POP() ]}),
         new Code(","     ,c=>dict.tail().qf.push(POP())),
         new Code("allot" ,c=>{
             let n=POP()
             for(let i=0;i<n;i++) dict.tail().qf.push(0)}),
         new Code("does"  ,c=>{
-            dict.tail().xt=()=>nest()
-            dict[dict.length-1].pf = dict[wp].pf.slice(ip); ip=-1}),
+            dict.tail().xt = ()=>{ ss.push(wx); nest() }
+            dict.tail().pf = dict[wp].pf.slice(ip); ip=-1}),
         new Code("q@"    ,c=>PUSH(dict[wp].qf[POP()])),
+        new Code("is"    ,c=>{ // ( a -- ) vector a to next word 
+            let b=tick(), a=POP(); dict[b].pf=dict[a].pf}),
+        new Code("to"    ,c=>{ // ( a -- ) change value of next word
+            let a=dict[wp].pf[ip++]; dict[a].qf[0]=POP()}),
+// memory access
+        new Code("@"     ,c=>{let a=POP(); PUSH(dict[a].qf[0])}),
+        new Code("!"     ,c=>{let a=POP(); dict[a].qf[0]=POP()}),
+        new Code("+!"    ,c=>{let a=POP(); dict[a].qf[0]+=POP()}),
+        new Code("?"     ,c=>log(dict[POP()].qf[0].toString(base)+" ")),
+        new Code("array@",c=>{ // array@ ( w i -- n ) 
+            let i=POP(), a=POP(); PUSH(dict[a].qf[i])}),
+        new Code("array!",c=>{ // array! ( n w i -- ) 
+            let i=POP(), a=POP(); dict[a].qf[i]=POP()}),
 // tools
         new Code("here"  ,c=>PUSH(dict.length)),
         new Code("words" ,c=>
@@ -242,24 +259,13 @@ window.ForthVM = function(output=console.log) {
         new Code("forget",c=>dict.splice(fence=Math.max(fence, tick()))),
         new Code("see"   ,c=>{
             let n=tick(), p=dict[n].pf, s=""
+            console.log(dict[n])
             for(let i=0;i<p.length;i++){
                 if (s=="dolit"||s=="branch"||s=="0branch"
                     ||s=="donext"||s=="dostr"||s=="dotstr") {
                     s=" ";log(p[i].toString(base)+" ")}
                 else {s=dict[p[i]].name;log(s+" ")}}}),
         new Code("date"  ,c=>{log(new Date()); log(CR)}),
-        new Code("@"     ,c=>{let a=POP(); PUSH(dict[a].qf[0])}),
-        new Code("!"     ,c=>{let a=POP(); dict[a].qf[0]=POP()}),
-        new Code("+!"    ,c=>{let a=POP(); dict[a].qf[0]+=POP()}),
-        new Code("?"     ,c=>log(dict[POP()].pf[0].toString(base)+" ")),
-        new Code("array@",c=>{ // array@ ( w i -- n ) 
-            let i=POP(), a=POP(); PUSH(dict[a].qf[i])}),
-        new Code("array!",c=>{ // array! ( n w i -- ) 
-            let i=POP(), a=POP(); dict[a].qf[i]=POP()}),
-        new Code("is"    ,c=>{ // ( a -- ) vector a to next word 
-            let b=tick(), a=POP();dict[b].pf=dict[a].pf}),
-        new Code("to"    ,c=>{ // ( a -- ) change value of next word
-            let a=dict[wp].pf[ip++]; dict[a].qf[0]=POP()}),
         new Code("ms"    ,c=>{let t=Date.now()+POP(); while (Date.now()<t);}),
 // transcendental
         new Code("pi"    ,c=>PUSH(Math.PI)),
