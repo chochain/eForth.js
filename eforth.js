@@ -123,10 +123,10 @@ window.ForthVM = function(output=console.log) {
         new Prim("-",     c=>{ let n=pop(); push(pop()-n) }),
         new Prim("*",     c=>{ let n=pop(); push(pop()*n) }),
         new Prim("/",     c=>{ let n=pop(); push(pop()/n) }),
+        new Prim("mod",   c=>{ let n=pop(); push(pop()%n) }),
         new Prim("*/",    c=>{ let n=pop(); push(pop()*pop()/n) }),
         new Prim("*/mod", c=>{ let n=pop(), m=pop()*pop();
                                push(m%n); push(Math.floor(m/n)) }),
-        new Prim("mod",   c=>{ let n=pop(); push(pop()%n) }),
         new Prim("and",   c=>push(pop()&pop())),
         new Prim("or",    c=>push(pop()|pop())),
         new Prim("xor",   c=>push(pop()^pop())),
