@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type"content="text/html;charset=UTF-8">
+<title>jeforth6.15</title>
+<style>body{font-family:'Courier New',monospace;font-size:12px;}
+  </style>
+<script src="jeforth615.js"></script>
+</head>
+<body>
+    <div id="log" style="float:left;overflow:auto;height:600px;width:600px;
+         background-color:#f8f0f0;">
+    </div>
+    <textarea id="tib" style="height:600px;width:400px;" 
+        onkeydown="if (13===event.keyCode) forth()">
+( Hit return to run this small demo.)
+: square dup * ; 
+: quad square square ; 
+: octet quad quad ; 
+8 octet . 4 octet . 
+    </textarea>
+</body>
+<script>
+    var log=document.getElementById("log");
+    log.innerHTML="jeforth 6.15<br/>";
+    var tib=document.getElementById("tib");
+    function forth() { 
+      log.innerHTML+="<font color='blue'>"+tib.value+"  </font>";
+      try{main(tib.value);}
+      catch(err){logtype(err.toString()+"<br/>");}
+      finally{tib.value="";log.scrollTop=log.scrollHeight;}
+    }
+    function logtype(t){log.innerHTML=log.innerHTML+t;}  // 
+</script>
+</html>
