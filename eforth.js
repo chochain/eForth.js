@@ -46,7 +46,7 @@ window.ForthVM = function(output=console.log) {
     let ss=[], rs=[]                      /// stacks
     let tib="", ntib=0, base=10, wp=0
     let cmpl=false
-    let SPC="&nbsp;"
+    let SPC="&nbsp;", CR="<br/>"
     /// @}
     /// @defgroup IO functions
     /// @{
@@ -151,7 +151,7 @@ window.ForthVM = function(output=console.log) {
         new Prim("base!", c=>base=pop()),
         new Prim("hex",   c=>base=16),
         new Prim("decimal",c=>base=10),
-        new Prim("cr",    c=>log("<br/>")),
+        new Prim("cr",    c=>log(CR)),
         new Prim(".",     c=>log(pop().toString(base))),
         new Prim(".r",    c=>{
             let n=pop(), s=pop().toString(base)
@@ -325,7 +325,7 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("here",  c=>push(dict.tail().token)),
         new Prim("words", c=>
-                 dict.forEach((w,i)=>log(w.name+((i%10)==9 ? "\n" : SPC)))),
+                 dict.forEach((w,i)=>log(w.name+((i%10)==9 ? CR : SPC)))),
         new Prim("see",   c=>{
             let w = tok2w(); console.log(w); log(w) }),   // pass object directly to browser console
         new Prim("forget",c=>{
@@ -381,6 +381,6 @@ window.ForthVM = function(output=console.log) {
         }
     }
     this.exec   = (cmd)=>{
-        cmd.split("\n").forEach(r=>{ this.outer(r+" "); log("\nok") })
+        cmd.split("\n").forEach(r=>{ this.outer(r+" "); log(CR+"ok") })
     }
 }
