@@ -4,7 +4,7 @@
 <title>jeforth6.15</title>
 <style>body{font-family:'Courier New',monospace;font-size:12px;}
   </style>
-<script src="jeforth615.js"></script>
+<script src="jeforth615b.js"></script>
 </head>
 <body>
     <div id="log" style="float:left;overflow:auto;height:600px;width:600px;
@@ -20,15 +20,16 @@
     </textarea>
 </body>
 <script>
-    var log=document.getElementById("log");
-    log.innerHTML="jeforth 6.15<br/>";
-    var tib=document.getElementById("tib");
+    let log=document.getElementById("log")
+    log.innerHTML="jeforth 6.15<br/>"
+    let tib=document.getElementById("tib")
+    let vm = new ForthVM(logtype)
     function forth() { 
-      log.innerHTML+="<font color='blue'>"+tib.value+"  </font>";
-      try{main(tib.value);}
-      catch(err){logtype(err.toString()+"<br/>");}
-      finally{tib.value="";log.scrollTop=log.scrollHeight;}
+        log.innerHTML+="<font color='blue'>"+tib.value+"<br/></font>"
+        try      { vm.outer(tib.value) }
+        catch(e) { logtype(e.toString()+"<br/>") }
+        finally  { tib.value="";log.scrollTop=log.scrollHeight}
     }
-    function logtype(t){log.innerHTML=log.innerHTML+t;}  // 
+    function logtype(t) { log.innerHTML += t }
 </script>
 </html>
