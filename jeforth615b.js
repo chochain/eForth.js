@@ -13,7 +13,7 @@ window.ForthVM = function(output=console.log) {
     let ss=[],rs=[]              // array allows push and pop
     let tib="",ntib=0,base=10
     let ip=0,wp=0,wx=0           // instruction and word pointers
-    let SPC="&nbsp;", CR="<br/>"
+    let SPC=" ", CR="<br/>"
     // classes for Code and Immedate words
     class Code {
         constructor(name, xt) {
@@ -57,7 +57,7 @@ window.ForthVM = function(output=console.log) {
         while (ip>=0) {
             wx=dict[wp].pf[ip++];
             //console.log("\nwp="+wp.toString()+",ip="+ip.toString()+"=>"+wx)
-            console.log(dict[wx])
+            //console.log(dict[wx])
             dict[wx].xt()
         }
         ip=rs.pop(); wp=rs.pop()              // restore call frame
@@ -142,7 +142,7 @@ window.ForthVM = function(output=console.log) {
         new Code("hex"   ,c=>base=16),
         new Code("decimal",c=>base=10),
         new Code("cr"    ,c=>log(CR)),
-        new Code("."     ,c=>log(POP().toString(base)+" ")),
+        new Code("."     ,c=>log(POP().toString(base)+SPC)),
         new Code("emit"  ,c=>log(String.fromCharCode(POP()))),
         new Code("space" ,c=>log(SPC)),
         new Code("spaces",c=>{for (let i=0,n=POP();i<n;i++) log(SPC)}),
@@ -160,13 +160,12 @@ window.ForthVM = function(output=console.log) {
         new Code("dolit" ,c=>PUSH(dict[wp].pf[ip++])),
         new Code("dostr" ,c=>PUSH(dict[wx].pf[ip++])),
         new Immd('s"'    ,c=>{
-            let s=parse('"');
+            let s=parse('"')
             if (compiling) { compile("dostr"); comma(s) }
             else PUSH(s) }),
         new Code("dotstr",c=>log(dict[wp].pf[ip++])),
         new Immd('."'    ,c=>{
-            let s=parse('"');
-            console.log(s)
+            let s=parse('"')
             if (compiling) { compile("dotstr"); comma(s) }
             else log(s)}),
         new Immd('('     ,c=>s=parse(')')),
@@ -238,7 +237,7 @@ window.ForthVM = function(output=console.log) {
         new Code("@"     ,c=>{let a=POP(); PUSH(dict[a].qf[0])}),
         new Code("!"     ,c=>{let a=POP(); dict[a].qf[0]=POP()}),
         new Code("+!"    ,c=>{let a=POP(); dict[a].qf[0]+=POP()}),
-        new Code("?"     ,c=>log(dict[POP()].qf[0].toString(base)+" ")),
+        new Code("?"     ,c=>log(dict[POP()].qf[0].toString(base)+SPC)),
         new Code("array@",c=>{ // array@ ( w i -- n ) 
             let i=POP(), a=POP(); PUSH(dict[a].qf[i])}),
         new Code("array!",c=>{ // array! ( n w i -- ) 
@@ -263,8 +262,8 @@ window.ForthVM = function(output=console.log) {
             for(let i=0;i<p.length;i++){
                 if (s=="dolit"||s=="branch"||s=="0branch"
                     ||s=="donext"||s=="dostr"||s=="dotstr") {
-                    s=" ";log(p[i].toString(base)+" ")}
-                else {s=dict[p[i]].name;log(s+" ")}}}),
+                    s=SPC; log(p[i].toString(base)+SPC)}
+                else { s=dict[p[i]].name; log(s+SPC) }}}),
         new Code("date"  ,c=>{log(new Date()); log(CR)}),
         new Code("ms"    ,c=>{let t=Date.now()+POP(); while (Date.now()<t);}),
 // transcendental
@@ -290,7 +289,6 @@ window.ForthVM = function(output=console.log) {
     ]
     // add access functions to dictionary object
 	dict.tail = function(i=1) { return this[this.length-i] }
-	
     fence=dict.length
 	
     this.outer = function(cmd) {
@@ -298,6 +296,6 @@ window.ForthVM = function(output=console.log) {
         for (let idiom=parse(); idiom!=""; idiom=parse()) {
             eval(idiom)
         }
-        if (!compiling) log(" < "+ss.join(" ")+" >ok"+CR)
+        if (!compiling) log(" < "+ss.join(SPC)+" >ok"+CR)
 	}
 }
