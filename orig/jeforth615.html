@@ -26,9 +26,9 @@
     let vm = new ForthVM(logtype)
     function forth() { 
         log.innerHTML+="<font color='blue'>"+tib.value+"<br/></font>"
-        try      { vm.outer(tib.value) }
-        catch(e) { logtype(e.toString()+"<br/>") }
-        finally  { tib.value="";log.scrollTop=log.scrollHeight}
+        vm.outer(tib.value)
+        tib.value=""
+        log.scrollTop=log.scrollHeight
     }
     function logtype(t) { log.innerHTML += t }
 </script>
