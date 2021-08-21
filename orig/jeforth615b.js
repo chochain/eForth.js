@@ -13,7 +13,7 @@ window.ForthVM = function(output=console.log) {
     let ss=[],rs=[]              // array allows push and pop
     let tib="",ntib=0,base=10
     let ip=0,wp=0                // instruction and word pointers
-    let SPC=" ", CR="<br/>"
+    let SPC=" ", CR="\n"
     // classes for Code and Immedate words
     class Code {
         constructor(name, xt) {
@@ -30,7 +30,7 @@ window.ForthVM = function(output=console.log) {
     // @return parsed token or "" (advance ntib index against tib string)
     const parse = function(delim=" ") {
         let tok=""
-        while (tib.charCodeAt(ntib)<=32) ntib++
+        while (delim==" " && tib.charCodeAt(ntib)<=32) ntib++
         while(ntib<tib.length &&
 			  tib[ntib]!=delim &&
               tib[ntib]!='\n') tok+=tib[ntib++]
@@ -58,8 +58,8 @@ window.ForthVM = function(output=console.log) {
         let n=dict[wp].pf.length               // previously wx
         while (ip>=0 && ip<n) {
             let cx = dict[wp].pf[ip++]         // fetch next instruction 
-            console.log("\nwp="+wp.toString()+",ip="+ip.toString()+"=>"+cx)
-            console.log(dict[cx])
+            //console.log("\nwp="+wp.toString()+",ip="+ip.toString()+"=>"+cx)
+            //console.log(dict[cx])
             dict[cx].xt(cx)                    // execute 
         }
         ip=rs.pop(); wp=rs.pop()               // restore call frame
@@ -217,7 +217,7 @@ window.ForthVM = function(output=console.log) {
         new Code("here"  ,c=>PUSH(dict.length)),
         new Code("words" ,c=>
             dict.forEach((w,i)=>
-                log(w.name+" "+i.toString()+" "+((i%10)==9 ? CR : SPC)))),
+                log(w.name+SPC+i.toString()+SPC+((i%10)==9 ? CR : "")))),
         new Code("dump"  ,c=>{
             log("dict["+CR)
             for(let i=0;i<dict.length;i++){
@@ -233,7 +233,7 @@ window.ForthVM = function(output=console.log) {
             console.log(dict[n])
             for(let i=0;i<p.length;i++){
                 if (s.match(/dolit|branch|0branch|donext|dostr|dotstr/)) {
-                    s=SPC; log(p[i].toString(base)+SPC)}
+                    s=""; log(p[i].toString(base)+SPC)}
                 else { s=dict[p[i]].name; log(s+SPC) }}}),
         new Code("date"  ,c=>{log(new Date()); log(CR)}),
         new Code("ms"    ,c=>{let t=Date.now()+POP(); while (Date.now()<t);}),
@@ -265,7 +265,7 @@ window.ForthVM = function(output=console.log) {
 	const eval = function(idiom) {
         let nword=find(idiom)
         if (nword>-1) {                       // is an existing word
-            console.log(idiom+"=>"+nword.toString())
+            //console.log(idiom+"=>"+nword.toString())
             if (compile && !dict[nword].immd) comma(nword)
             else dict[nword].xt(nword)
             return
@@ -273,11 +273,11 @@ window.ForthVM = function(output=console.log) {
         // try as a number
         let n=(base==10) ? parseFloat(idiom) : parseInt(idiom, base)
         if (isNaN(n)) {                       // not a number
-            console.log(idiom+"=>NaN")
+            //console.log(idiom+"=>NaN")
             throw idiom
         }
         // is a number
-        console.log(idiom+"=>"+n.toString())
+        //console.log(idiom+"=>"+n.toString())
         if (compile) { addcode("dolit"); comma(n) } // compile an literal
         else ss.push(n)
     }        
