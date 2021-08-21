@@ -85,7 +85,10 @@
             show_data()
         }
         catch(e) { console.log(e.toString()+'\n') }
-        finally  { tib.value=''; tib.style.backgroundColor='white' }
+        finally  {
+            tib.value=''; tib.style.backgroundColor='white'
+            txt.scrollTop = txt.scrollHeight
+        }
     }
     function show_data() {
         [ 'ss', 'dc' ].forEach(x=>{
@@ -96,7 +99,6 @@
     function clear_txt() { txt.innerHTML='' }
     function to_txt(t, esc=true) {
         txt.innerHTML += (typeof(t)==='object') ? json(t) : (esc ? escape(t) : t)
-        txt.scrollTop = txt.scrollHeight
     }
     function json(t) {
         // object also been sent to brower console for detail
@@ -104,7 +106,7 @@
         return JSON.stringify(t,f,2)
     }
     function escape(s) {
-        return s.replace(/ /g, '&nbsp;').replace(/\n/g, '<br/>')
+        return s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;')
     }
     let vm = new ForthVM(to_txt)       // create Forth VM object
     show_data()                        // select showing dictionary first

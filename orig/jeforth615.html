@@ -30,6 +30,8 @@
         tib.value=""
         log.scrollTop=log.scrollHeight
     }
-    function logtype(t) { log.innerHTML += t }
+    function logtype(t) {
+        log.innerHTML += t.replace(/\n/g,"<br/>").replace(/\s/g,"&nbsp;")
+    }
 </script>
 </html>
