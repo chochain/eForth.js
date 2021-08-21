@@ -9,7 +9,7 @@
 2011/12/23 initial version by Cheahshen Yap and Sam Chen */
 window.ForthVM = function(output=console.log) {
     let fence=0
-    let compiling=false
+    let compile=false
     let ss=[],rs=[]              // array allows push and pop
     let tib="",ntib=0,base=10
     let ip=0,wp=0,wx=0           // instruction and word pointers
@@ -46,39 +46,40 @@ window.ForthVM = function(output=console.log) {
     }
     // compiler functions
     const comma   = function(n) { dict.tail().pf.push(n) }
-    const compile = function(nword) {
+    const addcode = function(nword) {
 		let n=(typeof(nword)==="string") ? find(nword) : nword
-        if (n>-1) comma(n);
-        else {ss=[]; throw(SPC+nword+" ? ");}}
+        if (n>=0) comma(n);
+        else { ss=[]; throw SPC+nword+" ? " }}
     // interpreter functions
-    const exit = ()=>ip=-1                    // exit nest() loop, fat arrow style
-    const nest = function() {                 // inner interpreter
-        rs.push(wp); rs.push(ip); wp=wx; ip=0;// setup call frame
-        while (ip>=0) {
-            wx=dict[wp].pf[ip++];
-            //console.log("\nwp="+wp.toString()+",ip="+ip.toString()+"=>"+wx)
-            //console.log(dict[wx])
+    const exit = ()=>ip=-1                     // exit nest() loop, fat arrow style
+    const nest = function() {                  // inner interpreter
+        rs.push(wp); rs.push(ip); wp=wx; ip=0  // setup call frame
+        let n=dict[wp].pf.length
+        while (ip<n) {
+            wx = dict[wp].pf[ip++]
+            console.log("\nwp="+wp.toString()+",ip="+ip.toString()+"=>"+wx)
+            console.log(dict[wx])
             dict[wx].xt()
         }
         ip=rs.pop(); wp=rs.pop()              // restore call frame
 	}
-    const eval = function(idiom) {     // interpreter/compiler
+    const eval = function(idiom) {            // interpreter/compiler
         let nword=find(idiom)
-        if (nword>-1) {                // is an existing word
-            if (compiling && !dict[nword].immd) comma(nword)
-            else dict[wx=nword].xt()
+        if (nword>-1) {                       // is an existing word
+            if (compile && !dict[nword].immd) comma(nword)
+            else { dict[wx=nword].xt() }
             return
 		}
         // try as a number
         let n=(base==10) ? parseFloat(idiom) : parseInt(idiom, base)
-        if (isNaN(n)) {                 // not a number
-            if (compiling) dict.pop()   // delete defective word
-            compiling=false; ss=[]; ntib=tib.length
+        if (isNaN(n)) {                       // not a number
+            if (compile) dict.pop()           // delete defective word
+            compile=false; ss=[]; ntib=tib.length
             log(SPC+idiom+" ? ")
             return
         }
         // is a number
-        if (compiling) { compile("dolit"); comma(n) } // compile an literal
+        if (compile) { addcode("dolit"); comma(n) } // compile an literal
         else ss.push(n)
 	} 
     const tick = function() {
@@ -151,22 +152,22 @@ window.ForthVM = function(output=console.log) {
             for(let i=0; i+s.length<n; i++) log(SPC)
             log(s+SPC) }),
 // strings
-        new Immd("["     ,c=>compiling=false),
-        new Code("]"     ,c=>compiling=true),
+        new Immd("["     ,c=>compile=false),
+        new Code("]"     ,c=>compile=true),
         new Code("find"  ,c=>PUSH(find(parse()))),
         new Code("'"     ,c=>PUSH(tick())),
         new Code("(')"   ,c=>PUSH(dict[wx].pf[ip++])),
-        new Immd("[']"   ,c=>{ compile("(')"); compile(tick())}),
+        new Immd("[']"   ,c=>{ addcode("(')"); addcode(tick())}),
         new Code("dolit" ,c=>PUSH(dict[wp].pf[ip++])),
         new Code("dostr" ,c=>PUSH(dict[wx].pf[ip++])),
         new Immd('s"'    ,c=>{
             let s=parse('"')
-            if (compiling) { compile("dostr"); comma(s) }
+            if (compile) { addcode("dostr"); comma(s) }
             else PUSH(s) }),
         new Code("dotstr",c=>log(dict[wp].pf[ip++])),
         new Immd('."'    ,c=>{
             let s=parse('"')
-            if (compiling) { compile("dotstr"); comma(s) }
+            if (compile) { addcode("dotstr"); comma(s) }
             else log(s)}),
         new Immd('('     ,c=>s=parse(')')),
         new Immd('.('    ,c=>log(parse(')'))),
@@ -179,39 +180,39 @@ window.ForthVM = function(output=console.log) {
             let i=rs.pop()-1
             if (i>=0) { ip=dict[wp].pf[ip]; rs.push(i)} else { ip++ }}),
         new Immd("if"  ,c=>{    // if    ( -- here ) 
-            compile("0branch");
+            addcode("0branch");
             PUSH(xip()); comma(0)}),
         new Immd("else",c=>{    // else ( here -- there )
-            compile("branch");
+            addcode("branch");
             let h=xip()
             comma(0)
             dict.tail().pf[POP()]=xip(); PUSH(h)}),
         new Immd("then", c=>dict.tail().pf[POP()]=xip()),
         new Immd("begin",c=>PUSH(xip())),
         new Immd("again",c=>{   // again    ( there -- ) 
-            compile("branch"); compile(POP())}),
+            addcode("branch"); addcode(POP())}),
         new Immd("until",c=>{   // until    ( there -- ) 
-            compile("0branch"); compile(POP())}),
+            addcode("0branch"); addcode(POP())}),
         new Immd("while",c=>{   // while    ( there -- there here ) 
-            compile("0branch");
+            addcode("0branch");
             PUSH(xip()); comma(0)}),
         new Immd("repeat",c=>{  // repeat    ( there1 there2 -- ) 
-            compile("branch");
-            let t=POP(); compile(POP());
+            addcode("branch");
+            let t=POP(); addcode(POP());
             dict.tail().pf[t]=xip()}),
         new Immd("for" ,c=>{    // for ( -- here )
-            compile(">r"); PUSH(xip())}),
+            addcode(">r"); PUSH(xip())}),
         new Immd("next",c=>{    // next ( here -- )
-            compile("donext"); compile(POP())}),
+            addcode("donext"); addcode(POP())}),
         new Immd("aft" ,c=>{    // aft ( here -- here there )
-            POP(); compile("branch");
+            POP(); addcode("branch");
             let h=xip();
             comma(0); PUSH(xip()); PUSH(h)}),
 // defining dict
         new Code(":", c=>{
-            compiling=true
+            compile=true
             dict.push(new Code(parse(), c=>nest()))}),
-        new Immd(";", c=>{ compiling=false; compile("exit")}),
+        new Immd(";", c=>compile=false),
         new Code("create",  c=>{
             dict.push(new Code(parse(), c=>ss.push(wx)))
             dict.tail().qf = []}),
@@ -296,6 +297,6 @@ window.ForthVM = function(output=console.log) {
         for (let idiom=parse(); idiom!=""; idiom=parse()) {
             eval(idiom)
         }
-        if (!compiling) log(" < "+ss.join(SPC)+" >ok"+CR)
+        if (!compile) log(" < "+ss.join(SPC)+" >ok"+CR)
 	}
 }
