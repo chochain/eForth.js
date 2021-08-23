@@ -46,7 +46,7 @@ window.ForthVM = function(output=console.log) {
     let ss=[], rs=[]                      /// stacks
     let tib="", ntib=0, base=10, wp=0
     let cmpl=false
-    let SPC="&nbsp;", CR="<br/>"
+    let SPC=" ", CR="\n"
     /// @}
     /// @defgroup IO functions
     /// @{
