@@ -1,0 +1,440 @@
+( There are 20 lessons to learn using this Forth system )
+( Try typing these lessons into the input box and run them. )
+( You can copy a lesson and paste it into the input box. )
+( You can copy the entire file and run all lessons. )
+( Try these commands: )
+( words          show all commands in the dictionary )
+( date           show current date and time )
+( see <name>     disassemble a command )
+( reboot         remove all added commands )
+( forget <name>  remove all commans after <name> )
+
+( eforth system tests )
+
+: test1 1 2 3 4 5 ;
+: test2 if 1 else 2 then . ;
+: test3 10 for r@ . next ;
+: test4 10 for aft r@ . then next ;
+: test5 10 begin dup . dup while 1 - repeat drop ;
+: test6 1000000 for next ; ( 80 ms )
+: test7 100 for test6 next ;
+( date test7 date )
+
+cr .( lesson 1.      the universal greeting )
+
+: hello cr ." hello, world!" ;
+hello
+
+cr .( lesson 2.      the big f )
+
+: bar   cr ." *****" ;
+: post  cr ." *____" ;
+: f     bar post bar post post post ;
+f
+
+cr .( lesson 3.      fig, forth interest group )
+( HTML hates spaces. I have to use underscores in their places. )
+( pretend you do not see the underscores. )
+
+: center cr ." __*__" ;
+: sides  cr ." *___*" ;
+: triad1 cr ." *_*_*" ;
+: triad2 cr ." **__*" ;
+: triad3 cr ." *__**" ;
+: triad4 cr ." _***_" ;
+: quart  cr ." **_**" ;
+: right  cr ." *_***" ;
+: bigt  bar center center center center center center ;
+: bigi  center center center center center center center ;
+: bign  sides triad2 triad2 triad1 triad3 triad2 sides ;
+: bigg  triad4 sides post right triad1 sides triad4 ;
+: fig  f bigi bigg ;
+( fig )
+
+cr .( lesson 4.      repeated patterns )
+
+variable width                  ( number of asterisks to print )
+: spaces for space next ;
+: asterisks ( -- , print n asterisks on the screen, n=width )
+        width @                 ( limit=width, initial index=0 )
+        for ." *"               ( print one asterisk at a time )
+        next                    ( repeat n times )
+        ;
+: rectangle ( height width -- , print a rectangle of asterisks )
+        width !                 ( initialize width to be printed )
+        for     cr
+                asterisks       ( print a line of asterisks )
+        next
+        ;
+: parallelogram ( height width -- )
+        width !
+        for     cr r@ spaces    ( shift the lines to the right )
+                asterisks       ( print one line )
+        next
+        ;
+: triangle ( width -- , print a triangle area with asterisks )
+        for     cr
+                r@ width !      ( increase width every line )
+                asterisks       ( print one line )
+        next
+        ;
+( try the following instructions: )
+        3 10 rectangle
+        5 18 parallelogram
+        12 triangle  
+
+
+cr .( lesson 5.      the theory that jack built )
+( this example shows you how to build a hiararchical structure in forth)
+
+: the           ." the " ;
+: that          cr ." that " ;
+: this          cr ." this is " the ;
+: jack          ." jack builds" ;
+: summary       ." summary" ;
+: flaw          ." flaw" ;
+: mummery       ." mummery" ;
+: k             ." constant k" ;
+: haze          ." krudite verbal haze" ;
+: phrase        ." turn of a plausible phrase" ;
+: bluff         ." chaotic confusion and bluff" ;
+: stuff         ." cybernatics and stuff" ;
+: theory        ." theory " jack ;
+: button        ." button to start the machine" ;
+: child         ." space child with brow serene" ;
+: cybernatics   ." cybernatics and stuff" ;
+
+: hiding        cr ." hiding " the flaw ;
+: lay           that ." lay in " the theory ;
+: based         cr ." based on " the mummery ;
+: saved         that ." saved " the summary ;
+: cloak         cr ." cloaking " k ;
+: thick         if that else cr ." and " then
+                ." thickened " the haze ;
+: hung          that ." hung on " the phrase ;
+: cover         if that ." covered "
+                else cr ." to cover "
+                then bluff ;
+: make          cr ." to make with " the cybernatics ;
+: pushed        cr ." who pushed " button ;
+: without       cr ." without confusion, exposing the bluff" ;
+: rest                                  ( pause for user interaction )
+        ." . "                          ( print a period )
+        10 spaces                       ( followed by 10 spaces )
+ (       key                             ( wait the user to press a key )
+        drop cr cr ;
+
+: cloaked cloak saved based hiding lay rest ;
+: THEORY
+        cr this theory rest
+        this flaw lay rest
+        this mummery hiding lay rest
+        this summary based hiding lay rest
+        this k saved based hiding lay rest
+        this haze cloaked
+        this bluff hung 1 thick cloaked
+        this stuff 1 cover hung 0 thick cloaked
+        this button make 0 cover hung 0 thick cloaked
+        this child pushed
+                cr ." that made with " cybernatics without hung
+                cr ." and, shredding " the haze cloak
+                cr ." wrecked " the summary based hiding
+                cr ." and demolished " the theory rest
+        ;
+THEORY
+
+
+cr .( lesson 6.      help )
+( use forth interpreter to carry on a dialog )
+
+: question
+        cr cr ." any more problems you want to solve?"
+        cr ." what kind ( sex, job, money, health ) ?"
+        cr
+        ;
+: help  cr
+        cr ." hello!  my name is creating computer."
+        cr ." hi there!"
+        cr ." are you enjoying yourself here?"
+        cr ." say!"
+        cr ." i can solved all kinds of problems except those dealing"
+        cr ." with greece. "
+        question
+        ;
+: sex   cr cr ." is your problem too much or too little?"
+        cr
+        ;
+: too  ;                                ( noop for syntax smoothness )
+: much  cr cr ." you call that a problem?!!  i should have that problem."
+        cr ." if it really bothers you, take a cold shower."
+        question
+        ;
+: little
+        cr cr ." why are you here!"
+        cr ." you should be in tokyo or new york of amsterdam or"
+        cr ." some place with some action."
+        question
+        ;
+: health
+        cr cr ." my advise to you is:"
+        cr ."      1. take two tablets of aspirin."
+        cr ."      2. drink plenty of fluids."
+        cr ."      3. go to bed (along) ."
+        question
+        ;
+: job   cr cr ." i can sympathize with you."
+        cr ." i have to work very long every day with no pay."
+        cr ." my advise to you, is to open a rental computer store."
+        question
+        ;
+: money
+        cr cr ." sorry!  i am broke too."
+        cr ." why don't you sell encyclopedias of marry"
+        cr ." someone rich or stop eating, so you won't "
+        cr ." need so much money?"
+        question
+        ;
+: h help ;
+help
+
+cr .( lesson 7.  money exchange )
+
+decimal
+
+: euro    ( nnt -- $ )  0.815 *  ;
+: $euro    ( nnt -- $ )  0.815 /  ;
+: nt    ( nnt -- $ )    28.07 *  ;
+: $nt   ( $ -- nnt )    28.07 /  ;
+: rmb   ( nrmb -- $ )   6.50 *  ;
+: $rmb  ( $ -- njmp )   6.50 /  ;
+: hk    ( nhk -- $ )    7.75 *  ;
+: $hk   ( $ -- $ )      7.75 /  ;
+: gold  ( nounce -- $ ) 1900.6 *  ;
+: $gold ( $ -- nounce ) 1900.6 /  ;
+: silver ( nounce -- $ ) 26.42 *  ;
+: $silver ( $ -- nounce ) 26.42 /  ;
+: ounce ( n -- n, a word to improve syntax )  ;
+: dollars ( n -- )      . ;
+
+( with this set of money exchange words, you can do some tests: )
+	cr
+        5 ounce gold .
+        10 ounce silver .
+        100 $nt .
+        20 $rmb .
+
+( you have many different currency bills in your wallet, you )
+( can add then all up in dollars: )
+	cr
+        1000 nt 500 hk + 
+        320 rmb + 
+        dollars ( print out total worth in dollars )
+
+
+cr .( lesson 8. temperature conversion
+
+: f>c ( nfarenheit -- ncelcius )
+        32 - 1.8 / ;
+
+: c>f ( ncelcius -- nfarenheit )
+        1.8 * 32 + ;
+
+( try these commands )
+cr
+90 f>c .        ( celcius in a hot summer day )
+0 c>f .         ( farenheit in a cold winter night ) 
+
+
+cr .( lesson 9.  weather reporting. )
+
+: weather ( nfarenheit -- )
+        dup     55 <
+        if      ." too cold!" drop
+        else    85 <
+                if      ." about right."
+                else    ." too hot!"
+                then
+        then
+        ;
+cr
+( you can type the following instructions to your computer: )
+        90 weather ( too hot! )
+        70 weather ( about right. )
+        32 weather ( too cold. )
+
+
+cr .( lesson 10.  print the multiplication table )
+
+: onerow ( nrow -- )
+        cr
+        dup 3 .r 3 spaces
+        1 11
+        for     2dup *
+                4 .r
+                1 +
+        next
+        2drop ;
+: multiply ( -- )
+        cr cr 7 spaces
+        1 11
+        for     dup 4 .r 1 +
+        next drop 
+        1 11
+        for     dup onerow 1 +
+        next drop
+        ;
+cr multiply 
+
+
+cr .( lesson 11.  calendars )
+
+( print weekly calendars for any month in any year. )
+decimal
+
+variable julian                         ( 0 is 1/1/1950 )
+variable leap                           ( 1 for a leap year, 0 otherwise. )
+365.256363 constant daysYear            ( days in a year )
+
+: year ( year --, compute julian date and leap year )
+        dup
+        1949 - daysYear * int >r        
+        1950 - daysYear * dup julian !  ( 0 for 1/1/1950 )
+        int r> swap -                   ( leap year )
+        365 - leap !
+        ;
+: first ( month -- 1st, 1st of a month from jan. 1 )
+        dup 1 =
+        if drop 0 exit then             ( 0 for jan. 1 )
+        dup 2 =
+        if drop 31 exit then            ( 31 for feb. 1 )
+        dup 3 =
+        if drop 59 leap @ + exit then   ( 59/60 for mar. 1 )
+        4 - 30.624 * 
+        90 + leap @ + ;                 ( apr. 1 to dec. 1 )
+: stars cr 63 for ." *" next cr ;       ( form the boarder )
+: header ( -- )                         ( print title bar )
+        stars 4 spaces 
+        ." sun" 5 spaces ." mon" 5 spaces
+        ." tue" 5 spaces ." wed" 5 spaces
+        ." thu" 5 spaces ." fri" 5 spaces
+        ." sat" stars ;                 ( print weekdays )
+: blanks ( month -- )                   ( skip days not in this month )
+        first int julian @ int +        ( julian date of 1st of month )
+        7 mod 8 * spaces ;              ( skip colums if not sunday   )
+: days ( month -- )                     ( print days in a month )
+        dup first                       ( days of 1st this month )
+        swap 1 + first                  ( days of 1st next month )
+        over - 1 -                      ( loop to print the days )
+        1 swap                          ( first day count -- )
+        for  2dup + 1 -
+                julian @ + 7 mod        ( which day in the week? )
+                1 < if cr then          ( start a new line if sunday )
+                dup  8 .r               ( print day in 8 column field )
+                1 +
+        next
+        2drop ;                         ( discard 1st day in this month )
+: month ( n -- )                        ( print a month calendar )
+        header dup blanks               ( print header )
+        days stars ;                    ( print days   )
+: january       year 1 month ;
+: february      year 2 month ;
+: march         year 3 month ;
+: april         year 4 month ;
+: may           year 5 month ;
+: june          year 6 month ;
+: july          year 7 month ;
+: august        year 8 month ;
+: september     year 9 month ;
+: october       year 10 month ;
+: november      year 11 month ;
+: december      year 12 month ;
+
+cr 2021 august
+
+
+cr .( lesson 12.      sines and cosines )
+
+( javascript has a extensive library of transcendental functions)
+( they are compiled into jeforth 4.02: )
+( pi random sin cos tan asin acos atan2 exp log sqrt pow )
+
+
+cr .( lesson 13.      square root )
+
+( sqrt is a native Math function in javascript )
+
+
+cr .( lesson 14.      radix for number conversions )
+
+decimal
+
+( : decimal       10 base! ; )
+( : hex           16 base! ; )
+: octal         8 base!  ;
+: binary        2 base!  ;
+
+( try converting numbers among different radices: )
+	cr
+        decimal 12345 hex .
+        hex abcd decimal .
+        decimal 100 binary .
+        binary 101010101010 decimal .
+
+
+cr .( lesson 15.      ascii character table )
+
+: character ( n -- )
+        dup emit hex dup 4 .r
+        octal dup 4 .r
+        decimal 4 .r
+        2 spaces
+        ;
+: line ( n -- )
+        cr
+        5 for   dup character
+                16 +
+        next
+        drop ;
+: table ( -- )
+        32
+        15 for  dup line
+                1 +
+        next
+        drop ;
+cr table
+
+
+cr .( lesson 16.  random numbers
+
+( 'random' calls a native javascript Math.random function )
+( it returns a random floating point number between 0 and 1 )
+
+
+cr .( lesson 17.      guess a number )
+
+( an interactive game is better programmed in javascript with an input button )
+( with jeforth interpreter, the player must actively run the game )
+
+variable num
+variable limit
+: help  cr ." the commands to run this game are: "
+        cr ." nnn setLimit  --- set up the limit of number range "
+        cr ." nnn guess     --- make a gues"
+        ;
+: setLimit ( n -- )
+        int dup limit !
+        random * int num !
+        ;
+: guess ( n -- )
+        int dup num @ <
+        if cr ." too small " drop
+        else num @ >
+             if cr ." too big "
+             else cr ." got it!"
+             then
+        then
+        ;
+100 setLimit
+50 guess
+
+
