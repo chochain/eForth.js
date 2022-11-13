@@ -39,7 +39,7 @@ window.ForthVM = function(output=console.log) {
             wp = tmp
         }
         addcode(w) { this.pf.push(w); return this }
-   }
+    }
     ///
     /// @defgroup Virtual Machine instance variables
     /// @{
@@ -318,7 +318,7 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup System ops
         /// @{
         new Prim("exit",  c=>{ throw "close app" }),     // exit interpreter
-        new Prim("time",  c=>push(Date.getTime())),
+        new Prim("time",  c=>push(Date.now())),
         new Prim("delay", c=>sleep(pop()).then(()=>{})),
         /// @}
         /// @defgroup Debugging ops
