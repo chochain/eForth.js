@@ -42,10 +42,10 @@ window.ForthVM = function(output=console.log) {
             this.xt    = null             ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
-
+            
             let w = find(name);
             if (w != null) this.xt = w.xt
-
+            
             if (typeof(v)=="boolean" && v) this.token = _fence++  // new user defined word
             else if (typeof(v)=="string")  this.pf.push(v)
             else if (typeof(v)=="number")  this.pf.push(v)
@@ -114,6 +114,28 @@ window.ForthVM = function(output=console.log) {
     }
     const sleep  = (ms)=>{
         return new Promise(rst=>setTimeout(rst,ms))
+    }
+    /// @}
+    /// @defgroup looping functions
+    /// @{
+    const _for = c=>{
+        do { c.pf.forEach(w=>w.exec()) }           // for
+        while (c.stage==0 && dec_i()>=0)           // for...next only
+        while (c.stage>0) {                        // aft
+            c.pf2.forEach(w=>w.exec())             // then...next
+            if (dec_i()<0) break
+            c.pf1.forEach(w=>w.exec())             // aft...
+        }
+        rpop()
+    }
+    const _loop = c=>{
+        while (true) {
+            c.pf.forEach(w=>w.exec())
+            if (c.stage==0 && pop()!=0) break      // until
+            if (c.stage==1) continue               // again
+            if (c.stage==2 && pop()==0) break      // while
+            c.pf1.forEach(w=>w.exec())             // then
+        }
     }
     /// @}
     ///====================================================================================
@@ -217,13 +239,12 @@ window.ForthVM = function(output=console.log) {
         new Immd("if",    c=>{
             comma(new Code("bran"))
             dict.push(new Code("tmp"))               // as dict.tail()
-            let w=dict.pword();
+            let w=dict.pword()
             w.pf1=[]; w.stage=0 }),                  // stage for branching
         new Immd("else",  c=>{
             let w=dict.pword(), tmp=dict.tail()
-            w.pf.push(...tmp.pf)
-            tmp.pf.length = 0
-            w.stage=1 }),
+            w.pf.push(...tmp.pf); w.stage=1
+            tmp.pf.length = 0 }),
         new Immd("then",  c=>{
             let w=dict.pword(), tmp=dict.tail()
             if (w.stage==0) {
@@ -239,18 +260,11 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Loop ops
         /// @brief begin...again, begin...until, begin...while...repeat
         /// @{
-        new Prim("doloop", c=>{
-            while (true) {
-                c.pf.forEach(w=>w.exec())
-                if (c.stage==0 && pop()!=0) break    // until
-                if (c.stage==1) continue             // again
-                if (c.stage==2 && pop()==0) break    // while
-                c.pf1.forEach(w=>w.exec())           // then
-            } }),
         new Immd("begin", c=>{
             comma(new Code("doloop"))
             dict.push(new Code("tmp"))
-            let w = dict.pword(); w.pf1=[]; w.stage=0 }),
+            let w = dict.pword()
+            w.xt = _loop; w.pf1=[]; w.stage=0 }),
         new Immd("while", c=>{                     // begin...f.while...repeat
             let w=dict.pword(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=2
@@ -272,20 +286,12 @@ window.ForthVM = function(output=console.log) {
         /// @brief for...next, for...aft...then...next
         /// @{
         new Prim("i",     c=>push(rtop())),
-        new Prim("dofor", c=>{
-            do { c.pf.forEach(w=>w.exec()) }           // for
-            while (c.stage==0 && dec_i()>=0)           // for...next only
-            while (c.stage>0) {                        // aft
-                c.pf2.forEach(w=>w.exec())             // then...next
-                if (dec_i()<0) break
-                c.pf1.forEach(w=>w.exec())             // aft...
-            }
-            rpop() }),
         new Immd("for",   c=>{                         // for...next
             comma(new Code(">r"));
             comma(new Code("dofor"))
             dict.push(new Code("tmp"))
-            let w=dict.pword(); w.stage=0; w.pf1=[] }),
+            let w=dict.pword()
+            w.xt = _for; w.stage=0; w.pf1=[] }),
         new Immd("aft",   c=>{
             let w=dict.pword(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=3; w.pf2=[]   // for...aft
