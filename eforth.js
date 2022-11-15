@@ -40,6 +40,7 @@ window.ForthVM = function(output=console.log) {
     class Code {
         constructor(name, v=false) {
             this.name  = name             ///< name of the word
+			this.cat   = "ud"             ///< user defined word
             this.xt    = null             ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
@@ -248,7 +249,7 @@ window.ForthVM = function(output=console.log) {
         new Immd("then",  "br", c=>{
             let w=dict.word2(), tmp=dict.tail()
             if (w.stage==0) {
-                w.pf.push(...tmp.pf);                // copy tmp.pf into branch
+                w.pf.push(...tmp.pf)                 // copy tmp.pf into branch
                 dict.pop()                           // drop tmp
             }
             else {
