@@ -42,7 +42,7 @@ window.ForthVM = function(output=console.log) {
             this.xt    = null             ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
-            
+
             let w = find(name);
             if (w != null) this.xt = w.xt
             
@@ -120,9 +120,6 @@ window.ForthVM = function(output=console.log) {
     /// @{
     const _docon = c=>push(c.pf[0])
     const _dovar = c=>push(c.token)
-    const _dolit = c=>push(c.pf[0])                // integer literal
-    const _dostr = c=>push(c.token)                // string literal
-    const _dotstr= c=>log(c.pf[0])
     const _bran  = c=>{ (pop()!=0 ? c.pf : c.pf1).forEach(w=>w.exec()) }
     const _for   = c=>{
         do { c.pf.forEach(w=>w.exec()) }           // for
@@ -224,14 +221,17 @@ window.ForthVM = function(output=console.log) {
         /// @}
         /// @defgroup Literal ops
         /// @{
+        new Prim("dolit", c=>push(c.pf[0])),                // integer literal
+        new Prim("dostr", c=>push(c.token)),                // string literal
+        new Prim("dotstr",c=>log(c.pf[0])),                 // print str
         new Immd("[",     c=>_compi=false ),
         new Prim("]",     c=>_compi=true ),
         new Prim("'",     c=>{ let w=tok2w(); push(w.token) }),
-        new Immd("$\"",   c=>{                       // -- w a
-            lastword().add(new Code("_dostr", nxtok("\"")))
+        new Immd("$\"",   c=>{                              // -- w a
+            comma(new Code("dostr", nxtok("\"")))
             push(dict.tail().token)
             push(dict.pf.tail()) }),
-        new Immd(".\"",   c=>comma(new Code("_dotstr", nxtok("\"")))),
+        new Immd(".\"",   c=>comma(new Code("dotstr", nxtok("\"")))),
         new Immd("(",     c=>nxtok(")")),
         new Immd(".(",    c=>log(nxtok(")"))),
         new Immd("\\",    c=>_ntib=_tib.length),
@@ -241,14 +241,14 @@ window.ForthVM = function(output=console.log) {
         new Immd("if",    c=>{
             comma(new Code("_bran"))
             dict.push(new Code("tmp"))               // as dict.tail()
-            let w=dict.pword()
+            let w=dict.word2()
             w.xt = _bran; w.pf1=[]; w.stage=0 }),    // stage for branching
         new Immd("else",  c=>{
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=1
             tmp.pf.length = 0 }),
         new Immd("then",  c=>{
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             if (w.stage==0) {
                 w.pf.push(...tmp.pf);                // copy tmp.pf into branch
                 dict.pop()                           // drop tmp
@@ -265,22 +265,22 @@ window.ForthVM = function(output=console.log) {
         new Immd("begin", c=>{
             comma(new Code("_loop"))
             dict.push(new Code("tmp"))
-            let w = dict.pword()
+            let w = dict.word2()
             w.xt = _loop; w.pf1=[]; w.stage=0 }),
         new Immd("while", c=>{                     // begin...f.while...repeat
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=2
             tmp.pf.length = 0 }),
         new Immd("repeat", c=>{
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             w.pf1.push(...tmp.pf)
             dict.pop() }),
         new Immd("again", c=>{                     // begin...again
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=1
             dict.pop() }),
         new Immd("until", c=>{                     // begin...f.until
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             w.pf.push(...tmp.pf)
             dict.pop() }),
         /// @}
@@ -292,14 +292,14 @@ window.ForthVM = function(output=console.log) {
             comma(new Code(">r"));
             comma(new Code("_for"))
             dict.push(new Code("tmp"))
-            let w=dict.pword()
+            let w=dict.word2()
             w.xt = _for; w.stage=0; w.pf1=[] }),
         new Immd("aft",   c=>{
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=3; w.pf2=[]   // for...aft
             tmp.pf.length=0 }),
         new Immd("next",  c=>{
-            let w=dict.pword(), tmp=dict.tail()
+            let w=dict.word2(), tmp=dict.tail()
             if (w.stage==0) w.pf.push(...tmp.pf)        // for...next
             else            w.pf2.push(...tmp.pf)       // then...next
             dict.pop() }),
@@ -358,7 +358,7 @@ window.ForthVM = function(output=console.log) {
     /// @defgroup add dictionary access methods
     /// @{
     dict.tail = function(i=1) { return this[this.length-i]    }
-    dict.pword= function()    { return dict.tail(2).pf.tail() }
+    dict.word2= function()    { return dict.tail(2).pf.tail() }
     /// @}
     /// Forth initializer method
     ///
@@ -389,7 +389,7 @@ window.ForthVM = function(output=console.log) {
                     _compi=false                         ///>> restore interpret mode
                 }
                 else if (_compi) {                       ///> in compile mode?
-                    comma(new Code("_dolit", n))         ///>> compile the number
+                    comma(new Code("dolit", n))          ///>> compile the number
                 }
                 else push(n)                             ///>> or, push number onto stack top
             }
