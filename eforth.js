@@ -46,7 +46,7 @@ window.ForthVM = function(output=console.log) {
             let w = find(name);
             if (w != null) this.xt = w.xt
 
-            if (typeof(v)=="boolean" && v) this.token = _fence++
+            if (typeof(v)=="boolean" && v) this.token = _fence++  // new user defined word
             else if (typeof(v)=="string")  this.pf.push(v)
             else if (typeof(v)=="number")  this.pf.push(v)
             
@@ -61,15 +61,6 @@ window.ForthVM = function(output=console.log) {
             }
             else this.xt(this);                           /// * build-it words
         }
-        addcode(w, v) {                                   /// * add token to parameter field
-            if (typeof(w)=="string") {                    /// * given word
-                this.xt = find(w).xt                      /// * copy func ptr
-                this.pf.push(v)                           /// * literal in pf
-            }
-            else this.pf.push(w)                          /// * add Code obj
-            
-            return this
-        }       
     }
     ///====================================================================================
     /// @defgroup IO functions
@@ -97,11 +88,19 @@ window.ForthVM = function(output=console.log) {
     /// @}
     /// @defgroup Utilities functions
     /// @{
+    const addword = (w, v=null)=>{                  ///< add word to parameter 
+        let t = dict[dict.length-1]                 ///< last word
+        if (typeof(w)=="string") {                  /// * given word
+            t.xt = find(w).xt                       /// * copy func ptr
+            if (v!=null) t.pf.push(v)               /// * literal in pf
+        }
+        else t.pf.push(w)                           /// * add Code obj
+        return this
+    }
     const nword  = ()=>{                            ///< create a new word
         let s = nxtok();                            ///< fetch an input token
         if (s==null) { _compi=false; throw "more input" }
         dict.push(new Code(s, true))
-        return dict.tail()
     }
     const find   = (s)=>{                           ///< search through dictionary
         for (let i=dict.length-1; i>=0; --i) {      /// * search reversely
@@ -204,12 +203,11 @@ window.ForthVM = function(output=console.log) {
         new Prim("dolit", c=>push(c.pf[0])),         // integer literal
         new Prim("dostr", c=>push(c.token)),         // string literal
         new Immd("$\"",   c=>{                       // -- w a
-            let last=dict.tail()
-            last.addcode(new Code("dostr", nxtok("\"")))
-            push(last.token)
+            lastword().add(new Code("dostr", nxtok("\"")))
+            push(dict.tail().token)
             push(dict.pf.tail()) }),
         new Prim("dotstr",c=>log(c.pf[0])),
-        new Immd(".\"",   c=>dict.tail().addcode(new Code("dotstr", nxtok("\"")))),
+        new Immd(".\"",   c=>addword(new Code("dotstr", nxtok("\"")))),
         new Immd("(",     c=>nxtok(")")),
         new Immd(".(",    c=>log(nxtok(")"))),
         new Immd("\\",    c=>_ntib=_tib.length),
@@ -218,7 +216,7 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("bran",  c=>(pop()!=0 ? c.pf : c.pf1).forEach(w=>w.exec())),
         new Immd("if",    c=>{
-            dict.tail().addcode(new Code("bran"))
+            addword(new Code("bran"))
             dict.push(new Code("tmp"))               // as dict.tail()
             let word=dict.pword();
             word.pf1=[]; word.stage=0 }),            // stage for branching
@@ -251,7 +249,7 @@ window.ForthVM = function(output=console.log) {
                 c.pf1.forEach(w=>w.exec())           // then
             } }),
         new Immd("begin", c=>{
-            dict.tail().addcode(new Code("loop"))
+            addword(new Code("loop"))
             dict.push(new Code("tmp"))
             let word = dict.pword(); word.pf1=[]; word.stage=0 }),
         new Immd("while", c=>{                     // begin...f.while...repeat
@@ -287,9 +285,7 @@ window.ForthVM = function(output=console.log) {
             }
             rpop() }),
         new Immd("for",   c=>{                         // for...next
-            dict.tail()
-                .addcode(new Code(">r"))
-                .addcode(new Code("dofor"))
+            addword(new Code(">r")).addword(new Code("dofor"))
             dict.push(new Code("tmp"))
             let word=dict.pword();
             word.stage=0; word.pf1=[] }),
@@ -310,8 +306,8 @@ window.ForthVM = function(output=console.log) {
         new Immd(";",        c=>_compi=false),                // semicolon
         new Prim("docon",    c=>push(c.pf[0])),
         new Prim("dovar",    c=>push(c.token)),
-        new Immd("variable", c=>nword().addcode("dovar", 0)),
-        new Immd("constant", c=>nword().addcode("docon", pop())),
+        new Immd("variable", c=>(nword(), addword("dovar", 0))),
+        new Immd("constant", c=>(nword(), addword("docon", pop()))),
         /// @}
         /// @defgroup Memory Access ops
         /// @{
@@ -319,13 +315,15 @@ window.ForthVM = function(output=console.log) {
         new Prim("@",        c=>push(dict[pop()].pf[0])),                              // w -- n
         new Prim("!",        c=>{ let w=pop(); dict[w].pf[0]=pop() }),                 // n w  --
         new Prim("+!",       c=>{ let w=pop(); dict[w].pf[0]+=pop() }),                // n w --
-        new Prim("n@",       c=>{ let a=pop(); let w=pop(); push(dict[w].pf[a]) }),    // w a -- n
-        new Prim("n!",       c=>{ let a=pop(); let w=pop(); dict[w].pf[a]=pop() }),    // n w a --
+        new Prim("n?",       c=>{                                                      // w i --
+            let i=pop(); let w=pop(); log(dict[w].pf[i].toString(_base)+" ") }),
+        new Prim("n@",       c=>{ let i=pop(); let w=pop(); push(dict[w].pf[i]) }),    // w i -- n
+        new Prim("n!",       c=>{ let i=pop(); let w=pop(); dict[w].pf[i]=pop() }),    // n w i --
         new Prim("allot",    c=>{ for (let n=pop(), i=0; i<n; i++) dict.tail().pf[i]=0 }),  // n -- 
         /// @}
         /// @defgroup metacompiler
         /// @{
-        new Prim("create",   c=>nword().addcode("dovar", 0)),                          // create new word
+        new Prim("create",   c=>(nword(), addword("dovar"))),                          // create new word
         new Prim(",",        c=>dict.tail().pf.push(pop())),                           // n --
         new Prim("does",     c=>{
             let i=0, word=dict.tail(), src=dict[_wp].pf
@@ -357,7 +355,7 @@ window.ForthVM = function(output=console.log) {
     // add dictionary access methods
     //
     dict.tail = function(i=1) { return this[this.length-i]    }
-    dict.pword= function()    { return this.tail(2).pf.tail() }
+    dict.pword= function()    { return dict.tail(2).pf.tail() }
     ///
     /// initializer method
     ///
@@ -377,7 +375,7 @@ window.ForthVM = function(output=console.log) {
                     try       { w.exec() }               ///> execute word
                     catch (e) { log(e) }
                 }
-                else dict.tail().addcode(w)              ///> or compile word 
+                else addword(w)                          ///> or compile word 
             }
             else {                                       /// * word not found
                 let n=_base!=10                          ///> not word, try as number
@@ -388,7 +386,7 @@ window.ForthVM = function(output=console.log) {
                     _compi=false                         ///>> restore interpret mode
                 }
                 else if (_compi) {                       ///> in compile mode?
-                    dict.tail().addcode(new Code("dolit", n))  ///>> compile the number
+                    addword(new Code("dolit", n))        ///>> compile the number
                 }
                 else push(n)                             ///>> or, push number onto stack top
             }
