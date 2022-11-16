@@ -52,7 +52,7 @@ window.ForthVM = function(output=console.log) {
             else if (typeof(v)=="string")  this.qf = [ v ]
             else if (typeof(v)=="number")  this.qf = [ v ]
             
-            this.pf.tail = function(i=1) { return this[this.length-1] }
+            this.pf.tail = function() { return this[this.length-1] }
         }
         exec() {                                          /// run colon word
             if (this.xt == null) {                        /// * user define word
@@ -332,13 +332,16 @@ window.ForthVM = function(output=console.log) {
             else           nvar(_dovar, pop())                       // 1st value in qf
         }),
         new Prim("does",     "mc", c=>{
-            let w=dict.tail(), src=dict[_wp].pf, i=0
-            while (i<src.length && src[i].name!="does") i++;
-            if (++i<src.length) w.pf.push(...src.slice(i))
+            let w=dict.tail(), src=dict[_wp].pf
+            for (var i=0; i < src.length; i++) {
+                if (src[i].name=="does") w.pf.push(...src.slice(i+1))
+            }
             throw "does"                                             // break from inner interpreter
         }),
-        new Prim("to",       "mc", c=>tok2w().pf[0]=pop()),          // update constant
-        new Prim("is",       "mc", c=>tok2w().pf = dict[pop()].pf),  // n -- alias a word
+        new Prim("to",       "mc", c=>tok2w().val[0]=pop()),         // update constant
+        new Prim("is",       "mc", c=>{                              // n -- alias a word
+            nword(); dict.tail().pf = dict[pop()].pf
+        }),
         /// @}
         /// @defgroup System ops
         /// @{
