@@ -311,9 +311,10 @@ window.ForthVM = function(output=console.log) {
         new Prim("@",        "ma", c=>push(dict[pop()].val[0])),                              // w -- n
         new Prim("!",        "ma", c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
         new Prim("+!",       "ma", c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
-        new Prim("allot",    "ma", c=>{
-            for (let n=pop(), i=0; i<n; i++) dict.tail().val[i]=0 }),  // n -- 
-        new Prim("n?",       "ma", c=>{                                                      // w i --
+        new Prim("allot",    "ma", c=>{                                                       // n -- 
+			nvar(_dovar, 0)                                           // create qf array
+            for (let n=pop(), i=1; i<n; i++) dict.tail().val[i]=0 }), // fill all slot with 0
+        new Prim("n?",       "ma", c=>{                                                       // w i --
             let i=pop(); let w=pop(); log(SPC+dict[w].val[i].toString(_base)) }),
         new Prim("n@",       "ma", c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
         new Prim("n!",       "ma", c=>{ let i=pop(); let w=pop(); dict[w].val[i]=pop() }),    // n w i --
