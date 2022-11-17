@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+<textarea id="output" rows="20"></textarea>
+<script type='text/javascript'>
+const res    = await fetch('ceforth.wasm');
+const buffer = await res.arrayBuffer();
+const module = await WebAssembly.compile(buffer);
+
+const imports = {
+  env: {
+    memoryBase: 0,
+    tableBase: 0,
+    memory: new WebAssembly.Memory({
+      initial: 512
+    }),
+    table: new WebAssembly.Table({
+      initial: 0,
+      element: 'anyfunc'
+    })
+  }
+};
+
+module.print = {
+    var element = document.getElementById('output');
+    if (element) element.value = ''; // clear browser cache
+    return function(text) {
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+        if (element) {
+            console.log(text);
+            element.value += text + "\n";
+            element.scrollTop = element.scrollHeight; // focus on bottom
+        }
+    }
+})()
+          
+const instance = new WebAssembly.Instance(module, imports);
+</script>
+</body>
+</html>
