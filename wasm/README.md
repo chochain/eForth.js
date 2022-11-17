@@ -28,3 +28,5 @@ int my_func(int n, char *str) {
 
 ### To compile
 > emcc -o hello.html hello.c --shell-file minimal.html -sEXPORTED_FUNCTIONS=_main,_my_func -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
+> em++ -o ceforth.html ceforth.cpp --shell-file forth_template.html -sEXPORTED_FUNCTIONS=_main,_forth -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
+> em++ -o ceForth_403.html ceForth_403.cpp --shell-file forth_template.html -sEXPORTED_FUNCTIONS=_main,_forth -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
