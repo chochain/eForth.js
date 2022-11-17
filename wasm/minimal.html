@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WASM minimal</title>
+    <style>
+      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
+      textarea.emscripten { font-family: monospace; width: 100%; }
+    </style>
+  </head>
+  <body>
+    <textarea class="emscripten" id="output" rows="16"></textarea>
+    <script type='text/javascript'>
+      var Module = {                                            ///< WASM global object
+          print: (function() {
+              var el = document.getElementById('output')
+              if (el) el.value = ''                             /// * clear browser cache
+              return function(txt) {
+                  if (arguments.length > 1) txt = Array.prototype.slice.call(arguments).join(' ')
+                  console.log(txt)
+                  if (el) {
+                      el.value += txt + "\n"
+                      el.scrollTop = el.scrollHeight             /// * focus on bottom
+                  }
+              }
+          })()
+      }
+    </script>
+    {{{ SCRIPT }}}
+    <button id='my-button'>Click me</button>
+    <script type='text/javascript'>
+      document.getElementById('my-button').addEventListener('click', () => {
+          var my_func = Module.cwrap('my_func', 'number', ['number', 'string'])
+          my_func(123, 'my string')
+          my_func(456, 'string2')
+      })
+    </script>
+  </body>
+</html>
