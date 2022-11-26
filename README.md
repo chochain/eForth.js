@@ -17,9 +17,9 @@ With Javascript implementation, Forth can be run in a web page. **eforth.js** is
 Though I've never have the luck to meet him in person, the years of dedication and contribution he has to the Forth community is something I'll carry with me. As I told him once in the e-mail: "The name **eForth** will forever be associated with you, Dr. Ting".
 
 ### Documentation
-* [ceforth_403.html](https://chochain.github.io/eForth.js/docs/ceforth_403.html) Dr. Ting's final work.
+* [view ceforth_403.doc in HTML format](https://chochain.github.io/eForth.js/docs/ceforth_403.html) Dr. Ting's final work.
 
 ### Original
-* [jeforth_301](https://chochain.github.io/eForth.js/orig/index_301.html) by Shawn Chen, 2010
-* [jeforth615](https://chochain.github.io/eForth.js/orig/jeforth615.html) by Dr. Ting, 2021
+* [try jeforth_301 in your browser](https://chochain.github.io/eForth.js/orig/index_301.html) by Shawn Chen, 2010
+* [try jeforth615 in your browser](https://chochain.github.io/eForth.js/orig/jeforth615.html) by Dr. Ting, 2021
 * [download Word document ceforth_403.doc](.docs/ceforth_403.doc) by Dr. Ting, 2021
