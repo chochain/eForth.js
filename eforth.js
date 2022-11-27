@@ -361,8 +361,14 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Debugging ops
         /// @{
         new Prim("here",     "os", c=>push(dict.tail().token)),
-        new Prim("words",    "os", c=>
-                 dict.forEach((w,i)=>log(w.name+((i%10)==9 ? CR : SPC)))),
+        new Prim("words",    "os", c=>{
+			let sz = 0
+            dict.forEach((w,i)=>{
+				log(w.name+SPC)
+				sz += w.name.length + 1
+				if (sz > 52) { log(CR); sz = 0 }
+			})
+		}),
         new Prim("see",      "os", c=>{
             let w = tok2w(); console.log(w); log(w) }),   // pass object directly to browser console
         new Prim("forget",   "os", c=>{
@@ -380,7 +386,7 @@ window.ForthVM = function(output=console.log) {
     /// Forth initializer method
     ///
     this.init = ()=>{
-        log("<h2>eForth.js 4.0</h2><h3>...eForth with Javascript</h3>")
+        log("<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>")
     }
     ///
     /// outer interpreter method - main loop
