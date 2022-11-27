@@ -1,8 +1,8 @@
 # eForth.js - eForth in Javascript
 
-With Javascript implementation, Forth can be run from with a single web page.
+With Javascript implementation, Forth can be run from within a single web page.
 
-**eforth.js** is the only file you need! Well, maybe an extra index.html to wrap it. Copy both of them from the root directory shown above. Click on index.html and you have a Forth engine.
+The good news is **eforth.js** is the only file you need! Well, maybe an extra index.html to wrap it if you insist. Copy both of them from the root directory shown above. Click on index.html and you have a Forth engine.
 
 ## History - this is a project with interesting lineage.
 * It started back in 2010 when **Cheahshen Yap** from Taiwan FIG sent the 100-line kernel, named **KsanaVM**, to **Dr. Ting**.
