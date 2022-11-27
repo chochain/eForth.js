@@ -11,7 +11,7 @@ With Javascript implementation, Forth can be run in a web page. **eforth.js** is
 
   > <img src="./docs/jeforth400_snip1.png">
 * Dr. Ting didn't like the flashy front-end. He striped the sidebar, dropped dependency to CodeMirror, renamed it to jeforth614.js, but did included in his published document ceforth_403.doc (see ref below)
-* After a minor touch-up to [jeforth615.js](./orig/jeforth615.html), Dr. Ting and I then switched focus on upgrading **ceForth** (C-based Forth) for Windows and ESP32, and finally targeting an FPGA with Don and Demitri of [AI & Robotics project](https://www.facebook.com/groups/1304548976637542). He worked tirelessly even from his sickbed and did not ever stop. Not until he finally succumb to the illness 2022/5/30.
+* After he merged html and js into one [jeforth616.html](./orig/jeforth616.html), Dr. Ting and I then switched focus on upgrading **ceForth** (C-based Forth) for Windows and ESP32, and finally targeting an FPGA with Don and Demitri of [AI & Robotics project](https://www.facebook.com/groups/1304548976637542). He worked tirelessly even from his sickbed and did not ever stop. Not until he finally succumb to the illness 2022/5/30.
 * A few months of head-down cranking on [tensorForth](https://github.com/chochain/tensorForth), it is finally taking shape. I decided to take a breather and came back to review all the projects I've worked with Dr. Ting for the past year. In Thanksgiving Day, after looking at jeforth615 again, I've decided to call it **eForth.js** in memory of Dr. Ting.
 
 Though I've never have the luck to meet him in person, the years of dedication and contribution he has to the Forth community is something I'll carry with me. As I told him once in the e-mail: "The name **eForth** will forever be associated with you, Dr. Ting".
@@ -21,5 +21,5 @@ Though I've never have the luck to meet him in person, the years of dedication a
 
 ### Original
 * [jeforth_301](./orig/index_301.html) by Sam (Shawn?) Chen, 2010
-* [jeforth615](./orig/jeforth615.html) by Dr. Ting, 2021
+* [jeforth616](./orig/jeforth616.html) by Dr. Ting, 2021
 * [ceforth_403.doc](./docs/ceforth_403.doc) by Dr. Ting, 2021
