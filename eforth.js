@@ -43,16 +43,17 @@ window.ForthVM = function(output=console.log) {
     /// Colon word class
     ///
     class Code {
-        constructor(name, v=false) {
+        constructor(name, v=false, xt=null) {
             this.name  = name             ///< name of the word
 			this.cat   = "ud"             ///< user defined word
-            this.xt    = null             ///< function pointer
+            this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
 
-            let w = find(name);
-            if (w != null) this.xt = w.xt
-            
+            if (xt==null) {
+                let w = find(name);
+                if (w != null) this.xt = w.xt
+            }
             if (typeof(v)=="boolean" && v) this.token = _fence++  // new user defined word
             else if (typeof(v)=="string")  this.qf = [ v ]
             else if (typeof(v)=="number")  this.qf = [ v ]
@@ -259,8 +260,8 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
         /// @{
         new Immd("if",    "br", c=>{
-            let w = new Code("_bran")
-            w.xt = _bran; w.pf1=[]; w.stage=0        // stage for branching
+            let w = new Code("_bran", false, _bran)  // encode branch opcode
+            w.pf1=[]; w.stage=0                      // stage for branching
             compile(w)
             dict.push(new Code("tmp"))               // as dict.tail()
         }),
@@ -286,10 +287,10 @@ window.ForthVM = function(output=console.log) {
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{pf1}.repeat
         /// @{
         new Immd("begin", "br", c=>{
-            compile(new Code("_loop"))                 /// encode _loop opcode
+            compile(new Code("_loop", false, _loop))   /// encode _loop opcode
             dict.push(new Code("tmp"))                 /// create a tmp holder
             let w = dict.last()
-            w.xt = _loop; w.pf1=[]; w.stage=0
+            w.pf1=[]; w.stage=0                        /// create branching pf
         }),
         new Immd("while", "br", c=>{
             let w=dict.last(), tmp=dict.tail()
@@ -317,10 +318,10 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Immd("for",   "br", c=>{                   /// for...next
             compile(new Code(">r"));                   /// push I onto rstack
-            compile(new Code("_for"))                  /// encode _for opcode
+            compile(new Code("_for", false, _for))     /// encode _for opcode
             dict.push(new Code("tmp"))                 /// create tmp holder
             let w=dict.last()
-            w.xt = _for; w.stage=0; w.pf1=[]
+            w.stage=0; w.pf1=[]
         }),
         new Immd("aft",   "br", c=>{
             let w=dict.last(), tmp=dict.tail()
@@ -386,7 +387,7 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Debugging ops
         /// @{
         new Prim("here",     "os", c=>push(dict.tail().token)),
-        new Prim("words",    "os", c=>_word()),
+        new Prim("words",    "os", c=>_words()),
         new Prim("dump",     "os", c=>_dump()),
         new Prim("see",      "os", c=>{       
             let w = tok2w(); console.log(w); log(w)
@@ -401,8 +402,8 @@ window.ForthVM = function(output=console.log) {
     ///
     /// @defgroup add dictionary access methods
     /// @{
-    dict.add  = function()    {                     ///< create a new word
-        let s = nxtok();                            ///< fetch an input token
+    dict.add  = function()    {                        ///< create a new word
+        let s = nxtok();                               ///< fetch an input token
         if (s==null) { _compi=false; throw "more input" }
         dict.push(new Code(s, true))
     }
@@ -419,28 +420,28 @@ window.ForthVM = function(output=console.log) {
     /// @param row one line of input
     ///
     this.outer = (row)=>{
-        _tib=row; _ntib=0                                /// capture into TIB
-        for (let s=nxtok(); s!=null; s=nxtok()) {        /// * loop through tokens
-            let w=find(s)                                /// * search throug dictionary
-            if (w!=null) {                               /// * word found?
-                if((!_compi) || w.immd) {                /// * in interpret mode?
-                    try       { w.exec() }               ///> execute word
+        _tib=row; _ntib=0                             /// capture into TIB
+        for (let s=nxtok(); s!=null; s=nxtok()) {     /// * loop through tokens
+            let w=find(s)                             /// * search throug dictionary
+            if (w!=null) {                            /// * word found?
+                if((!_compi) || w.immd) {             /// * in interpret mode?
+                    try       { w.exec() }            ///> execute word
                     catch (e) { log(e) }
                 }
-                else compile(w)                          ///> or compile word 
+                else compile(w)                       ///> or compile word 
             }
-            else {                                       /// * word not found
-                let n=_base!=10                          ///> not word, try as number
+            else {                                    /// * word not found
+                let n=_base!=10                       ///> not word, try as number
                     ? parseInt(s, _base)
                     : parseFloat(s)
-                if (isNaN(n)) {                          ///> * not a number?
-                    log(s + "? ")                        ///>> display prompt
-                    _compi=false                         ///>> restore interpret mode
+                if (isNaN(n)) {                       ///> * not a number?
+                    log(s + "? ")                     ///>> display prompt
+                    _compi=false                      ///>> restore interpret mode
                 }
-                else if (_compi) {                       ///> in compile mode?
-                    compile(new Code("dolit", n))        ///>> compile the number
+                else if (_compi) {                    ///> in compile mode?
+                    compile(new Code("dolit", n))     ///>> compile the number
                 }
-                else push(n)                             ///>> or, push number onto stack top
+                else push(n)                          ///>> or, push number onto stack top
             }
         }
     }
