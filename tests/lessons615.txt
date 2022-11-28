@@ -1,14 +1,3 @@
-( There are 20 lessons to learn using this Forth system )
-( Try typing these lessons into the input box and run them. )
-( You can copy a lesson and paste it into the input box. )
-( You can copy the entire file and run all lessons. )
-( Try these commands: )
-( words          show all commands in the dictionary )
-( date           show current date and time )
-( see <name>     disassemble a command )
-( reboot         remove all added commands )
-( forget <name>  remove all commans after <name> )
-
 ( eforth system tests )
 
 : test1 1 2 3 4 5 ;
@@ -20,19 +9,19 @@
 : test7 100 for test6 next ;
 ( date test7 date )
 
-cr .( lesson 1.      the universal greeting )
+( lesson 1.      the universal greeting )
 
 : hello cr ." hello, world!" ;
 hello
 
-cr .( lesson 2.      the big f )
+( lesson 2.      the big f )
 
 : bar   cr ." *****" ;
 : post  cr ." *____" ;
 : f     bar post bar post post post ;
 f
 
-cr .( lesson 3.      fig, forth interest group )
+( lesson 3.      fig, forth interest group )
 ( HTML hates spaces. I have to use underscores in their places. )
 ( pretend you do not see the underscores. )
 
@@ -51,7 +40,7 @@ cr .( lesson 3.      fig, forth interest group )
 : fig  f bigi bigg ;
 ( fig )
 
-cr .( lesson 4.      repeated patterns )
+( lesson 4.      repeated patterns )
 
 variable width                  ( number of asterisks to print )
 : spaces for space next ;
@@ -84,7 +73,7 @@ variable width                  ( number of asterisks to print )
         12 triangle  
 
 
-cr .( lesson 5.      the theory that jack built )
+( lesson 5.      the theory that jack built )
 ( this example shows you how to build a hiararchical structure in forth)
 
 : the           ." the " ;
@@ -144,7 +133,7 @@ cr .( lesson 5.      the theory that jack built )
 THEORY
 
 
-cr .( lesson 6.      help )
+( lesson 6.      help )
 ( use forth interpreter to carry on a dialog )
 
 : question
@@ -197,7 +186,7 @@ cr .( lesson 6.      help )
 : h help ;
 help
 
-cr .( lesson 7.  money exchange )
+( lesson 7.  money exchange )
 
 decimal
 
@@ -217,7 +206,7 @@ decimal
 : dollars ( n -- )      . ;
 
 ( with this set of money exchange words, you can do some tests: )
-	cr
+
         5 ounce gold .
         10 ounce silver .
         100 $nt .
@@ -225,13 +214,13 @@ decimal
 
 ( you have many different currency bills in your wallet, you )
 ( can add then all up in dollars: )
-	cr
+
         1000 nt 500 hk + 
         320 rmb + 
         dollars ( print out total worth in dollars )
 
 
-cr .( lesson 8. temperature conversion
+( lesson 8. temperature conversion
 
 : f>c ( nfarenheit -- ncelcius )
         32 - 1.8 / ;
@@ -240,12 +229,12 @@ cr .( lesson 8. temperature conversion
         1.8 * 32 + ;
 
 ( try these commands )
-cr
+
 90 f>c .        ( celcius in a hot summer day )
 0 c>f .         ( farenheit in a cold winter night ) 
 
 
-cr .( lesson 9.  weather reporting. )
+( lesson 9.  weather reporting. )
 
 : weather ( nfarenheit -- )
         dup     55 <
@@ -256,14 +245,14 @@ cr .( lesson 9.  weather reporting. )
                 then
         then
         ;
-cr
+
 ( you can type the following instructions to your computer: )
         90 weather ( too hot! )
         70 weather ( about right. )
         32 weather ( too cold. )
 
 
-cr .( lesson 10.  print the multiplication table )
+( lesson 10.  print the multiplication table )
 
 : onerow ( nrow -- )
         cr
@@ -275,7 +264,7 @@ cr .( lesson 10.  print the multiplication table )
         next
         2drop ;
 : multiply ( -- )
-        cr cr 7 spaces
+        cr cr 6 spaces
         1 11
         for     dup 4 .r 1 +
         next drop 
@@ -283,10 +272,10 @@ cr .( lesson 10.  print the multiplication table )
         for     dup onerow 1 +
         next drop
         ;
-cr multiply 
+multiply 
 
 
-cr .( lesson 11.  calendars )
+( lesson 11.  calendars )
 
 ( print weekly calendars for any month in any year. )
 decimal
@@ -311,9 +300,9 @@ variable leap                           ( 1 for a leap year, 0 otherwise. )
         if drop 59 leap @ + exit then   ( 59/60 for mar. 1 )
         4 - 30.624 * 
         90 + leap @ + ;                 ( apr. 1 to dec. 1 )
-: stars cr 63 for ." *" next cr ;       ( form the boarder )
+: stars cr 60 for ." *" next cr ;       ( form the boarder )
 : header ( -- )                         ( print title bar )
-        stars 4 spaces 
+        stars 5 spaces 
         ." sun" 5 spaces ." mon" 5 spaces
         ." tue" 5 spaces ." wed" 5 spaces
         ." thu" 5 spaces ." fri" 5 spaces
@@ -349,22 +338,22 @@ variable leap                           ( 1 for a leap year, 0 otherwise. )
 : november      year 11 month ;
 : december      year 12 month ;
 
-cr 2021 august
+2021 january
 
 
-cr .( lesson 12.      sines and cosines )
+( lesson 12.      sines and cosines )
 
 ( javascript has a extensive library of transcendental functions)
 ( they are compiled into jeforth 4.02: )
 ( pi random sin cos tan asin acos atan2 exp log sqrt pow )
 
 
-cr .( lesson 13.      square root )
+( lesson 13.      square root )
 
 ( sqrt is a native Math function in javascript )
 
 
-cr .( lesson 14.      radix for number conversions )
+( lesson 14.      radix for number conversions )
 
 decimal
 
@@ -374,14 +363,14 @@ decimal
 : binary        2 base!  ;
 
 ( try converting numbers among different radices: )
-	cr
+
         decimal 12345 hex .
         hex abcd decimal .
         decimal 100 binary .
         binary 101010101010 decimal .
 
 
-cr .( lesson 15.      ascii character table )
+( lesson 15.      ascii character table )
 
 : character ( n -- )
         dup emit hex dup 4 .r
@@ -401,16 +390,16 @@ cr .( lesson 15.      ascii character table )
                 1 +
         next
         drop ;
-cr table
+table
 
 
-cr .( lesson 16.  random numbers
+( lesson 16.  random numbers
 
 ( 'random' calls a native javascript Math.random function )
 ( it returns a random floating point number between 0 and 1 )
 
 
-cr .( lesson 17.      guess a number )
+( lesson 17.      guess a number )
 
 ( an interactive game is better programmed in javascript with an input button )
 ( with jeforth interpreter, the player must actively run the game )
@@ -436,5 +425,52 @@ variable limit
         ;
 100 setLimit
 50 guess
+
+
+( 練習18	文字遊戲, a chinese word game )
+
+( 這是一個用骰子玩的文字遊戲。用三顆骰子，每顆有六面各別寫上兩個字。)
+( 一顆寫的是人物名稱，一顆寫的是地點，一顆寫的是動作。正常的六句詩是: )
+( 公子章台走馬 	少婦閨閣刺秀  寒士茅舍讀書 )
+( 屠夫市井揮刀  妓女花街賣俏  乞丐墳墓睡覺 )
+( 隨便擲這三顆骰子可以有216種不同的組合，有許多組合是蠻有趣的。)
+( this is a chinese word game )
+( you use 3 dices: one has 6 person, one has 6 places, and one has 6 actions )
+( roll the dices and you get a line. many of them are funny )
+( this shows that jeforth is a chinese programming language )
+
+: 人物 ( n -- , 選一個人 select a person )
+	dup 1 = if ." 公子"
+	else dup 2 = if ." 少婦"
+	else dup 3 = if ." 寒士"
+	else dup 4 = if ." 屠夫" 
+	else dup 5 = if ." 妓女"
+	else ." 乞丐"
+	then then then then then
+	drop
+	;
+: 地點 ( n -- , 選一個地點 select a place )
+	dup 1 = if ." 章台" drop exit then
+	dup 2 = if ." 閨閣" drop exit then
+	dup 3 = if ." 茅舍" drop exit then
+	dup 4 = if ." 市井" drop exit then
+	dup 5 = if ." 花街" drop exit then
+	." 墳墓"
+	;
+: 動作 ( n -- , 選一個動作 select an action )
+	dup 1 = if ." 走馬" drop exit then
+	dup 2 = if ." 刺秀" drop exit then
+	dup 3 = if ." 讀書" drop exit then
+	dup 4 = if ." 揮刀" drop exit then
+	5 = if ." 賣俏" else ." 睡覺" then
+	;
+: 骰子 ( -- , 印一句詩 print a line of poem )
+        cr
+	random 6 * int 人物 
+	random 6 * int 地點
+	random 6 * int 動作
+	;
+: dice 骰子 ;
+dice dice dice dice
 
 
