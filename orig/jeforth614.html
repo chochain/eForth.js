@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type"content="text/html;charset=UTF-8">
+<title>jeforth6.14</title>
+<style>body{font-family:'Courier New',monospace;font-size:14px;}
+  </style>
+<script src="jeforth614.js"></script>
+</head>
+<body>
+<div id="all" style="height:500px;width:800px;overflow:hidden;">
+  <div id="left" style="float:left;height:100%;width:50%;">
+    <div id="top" style="float:left;height:25%;width:100%;
+         background-color:#f0f8f0;">
+      <canvas id="cv" width=100 height=100></canvas>
+      <img id="logo" width="200" height="100" src="eforth100.jpg"
+         class="center">
+      <br/>In input box, enter text and hit return key:<br/>
+      </div>
+    <div id="mid" style="float: left;height:25%;  width:100%; 
+         background-color:#f0f0f8;">
+      <textarea id="tib" style="float:left;height:95%;width:95%;" 
+         onkeydown="if (13===event.keyCode) forth()">
+( Hit return to run this small demo.)
+: square dup * ; 
+: quad square square ; 
+: octet quad quad ; 
+8 octet . 4 octet . 
+         </textarea>
+      </div>
+    <div id="log" style="overflow:auto;height:50%;  width:100%;
+         background-color:#f8f0f0;"></div></div>
+  <div id="lessons" style="float: left;height:100%;  width:50%;
+         background-color:#f8f8f0;">
+    <h3 style="text-align: center;">( Lessons )</h3>
+    <embed type="text/html" src="lessons614.txt"
+         width="400" height="500">
+    </div>
+</div>
+</body>
+<script>
+    var AudioContext=window.AudioContext||window.webkitAudioContext;
+    var canvas=document.getElementById("cv"); 
+    var context=canvas.getContext("2d");
+    var imagedata=context.createImageData(100,100);
+    var log=document.getElementById("log");
+    log.innerHTML="jeforth 6.14<br/>";
+    var tib=document.getElementById("tib");
+    function forth() { 
+      audio=new AudioContext();
+      amp=audio.createGain();
+      amp.connect(audio.destination);amp.gain.value=0.1;
+      osc1=audio.createOscillator();
+      osc2=audio.createOscillator();
+      osc3=audio.createOscillator();
+      osc4=audio.createOscillator();
+      osc5=audio.createOscillator();
+      osc6=audio.createOscillator();
+      osc1.connect(amp);osc1.type="square";osc1.frequency.value=0;osc1.start();
+      osc2.connect(amp);osc2.type="square";osc2.frequency.value=0;osc2.start();
+      osc3.connect(amp);osc3.type="square";osc3.frequency.value=0;osc3.start();
+      osc4.connect(amp);osc4.type="square";osc4.frequency.value=0;osc4.start();
+      osc5.connect(amp);osc5.type="square";osc5.frequency.value=0;osc5.start();
+      osc6.connect(amp);osc6.type="square";osc6.frequency.value=0;osc6.start();
+      log.innerHTML+="<font color='blue'>"+tib.value+"  </font>";
+
+      try{main(tib.value);}
+      catch(err){logtype(err.toString()+"<br/>");}
+      finally{tib.value="";log.scrollTop=log.scrollHeight;
+        osc1.stop();osc2.stop();osc3.stop();
+        osc4.stop();osc5.stop();osc6.stop();}
+    }
+    function logtype(t){log.innerHTML=log.innerHTML+t;}  // 
+</script>
+</html>
