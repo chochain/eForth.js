@@ -132,7 +132,7 @@ window.ForthVM = function(output=console.log) {
         return w
     }
     /// @}
-    /// @defgroup built-in (branching, looping) functions
+    /// @defgroup Built-in (branching, looping) functions
     /// @{
     const _docon = c=>push(c.qf[0])
     const _dovar = c=>push(c.token)
@@ -247,11 +247,11 @@ window.ForthVM = function(output=console.log) {
             compile(w)
             dict.push(new Code("tmp")) }),           // as dict.tail()
         new Immd("else",  "br", c=>{
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=1
             tmp.pf.length = 0 }),
         new Immd("then",  "br", c=>{
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             if (w.stage==0) {
                 w.pf.push(...tmp.pf)                 // copy tmp.pf into branch
                 dict.pop()                           // drop tmp
@@ -268,22 +268,22 @@ window.ForthVM = function(output=console.log) {
         new Immd("begin", "br", c=>{
             compile(new Code("_loop"))
             dict.push(new Code("tmp"))
-            let w = dict.word2()
+            let w = dict.last()
             w.xt = _loop; w.pf1=[]; w.stage=0 }),
         new Immd("while", "br", c=>{               // begin...f.while...repeat
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=2
             tmp.pf.length = 0 }),
         new Immd("repeat", "br", c=>{
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             w.pf1.push(...tmp.pf)
             dict.pop() }),
         new Immd("again", "br", c=>{               // begin...again
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=1
             dict.pop() }),
         new Immd("until", "br", c=>{               // begin...f.until
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf)
             dict.pop() }),
         /// @}
@@ -294,14 +294,14 @@ window.ForthVM = function(output=console.log) {
             compile(new Code(">r"));
             compile(new Code("_for"))
             dict.push(new Code("tmp"))
-            let w=dict.word2()
+            let w=dict.last()
             w.xt = _for; w.stage=0; w.pf1=[] }),
         new Immd("aft",   "br", c=>{
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=3; w.pf2=[]   // for...aft
             tmp.pf.length=0 }),
         new Immd("next",  "br", c=>{
-            let w=dict.word2(), tmp=dict.tail()
+            let w=dict.last(), tmp=dict.tail()
             if (w.stage==0) w.pf.push(...tmp.pf)        // for...next
             else            w.pf2.push(...tmp.pf)       // then...next
             dict.pop() }),
@@ -389,7 +389,7 @@ window.ForthVM = function(output=console.log) {
     /// @defgroup add dictionary access methods
     /// @{
     dict.tail = function(i=1) { return this[this.length-i]    }
-    dict.word2= function()    { return dict.tail(2).pf.tail() }
+    dict.last = function()    { return dict.tail(2).pf.tail() }
     /// @}
     /// Forth initializer method
     ///
