@@ -1,0 +1,19 @@
+8190 CONSTANT SIZE                  \ define SIZE constants
+SIZE 1+ ARRAY-VARIABLE FLAGS        \ define array of size 8191
+: DO-PRIME
+  FLAGS SIZE 1+ 1 FILL              \ init all FLAGS to 1
+  0                                 \ 0 is init prime value
+  SIZE 0                            \ loop through 8191 FLAGS
+  DO
+    FLAGS I + C@                    \ fetch FLAGS[I]
+    IF I DUP + 3 + DUP I +          \ calculate prime=2*I+3, K=3*I+3
+       BEGIN DUP SIZE <=            \ loop while(K <= SIZE)
+       WHILE
+         0 OVER FLAGS + C!          \ store FLAGS[K]=0
+         OVER +                     \ increment K by prime, increment prime count
+       REPEAT
+       DROP DROP 1+                 \ drop prime, K; increment prime count
+    THEN
+  LOOP
+  . ." PRIMES"
+;

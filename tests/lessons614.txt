@@ -1,0 +1,681 @@
+( There are 20 lessons to learn using this Forth system )
+( Try typing these lessons into the input box and run them. )
+( You can copy a lesson and paste it into the input box. )
+( You can copy the entire file and run all lessons. )
+( Try these commands: )
+( words          show all commands in the dictionary )
+( date           show current date and time )
+( see <name>     disassemble a command )
+( reboot         remove all added commands )
+( forget <name>  remove all commans after <name> )
+
+( eforth system tests )
+
+: test1 1 2 3 4 5 ;
+: test2 if 1 else 2 then . ;
+: test3 10 for r@ . next ;
+: test4 10 for aft r@ . then next ;
+: test5 10 begin dup . dup while 1 - repeat drop ;
+: test6 1000000 for next ; ( 80 ms )
+: test7 100 for test6 next ;
+( date test7 date )
+
+( lesson 1.      the universal greeting )
+
+: hello cr ." hello, world!" ;
+hello
+
+( lesson 2.      the big f )
+
+: bar   cr ." *****" ;
+: post  cr ." *____" ;
+: f     bar post bar post post post ;
+f
+
+( lesson 3.      fig, forth interest group )
+( HTML hates spaces. I have to use underscores in their places. )
+( pretend you do not see the underscores. )
+
+: center cr ." __*__" ;
+: sides  cr ." *___*" ;
+: triad1 cr ." *_*_*" ;
+: triad2 cr ." **__*" ;
+: triad3 cr ." *__**" ;
+: triad4 cr ." _***_" ;
+: quart  cr ." **_**" ;
+: right  cr ." *_***" ;
+: bigt  bar center center center center center center ;
+: bigi  center center center center center center center ;
+: bign  sides triad2 triad2 triad1 triad3 triad2 sides ;
+: bigg  triad4 sides post right triad1 sides triad4 ;
+: fig  f bigi bigg ;
+( fig )
+
+( lesson 4.      repeated patterns )
+
+variable width                  ( number of asterisks to print )
+: spaces for space next ;
+: asterisks ( -- , print n asterisks on the screen, n=width )
+        width @                 ( limit=width, initial index=0 )
+        for ." *"               ( print one asterisk at a time )
+        next                    ( repeat n times )
+        ;
+: rectangle ( height width -- , print a rectangle of asterisks )
+        width !                 ( initialize width to be printed )
+        for     cr
+                asterisks       ( print a line of asterisks )
+        next
+        ;
+: parallelogram ( height width -- )
+        width !
+        for     cr r@ spaces    ( shift the lines to the right )
+                asterisks       ( print one line )
+        next
+        ;
+: triangle ( width -- , print a triangle area with asterisks )
+        for     cr
+                r@ width !      ( increase width every line )
+                asterisks       ( print one line )
+        next
+        ;
+( try the following instructions: )
+        3 10 rectangle
+        5 18 parallelogram
+        12 triangle  
+
+
+( lesson 5.      the theory that jack built )
+( this example shows you how to build a hiararchical structure in forth)
+
+: the           ." the " ;
+: that          cr ." that " ;
+: this          cr ." this is " the ;
+: jack          ." jack builds" ;
+: summary       ." summary" ;
+: flaw          ." flaw" ;
+: mummery       ." mummery" ;
+: k             ." constant k" ;
+: haze          ." krudite verbal haze" ;
+: phrase        ." turn of a plausible phrase" ;
+: bluff         ." chaotic confusion and bluff" ;
+: stuff         ." cybernatics and stuff" ;
+: theory        ." theory " jack ;
+: button        ." button to start the machine" ;
+: child         ." space child with brow serene" ;
+: cybernatics   ." cybernatics and stuff" ;
+
+: hiding        cr ." hiding " the flaw ;
+: lay           that ." lay in " the theory ;
+: based         cr ." based on " the mummery ;
+: saved         that ." saved " the summary ;
+: cloak         cr ." cloaking " k ;
+: thick         if that else cr ." and " then
+                ." thickened " the haze ;
+: hung          that ." hung on " the phrase ;
+: cover         if that ." covered "
+                else cr ." to cover "
+                then bluff ;
+: make          cr ." to make with " the cybernatics ;
+: pushed        cr ." who pushed " button ;
+: without       cr ." without confusion, exposing the bluff" ;
+: rest                                  ( pause for user interaction )
+        ." . "                          ( print a period )
+        10 spaces                       ( followed by 10 spaces )
+ (       key                             ( wait the user to press a key )
+        drop cr cr ;
+
+: cloaked cloak saved based hiding lay rest ;
+: THEORY
+        cr this theory rest
+        this flaw lay rest
+        this mummery hiding lay rest
+        this summary based hiding lay rest
+        this k saved based hiding lay rest
+        this haze cloaked
+        this bluff hung 1 thick cloaked
+        this stuff 1 cover hung 0 thick cloaked
+        this button make 0 cover hung 0 thick cloaked
+        this child pushed
+                cr ." that made with " cybernatics without hung
+                cr ." and, shredding " the haze cloak
+                cr ." wrecked " the summary based hiding
+                cr ." and demolished " the theory rest
+        ;
+THEORY
+
+
+( lesson 6.      help )
+( use forth interpreter to carry on a dialog )
+
+: question
+        cr cr ." any more problems you want to solve?"
+        cr ." what kind ( sex, job, money, health ) ?"
+        cr
+        ;
+: help  cr
+        cr ." hello!  my name is creating computer."
+        cr ." hi there!"
+        cr ." are you enjoying yourself here?"
+        cr ." say!"
+        cr ." i can solved all kinds of problems except those dealing"
+        cr ." with greece. "
+        question
+        ;
+: sex   cr cr ." is your problem too much or too little?"
+        cr
+        ;
+: too  ;                                ( noop for syntax smoothness )
+: much  cr cr ." you call that a problem?!!  i should have that problem."
+        cr ." if it really bothers you, take a cold shower."
+        question
+        ;
+: little
+        cr cr ." why are you here!"
+        cr ." you should be in tokyo or new york of amsterdam or"
+        cr ." some place with some action."
+        question
+        ;
+: health
+        cr cr ." my advise to you is:"
+        cr ."      1. take two tablets of aspirin."
+        cr ."      2. drink plenty of fluids."
+        cr ."      3. go to bed (along) ."
+        question
+        ;
+: job   cr cr ." i can sympathize with you."
+        cr ." i have to work very long every day with no pay."
+        cr ." my advise to you, is to open a rental computer store."
+        question
+        ;
+: money
+        cr cr ." sorry!  i am broke too."
+        cr ." why don't you sell encyclopedias of marry"
+        cr ." someone rich or stop eating, so you won't "
+        cr ." need so much money?"
+        question
+        ;
+: h help ;
+help
+
+( lesson 7.  money exchange )
+
+decimal
+
+: euro    ( nnt -- $ )  0.815 *  ;
+: $euro    ( nnt -- $ )  0.815 /  ;
+: nt    ( nnt -- $ )    28.07 *  ;
+: $nt   ( $ -- nnt )    28.07 /  ;
+: rmb   ( nrmb -- $ )   6.50 *  ;
+: $rmb  ( $ -- njmp )   6.50 /  ;
+: hk    ( nhk -- $ )    7.75 *  ;
+: $hk   ( $ -- $ )      7.75 /  ;
+: gold  ( nounce -- $ ) 1900.6 *  ;
+: $gold ( $ -- nounce ) 1900.6 /  ;
+: silver ( nounce -- $ ) 26.42 *  ;
+: $silver ( $ -- nounce ) 26.42 /  ;
+: ounce ( n -- n, a word to improve syntax )  ;
+: dollars ( n -- )      . ;
+
+( with this set of money exchange words, you can do some tests: )
+
+        5 ounce gold .
+        10 ounce silver .
+        100 $nt .
+        20 $rmb .
+
+( you have many different currency bills in your wallet, you )
+( can add then all up in dollars: )
+
+        1000 nt 500 hk + 
+        320 rmb + 
+        dollars ( print out total worth in dollars )
+
+
+( lesson 8. temperature conversion
+
+: f>c ( nfarenheit -- ncelcius )
+        32 - 1.8 / ;
+
+: c>f ( ncelcius -- nfarenheit )
+        1.8 * 32 + ;
+
+( try these commands )
+
+90 f>c .        ( celcius in a hot summer day )
+0 c>f .         ( farenheit in a cold winter night ) 
+
+
+( lesson 9.  weather reporting. )
+
+: weather ( nfarenheit -- )
+        dup     55 <
+        if      ." too cold!" drop
+        else    85 <
+                if      ." about right."
+                else    ." too hot!"
+                then
+        then
+        ;
+
+( you can type the following instructions to your computer: )
+        90 weather ( too hot! )
+        70 weather ( about right. )
+        32 weather ( too cold. )
+
+
+( lesson 10.  print the multiplication table )
+
+: onerow ( nrow -- )
+        cr
+        dup 3 .r 3 spaces
+        1 11
+        for     2dup *
+                4 .r
+                1 +
+        next
+        2drop ;
+: multiply ( -- )
+        cr cr 6 spaces
+        1 11
+        for     dup 4 .r 1 +
+        next drop 
+        1 11
+        for     dup onerow 1 +
+        next drop
+        ;
+multiply 
+
+
+( lesson 11.  calendars )
+
+( print weekly calendars for any month in any year. )
+decimal
+
+variable julian                         ( 0 is 1/1/1950 )
+variable leap                           ( 1 for a leap year, 0 otherwise. )
+365.256363 constant daysYear            ( days in a year )
+
+: year ( year --, compute julian date and leap year )
+        dup
+        1949 - daysYear * int >r        
+        1950 - daysYear * dup julian !  ( 0 for 1/1/1950 )
+        int r> swap -                   ( leap year )
+        365 - leap !
+        ;
+: first ( month -- 1st, 1st of a month from jan. 1 )
+        dup 1 =
+        if drop 0 exit then             ( 0 for jan. 1 )
+        dup 2 =
+        if drop 31 exit then            ( 31 for feb. 1 )
+        dup 3 =
+        if drop 59 leap @ + exit then   ( 59/60 for mar. 1 )
+        4 - 30.624 * 
+        90 + leap @ + ;                 ( apr. 1 to dec. 1 )
+: stars cr 60 for ." *" next cr ;       ( form the boarder )
+: header ( -- )                         ( print title bar )
+        stars 5 spaces 
+        ." sun" 5 spaces ." mon" 5 spaces
+        ." tue" 5 spaces ." wed" 5 spaces
+        ." thu" 5 spaces ." fri" 5 spaces
+        ." sat" stars ;                 ( print weekdays )
+: blanks ( month -- )                   ( skip days not in this month )
+        first int julian @ int +        ( julian date of 1st of month )
+        7 mod 8 * spaces ;              ( skip colums if not sunday   )
+: days ( month -- )                     ( print days in a month )
+        dup first                       ( days of 1st this month )
+        swap 1 + first                  ( days of 1st next month )
+        over - 1 -                      ( loop to print the days )
+        1 swap                          ( first day count -- )
+        for  2dup + 1 -
+                julian @ + 7 mod        ( which day in the week? )
+                1 < if cr then          ( start a new line if sunday )
+                dup  8 .r               ( print day in 8 column field )
+                1 +
+        next
+        2drop ;                         ( discard 1st day in this month )
+: month ( n -- )                        ( print a month calendar )
+        header dup blanks               ( print header )
+        days stars ;                    ( print days   )
+: january       year 1 month ;
+: february      year 2 month ;
+: march         year 3 month ;
+: april         year 4 month ;
+: may           year 5 month ;
+: june          year 6 month ;
+: july          year 7 month ;
+: august        year 8 month ;
+: september     year 9 month ;
+: october       year 10 month ;
+: november      year 11 month ;
+: december      year 12 month ;
+
+2021 january
+
+
+( lesson 12.      sines and cosines )
+
+( javascript has a extensive library of transcendental functions)
+( they are compiled into jeforth 4.02: )
+( pi random sin cos tan asin acos atan2 exp log sqrt pow )
+
+
+( lesson 13.      square root )
+
+( sqrt is a native Math function in javascript )
+
+
+( lesson 14.      radix for number conversions )
+
+decimal
+
+( : decimal       10 base! ; )
+( : hex           16 base! ; )
+: octal         8 base!  ;
+: binary        2 base!  ;
+
+( try converting numbers among different radices: )
+
+        decimal 12345 hex .
+        hex abcd decimal .
+        decimal 100 binary .
+        binary 101010101010 decimal .
+
+
+( lesson 15.      ascii character table )
+
+: character ( n -- )
+        dup emit hex dup 4 .r
+        octal dup 4 .r
+        decimal 4 .r
+        2 spaces
+        ;
+: line ( n -- )
+        cr
+        5 for   dup character
+                16 +
+        next
+        drop ;
+: table ( -- )
+        32
+        15 for  dup line
+                1 +
+        next
+        drop ;
+table
+
+
+( lesson 16.  random numbers
+
+( 'random' calls a native javascript Math.random function )
+( it returns a random floating point number between 0 and 1 )
+
+
+( lesson 17.      guess a number )
+
+( an interactive game is better programmed in javascript with an input button )
+( with jeforth interpreter, the player must actively run the game )
+
+variable num
+variable limit
+: help  cr ." the commands to run this game are: "
+        cr ." nnn setLimit  --- set up the limit of number range "
+        cr ." nnn guess     --- make a gues"
+        ;
+: setLimit ( n -- )
+        int dup limit !
+        random * int num !
+        ;
+: guess ( n -- )
+        int dup num @ <
+        if cr ." too small " drop
+        else num @ >
+             if cr ." too big "
+             else cr ." got it!"
+             then
+        then
+        ;
+100 setLimit
+50 guess
+
+
+( 練習18	文字遊戲, a chinese word game )
+
+( 這是一個用骰子玩的文字遊戲。用三顆骰子，每顆有六面各別寫上兩個字。)
+( 一顆寫的是人物名稱，一顆寫的是地點，一顆寫的是動作。正常的六句詩是: )
+( 公子章台走馬 	少婦閨閣刺秀  寒士茅舍讀書 )
+( 屠夫市井揮刀  妓女花街賣俏  乞丐墳墓睡覺 )
+( 隨便擲這三顆骰子可以有216種不同的組合，有許多組合是蠻有趣的。)
+( this is a chinese word game )
+( you use 3 dices: one has 6 person, one has 6 places, and one has 6 actions )
+( roll the dices and you get a line. many of them are funny )
+( this shows that jeforth is a chinese programming language )
+
+: 人物 ( n -- , 選一個人 select a person )
+	dup 1 = if ." 公子"
+	else dup 2 = if ." 少婦"
+	else dup 3 = if ." 寒士"
+	else dup 4 = if ." 屠夫" 
+	else dup 5 = if ." 妓女"
+	else ." 乞丐"
+	then then then then then
+	drop
+	;
+: 地點 ( n -- , 選一個地點 select a place )
+	dup 1 = if ." 章台" drop exit then
+	dup 2 = if ." 閨閣" drop exit then
+	dup 3 = if ." 茅舍" drop exit then
+	dup 4 = if ." 市井" drop exit then
+	dup 5 = if ." 花街" drop exit then
+	." 墳墓"
+	;
+: 動作 ( n -- , 選一個動作 select an action )
+	dup 1 = if ." 走馬" drop exit then
+	dup 2 = if ." 刺秀" drop exit then
+	dup 3 = if ." 讀書" drop exit then
+	dup 4 = if ." 揮刀" drop exit then
+	5 = if ." 賣俏" else ." 睡覺" then
+	;
+: 骰子 ( -- , 印一句詩 print a line of poem )
+        cr
+	random 6 * int 人物 
+	random 6 * int 地點
+	random 6 * int 動作
+	;
+: dice 骰子 ;
+dice dice dice dice
+
+
+( lesson 19. music )
+
+decimal 
+
+variable ppqn 250 ppqn ! ( 250 ms )
+: note ( freq delay -- ) 
+  >r >r 0.1 0 0 0 0 0 r> r> poly ;  
+: ppqn@ ppqn @ ; 
+: 1/4 ppqn@ note ; 
+: 1/2 ppqn@ 2 * note ;
+: 1/8 ppqn@ 2 / note ; 
+: 3/4 ppqn@ 3 * note ; 
+: 3/8 ppqn@ 1.5 * note ;
+
+( notes ) 
+1047 constant c6 
+987.8 constant b5
+932.3 constant a5#
+932.3 constant b5b
+880 constant a5
+830.6 constant g5#
+830.6 constant a5b
+784 constant g5
+740 constant f5#
+740 constant g5b 
+698.5 constant f5
+659.3 constant e5
+622.3 constant d5#
+622.3 constant e5b
+587.3 constant d5
+554.4 constant c5#
+554.4 constant d5b
+523.3 constant c5 
+493.9 constant b4
+466.2 constant b4b
+466.2 constant a4#
+440 constant a4
+415.3 constant g4#
+415.3 constant a4b
+392 constant g4
+370 constant f4#
+370 constant g4b 
+349.2 constant f4
+329.6 constant e4
+311.1 constant d4#
+311.1 constant e4b
+293.7 constant d4
+277.2 constant c4#
+277.2 constant d4b
+261.6 constant c4 
+246.9 constant b3
+233.1 constant a3#
+233.1 constant b3b
+220 constant a3
+207.7 constant g3#
+207.7 constant a3b
+196 constant g3
+185 constant f3#
+185 constant g3b 
+174.6 constant f3
+164.8 constant e3
+155.6 constant d3#
+155.6 constant e3b
+146.8 constant d3
+138.6 constant c3#
+138.6 constant d3b
+130.8 constant c3 
+123.5 constant b2
+116.5 constant a2#
+116.5 constant b2b
+110 constant a2
+103.8 constant g2#
+103.8 constant a2b
+98 constant g2
+92.50 constant f2#
+92.50 constant g2b 
+87.31 constant f2
+82.41 constant e2
+77.78 constant d2#
+77.78 constant e2b
+73.42 constant d2
+69.30 constant c2#
+69.30 constant d2b
+65.41 constant c2
+
+: blow 
+g2 1/4 g2 1/4 a2 1/8 g2 3/8 
+e2 1/4 c2 1/4 e2 1/4 g2 3/8 
+a2 1/8 g2 1/4 e2 1/2 
+c2 1/8 e2 1/8 g2 3/4 a2 3/4 
+f2 3/8 e2 1/8 f2 1/4 d2 1/2 d2 1/2 
+d2 1/4 d2 1/4 d2 1/4 f2 1/4 
+e2 1/4 d2 1/4 f2 1/4 e2 1/4 
+d2 1/4 a2 3/4 g2 1/4 g2 1/4 
+g2 1/4 g2 1/2 f2 1/4 e2 3/8 
+d2 1/8 e2 1/4 c2 3/4 ; 
+
+: ride 
+  c2 1/4 c2 1/8 d2# 3/8 c2 3/8 
+  d2# 1/4 d2# 1/8 g2 3/8 d2# 3/8 
+  g2 1/4 g2 1/8 a2# 3/8 a2# 3/8 
+  d2# 1/4 d2# 1/8 g2 3/4 ;
+
+: laser ( limit repeats -- )
+  for dup 120 - 20 / 120 swap 
+    for dup ppqn @ note 20 +
+    next drop 
+  next drop ; 
+( 400 2 laser )
+
+: warble ( limit repeats -- )
+  for dup 120 - 20 / over swap 
+    for dup ppqn @ note 20 - 
+    next drop 
+  next drop ; 
+( 800 2 warble )
+
+decimal variable vwail 160 vwail ! 
+: wail ( div repeats -- )
+  for vwail @ dup ( div wail wail -- )
+    for over note 
+      2dup swap / 100000 / note
+    1 + next drop 
+  next drop ; 
+( 10 2 wail )
+
+: bird 
+  for 100 over 10 / 
+    for 2dup - 1 max 10000 / 
+      over swap note
+    10 + next drop 
+  next drop ; 
+( 600 2 bird )
+
+: updown 
+  0 over 10 / 
+  for dup 0.1 note 
+  10 + next drop 
+  dup 10 / 
+  for aft dup 0.01 note
+  10 - then next drop ; 
+( 500 updown )
+
+: tones 
+  for 100 over 
+    for dup 0.001 note
+    1 + next drop 
+  next drop ; 
+( 1000 2 tones )
+
+
+( lesson 20. haiku eforth )
+
+( see real haikus on https://forthsalon.appspot.com/ )
+( 'to' changes values of constants. compile only )
+0 constant x
+0 constant y
+: xytest 12 to x 34 to y ;
+
+( libya is a prototype for drawing )
+: proto 0 255 0 ; 
+: haiku 39996 99 for r@ to y 99 for r@ to x
+     >r proto r@ image! r> 4 - 
+     next next drop show ;
+haiku
+
+( other drawing words are vectored by 'is' command to 'proto' )
+: france
+   x 33 > 255 *
+   x 33 > x 66 < and 255 *
+   x 66 < 255 *
+   ;
+' france is proto haiku
+: germany 
+   y 33 > 255 *
+   y 66 > 255 *
+   0 ;
+' germany is proto haiku
+
+( sin is fun )
+: switzerland
+   255
+   x 32 / sin 0.95 > y 32 / sin 0.95 > or
+   x 32 / sin 0.5 > and y 32 / sin 0.5 > and
+   255 *
+   dup ;
+' switzerland is proto haiku
+
+: 4spire x 100 / 23 * sin y 100 / 1 swap - max x 100 / 
+   over / sin y 100 / 1 swap -
+   rot / sin 2dup / sin 255 * rot 255 * rot 255 * rot ;
+' 4spire is proto haiku
+
+
