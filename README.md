@@ -18,10 +18,9 @@ Good news! **eforth.js** is the only file you need! Well, if you insist, maybe a
 Though I've never had the chance to meet him in person, the years of dedication and contribution he has to the Forth community is something I'll carry with me. As I told him once in the e-mail: "The name **eForth** will forever be associated with you, Dr. Ting".
 
 ### Documentation
-* view [ceforth_403.doc in HTML format](https://chochain.github.io/eForth.js/docs/ceforth_403.html) or download [ceforth_403.pdf](https://chochain.github.io/eForth.js/docs/ceforth_403.pdf) of Dr. Ting's final work.
+* view [ceforth_403.pdf](https://chochain.github.io/eForth.js/docs/ceforth_403.pdf) of Dr. Ting's final work.
 * download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021
 
-### Original
+### Original jeForth live demo
 * [try jeforth_301 in your browser](https://chochain.github.io/eForth.js/orig/index_301.html) by Sam Chen, 2011
 * [try jeforth616 in your browser](https://chochain.github.io/eForth.js/orig/jeforth616.html) by Dr. Ting, 2021
-* [download Word document ceforth_403.doc](https://chochain.github.io/docs/ceforth_403.doc) by Dr. Ting, 2021
