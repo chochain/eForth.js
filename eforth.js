@@ -118,7 +118,11 @@ window.ForthVM = function(output=console.log) {
     }
     const find   = (s)=>{                           ///< search through dictionary
         for (let i=dict.length-1; i>=0; --i) {      /// * search reversely
-            if (s==dict[i].name) return dict[i]     /// * return word index
+            if (s.localeCompare(                    /// * case insensitive
+                dict[i].name, undefined,
+                { sensitivity: 'accent'})==0) {
+                return dict[i]                      /// * return indexed word
+            }
         }
         return null                                 /// * not found
     }
