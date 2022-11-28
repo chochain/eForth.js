@@ -22,6 +22,6 @@ Though I've never had the chance to meet him in person, the years of dedication 
 * download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021
 
 ### Original
-* [try jeforth_301 in your browser](https://chochain.github.io/eForth.js/orig/index_301.html) by Shawn Chen, 2010
+* [try jeforth_301 in your browser](https://chochain.github.io/eForth.js/orig/index_301.html) by Sam Chen, 2011
 * [try jeforth616 in your browser](https://chochain.github.io/eForth.js/orig/jeforth616.html) by Dr. Ting, 2021
 * [download Word document ceforth_403.doc](https://chochain.github.io/docs/ceforth_403.doc) by Dr. Ting, 2021
