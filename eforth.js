@@ -57,15 +57,15 @@ window.ForthVM = function(output=console.log) {
         }
         exec() {                                          /// run colon word
             if (this.xt == null) {                        /// * user define word
-                _rs.push(_wp)
-                _wp = this.token                          /// * keep word ref
+                _rs.push(_wp)                             /// * setup call frame
+                _wp = this.token
                 try {
                     this.pf.forEach(                      /// * inner interpreter
                         w=>(typeof(w)=="number") ? push(w) : w.exec()
                     )
                 }
                 catch(e) {}                               /// * used by does, exit
-                _wp = _rs.pop()                           /// * restore word ref
+                _wp = _rs.pop()                           /// * restore call frame
             }
             else this.xt(this);                           /// * build-it words
         }
@@ -236,10 +236,10 @@ window.ForthVM = function(output=console.log) {
         new Immd("[",     "li", c=>_compi=false ),
         new Prim("]",     "li", c=>_compi=true ),
         new Prim("'",     "li", c=>{ let w=tok2w(); push(w.token) }),
-        new Immd("$\"",   "li", c=>comma(new Code("dostr", nxtok("\"")))),
-        new Immd(".\"",   "li", c=>comma(new Code("dotstr", nxtok("\"")))),
-        new Immd("(",     "li", c=>nxtok(")")),
-        new Immd(".(",    "li", c=>log(nxtok(")"))),
+        new Immd("s\"",   "li", c=>comma(new Code("dostr", nxtok('"')))),
+        new Immd(".\"",   "li", c=>comma(new Code("dotstr", nxtok('"')))),
+        new Immd("(",     "li", c=>nxtok(')')),
+        new Immd(".(",    "li", c=>log(nxtok(')'))),
         new Immd("\\",    "li", c=>_ntib=_tib.length),
         /// @}
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
@@ -369,6 +369,17 @@ window.ForthVM = function(output=console.log) {
 				if (sz > 52) { log(CR); sz = 0 }
 			})
 		}),
+        new Prim("dump",     "os", c=>{
+            log("dict["+CR)
+            dict.forEach((w,i)=>{
+                log('{name:"'+w.name+'", xt:'+w.xt.toString(_base))
+                if (w.pf)   log(', pf:['+w.pf.toString(_base)+']')
+                if (w.qf)   log(', qf:['+w.qf.toString(_base)+']')
+                if (w.immd) log(' ,immd:'+w.immd)
+                log("}},"+CR)
+            })
+            log("]"+CR)
+        }),
         new Prim("see",      "os", c=>{
             let w = tok2w(); console.log(w); log(w) }),   // pass object directly to browser console
         new Prim("forget",   "os", c=>{
