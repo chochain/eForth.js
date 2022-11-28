@@ -115,11 +115,6 @@ window.ForthVM = function(output=console.log) {
         w.xt    = xt                                /// * set internal func
         w.token = t.token                           /// * copy token
     }
-    const nword  = ()=>{                            ///< create a new word
-        let s = nxtok();                            ///< fetch an input token
-        if (s==null) { _compi=false; throw "more input" }
-        dict.push(new Code(s, true))
-    }
     const find   = (s)=>{                           ///< search through dictionary
         for (let i=dict.length-1; i>=0; --i) {      /// * search reversely
             if (s==dict[i].name) return dict[i]     /// * return word index
@@ -360,11 +355,11 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Word Defining ops
         /// @{
         new Immd("exec",     "mc", c=>dict[pop()].exec()),
-        new Prim(":",        "mc", c=>{ nword(); _compi=true }),     // new colon word
+        new Prim(":",        "mc", c=>{ dict.add(); _compi=true }),  // new colon word
         new Immd(";",        "mc", c=>_compi=false),                 // semicolon
-        new Immd("variable", "mc", c=>(nword(), nvar(_dovar, 0))),
-        new Immd("constant", "mc", c=>(nword(), nvar(_docon, pop()))),
-        new Prim("create",   "mc", c=>nword()),                      // create new word
+        new Immd("variable", "mc", c=>(dict.add(), nvar(_dovar, 0))),
+        new Immd("constant", "mc", c=>(dict.add(), nvar(_docon, pop()))),
+        new Prim("create",   "mc", c=>dict.add()),                   // create new word
         new Prim(",",        "mc", c=>{                              // push TOS into qf
             let pf = dict.tail().pf
             if (pf.length) pf[0].qf.push(pop())                      // append more values
@@ -379,7 +374,7 @@ window.ForthVM = function(output=console.log) {
         }),
         new Prim("to",       "mc", c=>tok2w().val[0]=pop()),         // update constant
         new Prim("is",       "mc", c=>{                              // n -- alias a word
-            nword(); dict.tail().pf = dict[pop()].pf
+            dict.add(); dict.tail().pf = dict[pop()].pf
         }),
         /// @}
         /// @defgroup System ops
@@ -406,6 +401,11 @@ window.ForthVM = function(output=console.log) {
     ///
     /// @defgroup add dictionary access methods
     /// @{
+    dict.add  = function()    {                     ///< create a new word
+        let s = nxtok();                            ///< fetch an input token
+        if (s==null) { _compi=false; throw "more input" }
+        dict.push(new Code(s, true))
+    }
     dict.tail = function(i=1) { return this[this.length-i]    }
     dict.last = function()    { return dict.tail(2).pf.tail() }
     /// @}
