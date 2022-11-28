@@ -81,6 +81,14 @@ window.ForthVM = function(output=console.log) {
         let s = (i==-1) ? null : _tib.substring(_ntib, i); _ntib=i+1
         return s
     }
+    const dot_r = (n, v)=>{
+        let s = v.toString(_base)
+        for(let i=0; i+s.length < n; i++) log(SPC)
+        log(s)
+    }
+    const sleep  = (ms)=>{
+        return new Promise(rst=>setTimeout(rst,ms))
+    }
     /// @}
     /// @defgroup data conversion functions
     /// @{
@@ -88,7 +96,7 @@ window.ForthVM = function(output=console.log) {
     const BOOL   = t=>(t ? -1 : 0)                        ///< Forth true = -1 
     const ZERO   = v=>BOOL(Math.abs(v) < EPS)             ///< zero floating point
     /// @}
-    /// @defgroup Stack functions
+    /// @defgroup Stack op short-hand functions (macros)
     /// @{
     const top    = (n=1)=>_ss[_ss.length - INT(n)]
     const push   = v    =>_ss.push(v)
@@ -97,13 +105,11 @@ window.ForthVM = function(output=console.log) {
     const rtop   = (n=1)=>_rs[_rs.length - INT(n)]
     const dec_i  = ()   =>_rs[_rs.length - 1] -= 1
     /// @}
-    /// @defgroup Utilities functions
+    /// @defgroup Compiler functions
     /// @{
-    const comma  = (w)=>{                           ///< add word to pf[]
-        dict.tail().pf.push(w)                      /// * append Code obj
-    }
+    const compile= (w)=>dict.tail().pf.push(w)      ///< add word to pf[]
     const nvar   = (xt, v)=>{
-        comma(new Code("dovar", v))
+        compile(new Code("dovar", v))
         let t = dict.tail(), w = t.pf[0]            ///< last work and its pf
         t.val   = w.qf                              /// * create a val func
         w.xt    = xt                                /// * set internal func
@@ -124,14 +130,6 @@ window.ForthVM = function(output=console.log) {
         let s=nxtok(), w=find(s)
         if (w==null) throw NA(s);
         return w
-    }
-    const _dot_r = (n, v)=>{
-        let s = v.toString(_base)
-        for(let i=0; i+s.length < n; i++) log(SPC)
-        log(s)
-    }
-    const sleep  = (ms)=>{
-        return new Promise(rst=>setTimeout(rst,ms))
     }
     /// @}
     /// @defgroup built-in (branching, looping) functions
@@ -220,8 +218,8 @@ window.ForthVM = function(output=console.log) {
         new Prim("decimal","io",c=>_base=10),
         new Prim("cr",    "io", c=>log(CR)),
         new Prim(".",     "io", c=>log(pop().toString(_base)+SPC)),
-        new Prim(".r",    "io", c=>{ let n=pop(); _dot_r(n, pop()) }),
-        new Prim("u.r",   "io", c=>{ let n=pop(); _dot_r(n, pop()&0x7fffffff) }),
+        new Prim(".r",    "io", c=>{ let n=pop(); dot_r(n, pop()) }),
+        new Prim("u.r",   "io", c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
         new Prim("key",   "io", c=>push(nxtok()[0])),
         new Prim("emit",  "io", c=>log(String.fromCharCode(pop()))),
         new Prim("space", "io", c=>log(SPC)),
@@ -235,8 +233,8 @@ window.ForthVM = function(output=console.log) {
         new Immd("[",     "li", c=>_compi=false ),
         new Prim("]",     "li", c=>_compi=true ),
         new Prim("'",     "li", c=>{ let w=tok2w(); push(w.token) }),
-        new Immd("s\"",   "li", c=>comma(new Code("dostr", nxtok('"')))),
-        new Immd(".\"",   "li", c=>comma(new Code("dotstr", nxtok('"')))),
+        new Immd("s\"",   "li", c=>compile(new Code("dostr", nxtok('"')))),
+        new Immd(".\"",   "li", c=>compile(new Code("dotstr", nxtok('"')))),
         new Immd("(",     "li", c=>nxtok(')')),
         new Immd(".(",    "li", c=>log(nxtok(')'))),
         new Immd("\\",    "li", c=>_ntib=_tib.length),
@@ -246,7 +244,7 @@ window.ForthVM = function(output=console.log) {
         new Immd("if",    "br", c=>{
             let w = new Code("_bran")
             w.xt = _bran; w.pf1=[]; w.stage=0        // stage for branching
-            comma(w)
+            compile(w)
             dict.push(new Code("tmp")) }),           // as dict.tail()
         new Immd("else",  "br", c=>{
             let w=dict.word2(), tmp=dict.tail()
@@ -268,7 +266,7 @@ window.ForthVM = function(output=console.log) {
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{pf1}.repeat
         /// @{
         new Immd("begin", "br", c=>{
-            comma(new Code("_loop"))
+            compile(new Code("_loop"))
             dict.push(new Code("tmp"))
             let w = dict.word2()
             w.xt = _loop; w.pf1=[]; w.stage=0 }),
@@ -293,8 +291,8 @@ window.ForthVM = function(output=console.log) {
         /// @brief for.{pf}.next, for.{pf}.aft.{pf1}..then.{pf2}.next
         /// @{
         new Immd("for",   "br", c=>{                    // for...next
-            comma(new Code(">r"));
-            comma(new Code("_for"))
+            compile(new Code(">r"));
+            compile(new Code("_for"))
             dict.push(new Code("tmp"))
             let w=dict.word2()
             w.xt = _for; w.stage=0; w.pf1=[] }),
@@ -411,7 +409,7 @@ window.ForthVM = function(output=console.log) {
                     try       { w.exec() }               ///> execute word
                     catch (e) { log(e) }
                 }
-                else comma(w)                            ///> or compile word 
+                else compile(w)                          ///> or compile word 
             }
             else {                                       /// * word not found
                 let n=_base!=10                          ///> not word, try as number
@@ -422,7 +420,7 @@ window.ForthVM = function(output=console.log) {
                     _compi=false                         ///>> restore interpret mode
                 }
                 else if (_compi) {                       ///> in compile mode?
-                    comma(new Code("dolit", n))          ///>> compile the number
+                    compile(new Code("dolit", n))        ///>> compile the number
                 }
                 else push(n)                             ///>> or, push number onto stack top
             }
