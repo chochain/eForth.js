@@ -19,7 +19,11 @@ window.ForthVM = function(output=console.log) {
     let _tib   ="", _ntib = 0             ///< input buffer
     let _fence = 0                        ///< dict length control
     /// @}
-    ///====================================================================================
+    ///==============================================================
+    /// Inner interpreter (use catch for does and exit)
+    ///
+    const _run = (p)=>{ try { p.forEach(w=>w.exec()) } catch {} }
+    ///
     /// Primitive and Immediate word classes
     ///
     class Prim {
@@ -55,19 +59,14 @@ window.ForthVM = function(output=console.log) {
             
             this.pf.tail = function() { return this[this.length-1] }
         }
-        exec() {                                          /// run colon word
-            if (this.xt == null) {                        /// * user define word
-                _rs.push(_wp)                             /// * setup call frame
+        exec() {                         /// run colon word
+            if (this.xt == null) {       /// * user define word
+                _rs.push(_wp)            /// * setup call frame
                 _wp = this.token
-                try {
-                    this.pf.forEach(                      /// * inner interpreter
-                        w=>(typeof(w)=="number") ? push(w) : w.exec()
-                    )
-                }
-                catch(e) {}                               /// * used by does, exit
-                _wp = _rs.pop()                           /// * restore call frame
+                _run(this.pf)            /// * inner interpreter
+                _wp = _rs.pop()          /// * restore call frame
             }
-            else this.xt(this);                           /// * build-it words
+            else this.xt(this);          /// * build-it words
         }
     }
     ///====================================================================================
@@ -139,24 +138,24 @@ window.ForthVM = function(output=console.log) {
     /// @{
     const _docon = c=>push(c.qf[0])
     const _dovar = c=>push(c.token)
-    const _bran  = c=>{ (ZERO(pop()) ? c.pf1 : c.pf).forEach(w=>w.exec()) }
+    const _bran  = c=>_run(ZERO(pop()) ? c.pf1 : c.pf)
     const _for   = c=>{
-        do { c.pf.forEach(w=>w.exec()) }           // for
-        while (c.stage==0 && dec_i() >= 0)         // for...next only
-        while (c.stage>0) {                        // aft
-            c.pf2.forEach(w=>w.exec())             // then...next
+        do { _run(c.pf) }
+        while (c.stage==0 && dec_i() >= 0)         /// for.{pf}.next only
+        while (c.stage>0) {                        /// aft
+            _run(c.pf2)                            /// aft.{pf2}.next
             if (dec_i() < 0) break
-            c.pf1.forEach(w=>w.exec())             // aft...
+            _run(c.pf1)                            /// then.{pf1}.next
         }
-        _rs.pop()
+        _rs.pop()                                  /// pop off I
     }
     const _loop  = c=>{
         while (true) {
-            c.pf.forEach(w=>w.exec())
-            if (c.stage==0 && INT(pop())!=0) break // until
-            if (c.stage==1) continue               // again
-            if (c.stage==2 && ZERO(pop())) break   // while
-            c.pf1.forEach(w=>w.exec())             // then
+            _run(c.pf)                             /// begin.{pf}.
+            if (c.stage==0 && INT(pop())!=0) break /// until
+            if (c.stage==1) continue               /// again
+            if (c.stage==2 && ZERO(pop())) break   /// while
+            _run(c.pf1)                            /// .{pf1}.until
         }
     }
     /// @}
