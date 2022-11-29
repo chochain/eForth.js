@@ -81,8 +81,11 @@
         if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')
         to_txt('<pre class="cmd"><em>'+cmd+'</em></pre>', false)
         try {
-            vm.exec(tib.value)
-            show_data()
+            if (tib.value=="clear") clear_txt()
+            else {
+                vm.exec(tib.value)
+                show_data()
+            }
         }
         catch(e) { console.log(e.toString()+'\n') }
         finally  {
@@ -96,9 +99,12 @@
             document.getElementById(x).innerHTML = v.reverse().join('<br/>')
         })
     }
-    function clear_txt() { txt.innerHTML='' }
     function to_txt(t, esc=true) {
         txt.innerHTML += (typeof(t)==='object') ? json(t) : (esc ? escape(t) : t)
+    }
+    function clear_txt() {
+        txt.innerHTML=''
+        to_txt("<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>")
     }
     function json(t) {
         // object also been sent to brower console for detail
@@ -109,8 +115,8 @@
         return s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;')
     }
     let vm = new ForthVM(to_txt)       // create Forth VM object
+    clear_txt()                        // set init prompt
     show_data()                        // select showing dictionary first
-    vm.init()                          // initialize the VM
     </script>
   </body>
 </html>
