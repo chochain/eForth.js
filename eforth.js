@@ -16,6 +16,7 @@ window.ForthVM = function(output=console.log) {
     /// VM state control
     ///
     let _compi = false                    ///< compile flag
+    let _ucase = false                    ///< case sensitive find
     let _tib   ="", _ntib = 0             ///< input buffer
     let _fence = 0                        ///< dict length control
     /// @}
@@ -74,7 +75,7 @@ window.ForthVM = function(output=console.log) {
     /// @defgroup IO functions
     /// @{
     const log    = (s)=>output(s)
-    const NA     = (s)=>s+" not found"
+    const NA     = (s)=>s+" not found! "
     const nxtok  = (d=SPC)=>{             /// assumes tib ends with a blank
         while (d==SPC &&
                (_tib[_ntib]==SPC || _tib[_ntib]=="\t")) _ntib++ // skip leading blanks and tabs
@@ -120,7 +121,8 @@ window.ForthVM = function(output=console.log) {
         for (let i=dict.length-1; i>=0; --i) {      /// * search reversely
             if (s.localeCompare(                    /// * case insensitive
                 dict[i].name, undefined,
-                { sensitivity: 'accent'})==0) {
+                { sensitivity: _ucase ? 'case' : 'base' }
+            )==0) {
                 return dict[i]                      /// * return indexed word
             }
         }
@@ -235,6 +237,7 @@ window.ForthVM = function(output=console.log) {
         /// @}
         /// @defgroup IO ops
         /// @{
+        new Prim("ucase", "io", c=>_ucase=BOOL(ZERO(pop()))),
         new Prim("base@", "io", c=>push(INT(_base))),
         new Prim("base!", "io", c=>_base=INT(pop())),
         new Prim("hex",   "io", c=>_base=16),
