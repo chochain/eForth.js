@@ -161,7 +161,7 @@ window.ForthVM = function(output=console.log) {
     /// @}
     /// @defgroup Debug functions
     /// @{
-    const _words = c=>{
+    const _words = ()=>{
 		let sz = 0
         dict.forEach((w,i)=>{
 			log(w.name+SPC)
@@ -169,16 +169,15 @@ window.ForthVM = function(output=console.log) {
 			if (sz > 52) { log(CR); sz = 0 }
 		})
 	}
-    const _dump = c=>{
-        log("dict["+CR)
-        dict.forEach((w,i)=>{
-            log('{name:"'+w.name+'", xt:'+w.xt.toString(_base))
-            if (w.pf)   log(', pf:['+w.pf.toString(_base)+']')
-            if (w.qf)   log(', qf:['+w.qf.toString(_base)+']')
-            if (w.immd) log(' ,immd:'+w.immd)
-            log("}},"+CR)
-        })
-        log("]"+CR)
+    const _dump = (n0, n1)=>{
+        for (let i = n0; i <= n1; i++) {
+            let w = dict[i]
+            log('dict[' + i +']=("' + w.name + '", ')
+            if (w.xt) log(w.xt.toString(_base))
+            else      log('[' + w.pf.map(w1=>w1.name).toString(_base) + ']')
+            if (w.qf) log(', qf[' + w.qf.toString(_base) + ']')
+            log((w.immd ? ' immd)' : ')') + CR)
+        }
     }
     /// @}
     ///====================================================================================
@@ -395,7 +394,7 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("here",     "os", c=>push(dict.tail().token)),
         new Prim("words",    "os", c=>_words()),
-        new Prim("dump",     "os", c=>_dump()),
+        new Prim("dump",     "os", c=>{ let n=pop(); _dump(pop(), n) }),
         new Prim("see",      "os", c=>{       
             let w = tok2w(); console.log(w); log(w)
         }),
@@ -417,11 +416,6 @@ window.ForthVM = function(output=console.log) {
     dict.tail = function(i=1) { return this[this.length-i]    }
     dict.last = function()    { return dict.tail(2).pf.tail() }
     /// @}
-    /// Forth initializer method
-    ///
-    this.init = ()=>{
-        log("<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>")
-    }
     ///
     /// outer interpreter method - main loop
     /// @param row one line of input
