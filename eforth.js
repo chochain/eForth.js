@@ -385,7 +385,7 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup System ops
         /// @{
         new Prim("exit",     "os", c=>{ throw "exit" }),             // exit inner interpreter
-        new Prim("clock",    "os", c=>push(Date.now())),
+        new Prim("clock",    "os", c=>{ let n = Date.now(); push(n) }),
         new Prim("date",     "os", c=>log((new Date()).toDateString()+" ")),
         new Prim("time",     "os", c=>log((new Date()).toLocaleTimeString()+" ")),
         new Prim("delay",    "os", c=>sleep(pop()).then(()=>{})),
@@ -402,7 +402,11 @@ window.ForthVM = function(output=console.log) {
             _fence=Math.max(tok2w().token, find("boot").token+1)
             dict.splice(_fence)
         }),
-        new Prim("boot",     "os", c=>dict.splice(_fence=find("boot").token+1))
+        new Prim("boot",     "os", c=>{
+            dict.splice(_fence=find("boot").token+1)
+            _wp   = _rs.length = _ss.length = 0
+            _base = 10
+        })
         /// @}
     ]
     ///
@@ -453,7 +457,7 @@ window.ForthVM = function(output=console.log) {
         case "rs": return _rs.map(v=>v.toString(_base))
         }
     }
-    this.exec   = (cmd)=>{
+    this.exec = (cmd)=>{
         cmd.split("\n").forEach(r=>{ this.outer(r+SPC); log("ok\n") })
     }
 }
