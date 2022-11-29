@@ -232,12 +232,10 @@ window.ForthVM = function(output=console.log) {
         new Prim("<",     "bi", c=>{ let n=pop(); push(BOOL((pop() - n) < -EPS)) }),
         new Prim(">",     "bi", c=>{ let n=pop(); push(BOOL((pop() - n) >  EPS)) }),
         new Prim("<>",    "bi", c=>{ let n=pop(); push(BOOL(ZERO(pop() - n)==0)) }),
-        new Prim("<=",    "bi", c=>{ let n=pop(); push(BOOL(INT(pop()) <= INT(n))) }),
-        new Prim(">=",    "bi", c=>{ let n=pop(); push(BOOL(INT(pop()) >= INT(n))) }),
         /// @}
         /// @defgroup IO ops
         /// @{
-        new Prim("ucase", "io", c=>_ucase=BOOL(ZERO(pop()))),
+        new Prim("ucase!","io", c=>_ucase=BOOL(ZERO(pop()))),
         new Prim("base@", "io", c=>push(INT(_base))),
         new Prim("base!", "io", c=>_base=INT(pop())),
         new Prim("hex",   "io", c=>_base=16),
@@ -388,7 +386,9 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup System ops
         /// @{
         new Prim("exit",     "os", c=>{ throw "exit" }),             // exit inner interpreter
-        new Prim("time",     "os", c=>push(Date.now())),
+        new Prim("clock",    "os", c=>push(Date.now())),
+        new Prim("date",     "os", c=>log((new Date()).toDateString()+" ")),
+        new Prim("time",     "os", c=>log((new Date()).toLocaleTimeString()+" ")),
         new Prim("delay",    "os", c=>sleep(pop()).then(()=>{})),
         /// @}
         /// @defgroup Debugging ops
