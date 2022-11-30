@@ -65,7 +65,7 @@ window.ForthVM = function(output=console.log) {
             if (this.xt == null) {       /// * user define word
                 _rs.push(_wp)            /// * setup call frame
                 _wp = this.token
-                _run(this.pf)            /// * inner interpreter
+                _run(this.pf)
                 _wp = _rs.pop()          /// * restore call frame
             }
             else this.xt(this);          /// * build-it words
@@ -172,12 +172,26 @@ window.ForthVM = function(output=console.log) {
     const _dump = (n0, n1)=>{
         for (let i = n0; i <= n1; i++) {
             let w = dict[i]
-            log('dict[' + i +']=("' + w.name + '", ')
+            log('dict[' + i + ']=("' + w.name + '" ')
             if (w.xt) log(w.xt.toString(_base))
-            else      log('[' + w.pf.map(w1=>w1.name).toString(_base) + ']')
+            else      log(', pf[' + w.pf.map(w1=>w1.name).toString(_base) + ']')
             if (w.qf) log(', qf[' + w.qf.toString(_base) + ']')
-            log((w.immd ? ' immd)' : ')') + CR)
+            log((w.immd ? 'immd)' : ')') + CR)
         }
+    }
+    const _see = (w, n=0)=>{
+        const _show_pf = (pf)=>{
+            if (pf == null || pf.length == 0) return
+            log('['+CR); pf.forEach(w=>_see(w, n+1)); log('] ')
+        }
+        log(CR); for (let i=0; i<2*n; i++) log(SPC)       /// * indent by level
+        log(w.name)
+        if (w.qf != null && w.qf.length > 0) {
+            log(' =[' + w.qf.toString(_base) + ']')
+        }
+        _show_pf(w.pf)
+        _show_pf(w.pf1)
+        _show_pf(w.pf2)
     }
     /// @}
     ///====================================================================================
@@ -349,9 +363,9 @@ window.ForthVM = function(output=console.log) {
         new Prim("@",        "ma", c=>push(dict[pop()].val[0])),                              // w -- n
         new Prim("!",        "ma", c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
         new Prim("+!",       "ma", c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
-        new Prim("allot",    "ma", c=>{                                                       // n -- 
-			nvar(_dovar, 0)                                           // create qf array
-            for (let n=pop(), i=1; i<n; i++) dict.tail().val[i]=0 }), // fill all slot with 0
+        new Prim("allot",    "ma", c=>{                                                       // n --
+            nvar(_dovar, 0)                                                                   // create qf array
+            for (let n=pop(), i=1; i<n; i++) dict.tail().val[i]=0 }),                         // fill all slot with 0
         new Prim("n?",       "ma", c=>{                                                       // w i --
             let i=pop(); let w=pop(); log(dict[w].val[i].toString(_base)+SPC) }),
         new Prim("n@",       "ma", c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
@@ -395,9 +409,7 @@ window.ForthVM = function(output=console.log) {
         new Prim("here",     "os", c=>push(dict.tail().token)),
         new Prim("words",    "os", c=>_words()),
         new Prim("dump",     "os", c=>{ let n=pop(); _dump(pop(), n) }),
-        new Prim("see",      "os", c=>{       
-            let w = tok2w(); console.log(w); log(w)
-        }),
+        new Prim("see",      "os", c=>{ let w=tok2w(); console.log(w); _see(w) }),
         new Prim("forget",   "os", c=>{
             _fence=Math.max(tok2w().token, find("boot").token+1)
             dict.splice(_fence)
