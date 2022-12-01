@@ -22,5 +22,30 @@ Though I've never had the chance to meet him in person, the years of dedication 
 * download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021
 
 ### Original jeForth live demo
-* [try jeforth_301 in your browser](https://chochain.github.io/eForth.js/orig/index_301.html) by Sam Chen, 2011
+* [jeforth](https://github.com/yapcheahshen/jeforth) by Cheah Shen Yap and Sam Chen, 2012 [try jeforth_301 here](https://chochain.github.io/eForth.js/orig/index_301.html)
 * [try jeforth616 in your browser](https://chochain.github.io/eForth.js/orig/jeforth616.html) by Dr. Ting, 2021
+
+### Prior Art (on GitHub)
+* [jorth](https://github.com/ramunas/jorth) by Ramunas Forsberg Gutkovas, 2012 (nice and clean)
+* [FORTH-on-browser](https://github.com/nishio/FORTH-on-browser) by Nishio Hirokazu, 2012
+* [fjs](https://github.com/mark-hahn/fjs) by Mark Hahn, 2013
+* [EasyForth](https://github.com/skilldrick/easyforth) by Nick Morgan, 2015, [try it here](https://skilldrick.github.io/easyforth)
+* [jsforth](https://github.com/eatonphil/jsforth) by Phil Eaton, 2015
+* [hjsorth](https://github.com/RauliL/hjsorth) by Rauli Laine, 2015 (full)
+* [jsforth](https://github.com/rjose/jsforth) by Rino Jose, 2015 (code C like) 
+* [ForthHub/forth](https://github.com/ForthHub/forth) or [here](https://github.com/drom/forth) by Aliaksei Chapyzhenka, 2015
+* [jsForth](https://github.com/paxl13/jsForth) by Xavier LaRue, 2016
+* [jsForth](https://github.com/brendanator/jsForth) by Brendan Maginnis, 2016, [try it here](http://forthworks.com/temp/jsforth/jsforth80x25.html)
+* [jsforth](https://github.com/Bushmills/jsforth) by Bushmills, 2019
+* [simpleForth](https://github.com/ajlopez/SimpleForth) by AJ Lopez, 2020
+
+Other Refs From Lars Brinkhoff's 2017 list
+* https://github.com/marianoguerra/ricardo-forth
+* https://github.com/paxl13/jsForth
+* https://github.com/fatman2021/forthjs
+* https://github.com/cmwt/forth-js
+* https://github.com/connorberry/forth4js
+* https://github.com/graham/fifth
+* https://github.com/tptb/sforth
+* https://github.com/12pt/fifth.js
+
