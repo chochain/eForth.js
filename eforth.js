@@ -25,7 +25,7 @@ window.ForthVM = function(output=console.log) {
     ///
     const _run = (p)=>{ try { p.forEach(w=>w.exec()) } catch {} }
     ///
-    /// Primitive and Immediate word classes
+    /// Primitive and Immediate word classes (to simplify Dr. Ting's)
     ///
     class Prim {
         constructor(name, cat, xt) {
@@ -92,21 +92,6 @@ window.ForthVM = function(output=console.log) {
         return new Promise(rst=>setTimeout(rst,ms))
     }
     /// @}
-    /// @defgroup data conversion functions
-    /// @{
-    const INT    = v=>(v | 0)                        ///< OR takes 32-bit integer
-    const BOOL   = t=>(t ? -1 : 0)                   ///< Forth true = -1 
-    const ZERO   = v=>BOOL(Math.abs(v) < EPS)        ///< zero floating point
-    /// @}
-    /// @defgroup Stack op short-hand functions (macros)
-    /// @{
-    const top    = (n=1)=>_ss[_ss.length - INT(n)]
-    const push   = v    =>_ss.push(v)
-    const pop    = ()   =>_ss.pop()
-    const remove = n    =>{ let v=top(n); _ss.splice(length - n, 1); return v }
-    const rtop   = (n=1)=>_rs[_rs.length - INT(n)]
-    const dec_i  = ()   =>_rs[_rs.length - 1] -= 1
-    /// @}
     /// @defgroup Compiler functions
     /// @{
     const compile= (w)=>dict.tail().pf.push(w)      ///< add word to pf[]
@@ -134,6 +119,21 @@ window.ForthVM = function(output=console.log) {
         return w
     }
     /// @}
+    /// @defgroup data conversion functions
+    /// @{
+    const INT    = v=>(v | 0)                        ///< OR takes 32-bit integer
+    const BOOL   = t=>(t ? -1 : 0)                   ///< Forth true = -1 
+    const ZERO   = v=>BOOL(Math.abs(v) < EPS)        ///< zero floating point
+    /// @}
+    /// @defgroup Stack op short-hand functions (macros)
+    /// @{
+    const top    = (n=1)=>_ss[_ss.length - INT(n)]
+    const push   = v    =>_ss.push(v)
+    const pop    = ()   =>_ss.pop()
+    const remove = n    =>{ let v=top(n); _ss.splice(length - n, 1); return v }
+    const rtop   = (n=1)=>_rs[_rs.length - INT(n)]
+    const dec_i  = ()   =>_rs[_rs.length - 1] -= 1
+    /// @}
     /// @defgroup Built-in (branching, looping) functions
     /// @{
     const _docon = c=>push(c.qf[0])
@@ -159,7 +159,7 @@ window.ForthVM = function(output=console.log) {
         }
     }
     /// @}
-    /// @defgroup Debug functions
+    /// @defgroup Debug functions (can be implemented in front-end)
     /// @{
     const _words = ()=>{
 		let sz = 0
@@ -333,7 +333,7 @@ window.ForthVM = function(output=console.log) {
         }),
         /// @}
         /// @defgroup Loop ops
-        /// @brief for.{pf}.next, for.{pf}.aft.{pf1}..then.{pf2}.next
+        /// @brief for.{pf}.next, for.{pf}.aft.{pf1}.then.{pf2}.next
         /// @{
         new Immd("for",   "br", c=>{                   /// for...next
             compile(new Code(">r"));                   /// push I onto rstack
@@ -439,7 +439,6 @@ window.ForthVM = function(output=console.log) {
     this.ss    = _ss
     this.rs    = _rs
     this.dict  = dict
-    dict.forEach(w=>this.dict[w.name] = w)    /// * add dict["word"]
     ///
     /// outer interpreter method
     /// @param tok - one token (or idiom) from input buffer
