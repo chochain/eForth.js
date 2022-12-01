@@ -83,7 +83,7 @@
     }
     function clear_txt() {
         txt.innerHTML=''
-        to_txt('<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>')
+        to_txt('<h2>eForth.js 8.0</h2>')
     }
     function escape(s) {
         return typeof(s)=='string' 
@@ -118,26 +118,19 @@
     console.log(vm)
     clear_txt()                                /// * set init prompt
     show_data()                                /// * select showing dictionary first
-    ///
-    /// embedded Forth processor
-    ///
-    window.addEventListener('load', async ()=>{              ///< load event handler
-        let slst = document.getElementsByTagName('script')   ///< get HTMLcollection
-        for (let i = 0; i < slst.length; i++) {              /// * walk thru script elements
-            let s = slst[i]
-            if (s.type != 'application/forth') continue      /// * handle embedded Forth 
-            if (s.src) await fetch(s.src)                    /// * handle nested scripts
-            else       vm.exec(s.innerText)
-        }
-    })
     </script>
     ///
-    /// demo embedded Forth
+    /// embedded Forth demo here
     ///
     <script type='application/forth'>
+      cr .( <h3>this demo shows embedded Forth</h3> ) cr
+      .( <b>\ list dictionary</b>words ) cr
       words
-      : xx 2 for r@ . next ;
-      see xx
+      .( <b>\ defined a new word</b>: xx 10 for r@ . next ; ) cr
+      : xx 10 for r@ . next ;
+      .( <b>see xx</b> )
+      see xx cr
+      .( <b>xx<b> ) cr
       xx
     </script>
   </body>
