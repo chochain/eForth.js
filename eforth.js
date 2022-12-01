@@ -71,14 +71,14 @@ window.ForthVM = function(output=console.log) {
             else this.xt(this);          /// * build-it words
         }
     }
-    ///====================================================================================
+    ///=====================================================================
     /// @defgroup IO functions
     /// @{
     const log    = (s)=>output(s)
     const NA     = (s)=>s+" not found! "
     const nxtok  = (d=SPC)=>{             /// assumes tib ends with a blank
         while (d==SPC &&
-               (_tib[_ntib]==SPC || _tib[_ntib]=="\t")) _ntib++ // skip leading blanks and tabs
+               (_tib[_ntib]==SPC || _tib[_ntib]=="\t")) _ntib++ /// skip leading blanks and tabs
         let i = _tib.indexOf(d, _ntib)
         let s = (i==-1) ? null : _tib.substring(_ntib, i); _ntib=i+1
         return s
@@ -94,9 +94,9 @@ window.ForthVM = function(output=console.log) {
     /// @}
     /// @defgroup data conversion functions
     /// @{
-    const INT    = v=>(v | 0)                             ///< OR takes 32-bit integer
-    const BOOL   = t=>(t ? -1 : 0)                        ///< Forth true = -1 
-    const ZERO   = v=>BOOL(Math.abs(v) < EPS)             ///< zero floating point
+    const INT    = v=>(v | 0)                        ///< OR takes 32-bit integer
+    const BOOL   = t=>(t ? -1 : 0)                   ///< Forth true = -1 
+    const ZERO   = v=>BOOL(Math.abs(v) < EPS)        ///< zero floating point
     /// @}
     /// @defgroup Stack op short-hand functions (macros)
     /// @{
@@ -168,6 +168,7 @@ window.ForthVM = function(output=console.log) {
 			sz += w.name.length + 1
 			if (sz > 52) { log(CR); sz = 0 }
 		})
+        log(CR)
 	}
     const _dump = (n0, n1)=>{
         for (let i = n0; i <= n1; i++) {
@@ -194,7 +195,7 @@ window.ForthVM = function(output=console.log) {
         _show_pf(w.pf2)
     }
     /// @}
-    ///====================================================================================
+    ///======================================================================
     /// dictionary intialized with primitive words
     ///
     let dict = [
@@ -433,43 +434,46 @@ window.ForthVM = function(output=console.log) {
     dict.last = function()    { return dict.tail(2).pf.tail() }
     /// @}
     ///
-    /// outer interpreter method - main loop
-    /// @param row one line of input
+    /// expose data structure to JS engine
     ///
-    this.outer = (row)=>{
-        _tib=row; _ntib=0                             /// capture into TIB
-        for (let s=nxtok(); s!=null; s=nxtok()) {     /// * loop through tokens
-            let w=find(s)                             /// * search throug dictionary
-            if (w!=null) {                            /// * word found?
-                if((!_compi) || w.immd) {             /// * in interpret mode?
-                    try       { w.exec() }            ///> execute word
-                    catch (e) { log(e) }
-                }
-                else compile(w)                       ///> or compile word 
+    this.ss    = _ss
+    this.rs    = _rs
+    this.dict  = dict
+    dict.forEach(w=>this.dict[w.name] = w)    /// * add dict["word"]
+    ///
+    /// outer interpreter method
+    /// @param tok - one token (or idiom) from input buffer
+    ///
+    this.outer = (tok)=>{
+        let w = find(tok)                     /// * search throug dictionary
+        if (w != null) {                      /// * word found?
+            if(!_compi || w.immd) {           /// * in interpret mode?
+                try       { w.exec() }        ///> execute word
+                catch (e) { log(e) }
             }
-            else {                                    /// * word not found
-                let n=_base!=10                       ///> not word, try as number
-                    ? parseInt(s, _base)
-                    : parseFloat(s)
-                if (isNaN(n)) {                       ///> * not a number?
-                    log(s + "? ")                     ///>> display prompt
-                    _compi=false                      ///>> restore interpret mode
-                }
-                else if (_compi) {                    ///> in compile mode?
-                    compile(new Code("dolit", n))     ///>> compile the number
-                }
-                else push(n)                          ///>> or, push number onto stack top
-            }
+            else compile(w)                   ///> or compile word
+            return
         }
-    }
-    this.data = (d)=>{
-        switch (d) {
-        case "dc": return dict.map(v=>v.name+SPC+v.cat+SPC+v.token)
-        case "ss": return _ss.map(v=>v.toString(_base))
-        case "rs": return _rs.map(v=>v.toString(_base))
+        let n = _base!=10                     ///> not word, try as number
+            ? parseInt(tok, _base)
+            : parseFloat(tok)
+        if (isNaN(n)) {                       ///> * not a number?
+            log(tok + "? ")                   ///>> display prompt
+            _compi=false                      ///>> restore interpret mode
         }
+        else if (_compi) {                    ///> in compile mode?
+            compile(new Code("dolit", n))     ///>> compile the number
+        }
+        else push(n)                          ///>> or, push number onto stack top
     }
     this.exec = (cmd)=>{
-        cmd.split("\n").forEach(r=>{ this.outer(r+SPC); log("ok\n") })
+        cmd.split("\n").forEach(r=>{          /// * multi-line input
+            _tib=r + SPC; _ntib=0             /// * capture into TIB
+            let tok = ''                      ///< input idiom
+            while ((tok=nxtok()) != null) {   /// * loop thru all idioms
+                this.outer(tok)
+            }
+        })
+        log("ok\n")
     }
 }
