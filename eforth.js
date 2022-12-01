@@ -476,3 +476,16 @@ window.ForthVM = function(output=console.log) {
         log("ok\n")
     }
 }
+///
+/// embedded Forth processor
+///
+window.addEventListener('load', async ()=>{              ///< load event handler
+    let slst = document.getElementsByTagName('script')   ///< get HTMLcollection
+    for (let i = 0; i < slst.length; i++) {              /// * walk thru script elements
+        let s = slst[i]
+        if (s.type != 'application/forth') continue      /// * handle embedded Forth 
+        if (s.src) await fetch(s.src)                    /// * handle nested scripts
+        else       vm.exec(s.innerText)
+    }
+})
+
