@@ -38,10 +38,12 @@
     </div>
     <script src='eforth.js'></script>
     <script>
-    let tib = document.getElementById('tib')
-    let txt = document.getElementById('txt')
-    let edt = document.getElementById('edt')
-    let cm  = CodeMirror.fromTextArea(document.getElementById('cm'), {
+    const tib = document.getElementById('tib')
+    const txt = document.getElementById('txt')
+    const edt = document.getElementById('edt')
+    const ss = document.getElementById('ss')
+    const dc = document.getElementById('dc')
+    const cm  = CodeMirror.fromTextArea(document.getElementById('cm'), {
         lineNumbers: true,
         styleActiveLine: true,
         mode: 'forth'
@@ -74,8 +76,23 @@
             }
         }
     }
+    function to_txt(t, esc=true) {
+        setTimeout(()=>{
+            txt.innerHTML += esc ? escape(t) : t
+        }, 0)
+    }
+    function clear_txt() {
+        txt.innerHTML=''
+        to_txt("<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>")
+    }
+    function escape(s) {
+        return typeof(s)=="string" 
+            ? s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;') : s
+    }
     drag(txt, document.getElementById("sep"), edt)
-    // forth section
+    ///
+    /// Forth section
+    ///
     function forth_eval() {
         let cmd=tib.value.replace(/:/g,'<br/>:')
         if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')
@@ -83,7 +100,7 @@
         try {
             if (tib.value=="clear") clear_txt()
             else {
-                vm.exec(tib.value)
+                vm.exec(tib.value)        /// * handle multi-line input
                 show_data()
             }
         }
@@ -94,25 +111,13 @@
         }
     }
     function show_data() {
-        [ 'ss', 'dc' ].forEach(x=>{
-            let v = vm.data(x)
-            document.getElementById(x).innerHTML = v.reverse().join('<br/>')
-        })
+        dc.innerHTML = vm.dict.map(v=>v.name+' '+v.token).reverse().join('<br/>')
+        ss.innerHTML = vm.ss.map(v=>v.toString(10)).reverse().join('<br/>')
     }
-    function to_txt(t, esc=true) {
-        txt.innerHTML += esc ? escape(t) : t
-    }
-    function clear_txt() {
-        txt.innerHTML=''
-        to_txt("<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>")
-    }
-    function escape(s) {
-        return typeof(s)=="string" 
-            ? s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;') : s
-    }
-    let vm = new ForthVM(to_txt)       // create Forth VM object
-    clear_txt()                        // set init prompt
-    show_data()                        // select showing dictionary first
+    let vm = new ForthVM(to_txt)       ///< create Forth VM object
+    console.log(vm)
+    clear_txt()                        /// * set init prompt
+    show_data()                        /// * select showing dictionary first
     </script>
   </body>
 </html>
