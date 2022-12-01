@@ -48,7 +48,7 @@
         styleActiveLine: true,
         mode: 'forth'
     })
-    cm.setSize("100%","100%")
+    cm.setSize('100%','100%')
     cm.on('copy', (doc)=>{
         let cmd=doc.getSelection()
         tib.value = cmd.replace(/[\t|\n]/g,' ')
@@ -59,19 +59,19 @@
     // dragger section
     function drag(p0, sep, p1) {
         sep.onmousedown = (e)=>{
-            // console.log("mouse down: " + e.clientX);
+            // console.log('mouse down: ' + e.clientX);
             let m = { mx:e.clientX, my:e.clientY, x:e.offsetLeft, y:e.offsetTop, w0:p0.offsetWidth, w1:p1.offsetWidth }
             document.onmousemove = (e)=>{
-                // console.log("mouse move: " + e.clientX);
+                // console.log('mouse move: ' + e.clientX);
                 let d = { x:e.clientX - m.mx, y:e.clientY - m.my }
                 d.x = Math.min(Math.max(d.x, -m.w0), m.w1)  // no negative offset
 
-                sep.style.left = m.offsetLeft + d.x + "px"
-                p0.style.width = (m.w0 + d.x) + "px"
-                p1.style.width = (m.w1 - d.x) + "px"
+                sep.style.left = m.offsetLeft + d.x + 'px'
+                p0.style.width = (m.w0 + d.x) + 'px'
+                p1.style.width = (m.w1 - d.x) + 'px'
             }
             document.onmouseup = ()=>{
-                // console.log("mouse up");
+                // console.log('mouse up');
                 document.onmousemove = document.onmouseup = null;
             }
         }
@@ -83,13 +83,13 @@
     }
     function clear_txt() {
         txt.innerHTML=''
-        to_txt("<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>")
+        to_txt('<h2>eForth.js 8.0</h2><h3>...eForth with Javascript</h3>')
     }
     function escape(s) {
-        return typeof(s)=="string" 
+        return typeof(s)=='string' 
             ? s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;') : s
     }
-    drag(txt, document.getElementById("sep"), edt)
+    drag(txt, document.getElementById('sep'), edt)
     ///
     /// Forth section
     ///
@@ -98,7 +98,7 @@
         if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')
         to_txt('<pre class="cmd"><em>'+cmd+'</em></pre>', false)
         try {
-            if (tib.value=="clear") clear_txt()
+            if (tib.value=='clear') clear_txt()
             else {
                 vm.exec(tib.value)        /// * handle multi-line input
                 show_data()
@@ -114,10 +114,31 @@
         dc.innerHTML = vm.dict.map(v=>v.name+' '+v.token).reverse().join('<br/>')
         ss.innerHTML = vm.ss.map(v=>v.toString(10)).reverse().join('<br/>')
     }
-    let vm = new ForthVM(to_txt)       ///< create Forth VM object
+    let vm = new ForthVM(to_txt)               ///< create Forth VM object
     console.log(vm)
-    clear_txt()                        /// * set init prompt
-    show_data()                        /// * select showing dictionary first
+    clear_txt()                                /// * set init prompt
+    show_data()                                /// * select showing dictionary first
+    ///
+    /// embedded Forth processor
+    ///
+    window.addEventListener('load', async ()=>{              ///< load event handler
+        let slst = document.getElementsByTagName('script')   ///< get HTMLcollection
+        for (let i = 0; i < slst.length; i++) {              /// * walk thru script elements
+            let s = slst[i]
+            if (s.type != 'application/forth') continue      /// * handle embedded Forth 
+            if (s.src) await fetch(s.src)                    /// * handle nested scripts
+            else       vm.exec(s.innerText)
+        }
+    })
+    </script>
+    ///
+    /// demo embedded Forth
+    ///
+    <script type='application/forth'>
+      words
+      : xx 2 for r@ . next ;
+      see xx
+      xx
     </script>
   </body>
 </html>
