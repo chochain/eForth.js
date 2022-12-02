@@ -1,13 +1,16 @@
 ﻿<html>
+  <head><style>.bg { padding:8px; font-size:24px; border: 1px solid #888; }</style></head>
   <body>
-    <div style='padding:1%; font-family:monospace; font-size:20px'>
-      <input id='tib' style='padding:8px; font-size:24px; height:36px; width:96%'
-        value='' onkeydown='if (13===event.keyCode) forth_eval()'/>
-      <pre id='txt' class='txt' style='display:block; height:80%; overflow:scroll'></pre>
+    <div style='padding:1%; font-size:20px'>
+      <input id='tib' class='bg' style='height:36px; width:100%' value=''
+        onkeydown='if (13===event.keyCode) forth_eval()'/>
+      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'></pre>
+  	  <pre id='ss' class='bg'>[ ]</pre>
     </div>
     <script src='eforth.js'></script>
     <script>
-    const txt = document.getElementById('txt')
+    const txt = document.getElementById('txt')    ///< text console
+    const ss  = document.getElementById('ss')     ///< data stack
     const vm  = new ForthVM(to_txt)               ///< create Forth VM object
     console.log(vm)                               /// * show VM on console
 
@@ -17,7 +20,8 @@
     function forth_eval() {
         to_txt('<em class="cmd" style="color:#48f">'+tib.value+'</em><br/>')
         if (tib.value=='clear') txt.innerHTML = ''
-        else                    vm.exec(tib.value)
+        else vm.exec(tib.value)
+		ss.innerHTML = '[ ' + vm.ss.map(v=>v.toString(10)).join(' ') + ' ]'
         tib.value = ''
     }
     </script>
