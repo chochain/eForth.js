@@ -26,26 +26,25 @@ Though I've never had the chance to meet him in person, the years of dedication 
 * [try jeforth616 in your browser](https://chochain.github.io/eForth.js/orig/jeforth616.html) by Dr. Ting, 2021
 
 ### Prior Art (on GitHub)
-* [jorth](https://github.com/ramunas/jorth) by Ramunas Forsberg Gutkovas, 2012 (nice and clean)
-* [FORTH-on-browser](https://github.com/nishio/FORTH-on-browser) by Nishio Hirokazu, 2012
-* [fjs](https://github.com/mark-hahn/fjs) by Mark Hahn, 2013
-* [EasyForth](https://github.com/skilldrick/easyforth) by Nick Morgan, 2015, [try it here](https://skilldrick.github.io/easyforth)
-* [jsforth](https://github.com/eatonphil/jsforth) by Phil Eaton, 2015
-* [hjsorth](https://github.com/RauliL/hjsorth) by Rauli Laine, 2015 (full)
-* [jsforth](https://github.com/rjose/jsforth) by Rino Jose, 2015 (code C like) 
+* [jorth](https://github.com/ramunas/jorth) by Ramunas Forsberg Gutkovas, 2012 (small and clean)
+* [FORTH-on-browser](https://github.com/nishio/FORTH-on-browser) by Nishio Hirokazu, 2012 (detailed with jQuery)
+* [fjs](https://github.com/mark-hahn/fjs) by Mark Hahn, 2013 (scoped beyond Forth, more like Factor)
+* [EasyForth](https://github.com/skilldrick/easyforth) by Nick Morgan, 2015, with instructions [try it here](https://skilldrick.github.io/easyforth)
+* [jsforth](https://github.com/eatonphil/jsforth) by Phil Eaton, 2015 (short word list)
+* [hjsorth](https://github.com/RauliL/hjsorth) by Rauli Laine, 2015 (formal and fully documented)
+* [jsforth](https://github.com/rjose/jsforth) by Rino Jose, 2015 (C like, handles HTML) 
 * [ForthHub/forth](https://github.com/ForthHub/forth) or [here](https://github.com/drom/forth) by Aliaksei Chapyzhenka, 2015
-* [jsForth](https://github.com/paxl13/jsForth) by Xavier LaRue, 2016
-* [jsForth](https://github.com/brendanator/jsForth) by Brendan Maginnis, 2016, [try it here](http://forthworks.com/temp/jsforth/jsforth80x25.html)
-* [jsforth](https://github.com/Bushmills/jsforth) by Bushmills, 2019
-* [simpleForth](https://github.com/ajlopez/SimpleForth) by AJ Lopez, 2020
+* [jsForth](https://github.com/paxl13/jsForth) by Xavier LaRue, 2016 (jonesForth and more)
+* [jsForth](https://github.com/brendanator/jsForth) by Brendan Maginnis, 2016, [try it  here](https://brendanator.github.io/jsForth/)
+* [jsforth](https://github.com/Bushmills/jsforth) by Bushmills, 2019, [try it here](http://forthworks.com/temp/jsforth/jsforth80x25.html)
+* [simpleForth](https://github.com/ajlopez/SimpleForth) by AJ Lopez, 2020 (inspired by fjs)
+* [sforth](https://github.com/tptb/sforth) by Bernd Amend 2022 (Forth like script, compiled to JS)
 
 Other Refs From Lars Brinkhoff's 2017 list
-* https://github.com/marianoguerra/ricardo-forth
-* https://github.com/paxl13/jsForth
-* https://github.com/fatman2021/forthjs
-* https://github.com/cmwt/forth-js
-* https://github.com/connorberry/forth4js
-* https://github.com/graham/fifth
-* https://github.com/tptb/sforth
-* https://github.com/12pt/fifth.js
+* https://github.com/marianoguerra/ricardo-forth, 2016 (WASM, based on Buzzard2)
+* https://github.com/fatman2021/forthjs (a few lines)
+* https://github.com/cmwt/forth-js (just started)
+* https://github.com/connorberry/forth4js (4 functions)
+* https://github.com/graham/fifth (a few functions)
+* https://github.com/12pt/fifth.js (started)
 
