@@ -161,6 +161,7 @@ window.ForthVM = function(output=console.log) {
     /// @}
     /// @defgroup Debug functions (can be implemented in front-end)
     /// @{
+    const _spaces= (n)=>{ for (let i=0; i<n; i++) log(SPC) }
     const _words = ()=>{
 		let sz = 0
         dict.forEach((w,i)=>{
@@ -183,12 +184,13 @@ window.ForthVM = function(output=console.log) {
     const _see = (w, n=0)=>{
         const _show_pf = (pf)=>{
             if (pf == null || pf.length == 0) return
-            log('['+CR); pf.forEach(w=>_see(w, n+1)); log('] ')
+            log('['+CR); _spaces(2*(n+1))          /// * indent section
+            pf.forEach(w=>_see(w, n+1))            /// * recursive call
+            log('] ')                              /// * close section
         }
-        log(CR); for (let i=0; i<2*n; i++) log(SPC)       /// * indent by level
-        log(w.name)
-        if (w.qf != null && w.qf.length > 0) {
-            log(' =[' + w.qf.toString(_base) + ']')
+        log(w.name+SPC)                            /// * display word name
+        if (w.qf != null && w.qf.length > 0) {     /// * display qf array
+            log('='+JSON.stringify(w.qf)+SPC)
         }
         _show_pf(w.pf)
         _show_pf(w.pf1)
@@ -261,7 +263,7 @@ window.ForthVM = function(output=console.log) {
         new Prim("key",   "io", c=>push(nxtok()[0])),
         new Prim("emit",  "io", c=>log(String.fromCharCode(pop()))),
         new Prim("space", "io", c=>log(SPC)),
-        new Prim("spaces","io", c=>{ for (let i=0, n=pop(); i<n; i++) log(SPC) }),
+        new Prim("spaces","io", c=>_spaces(pop())),
         /// @}
         /// @defgroup Literal ops
         /// @{
@@ -270,7 +272,11 @@ window.ForthVM = function(output=console.log) {
         new Immd("[",     "li", c=>_compi=false ),
         new Prim("]",     "li", c=>_compi=true ),
         new Prim("'",     "li", c=>{ let w=tok2w(); push(w.token) }),
-        new Immd("s\"",   "li", c=>compile(new Code("dostr", nxtok('"')))),
+        new Immd("s\"",   "li", c=>{
+            let s = nxtok('"')
+            if (_compi) compile(new Code("dostr", s))
+            else push(s)                             /// * push string object
+        }),
         new Immd(".\"",   "li", c=>compile(new Code("dolit", nxtok('"')))),
         new Immd("(",     "li", c=>nxtok(')')),
         new Immd(".(",    "li", c=>log(nxtok(')'))),
@@ -401,9 +407,10 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim("exit",     "os", c=>{ throw "exit" }),             // exit inner interpreter
         new Prim("clock",    "os", c=>{ let n = Date.now(); push(n) }),
+        new Prim("delay",    "os", c=>sleep(pop()).then(()=>{})),
         new Prim("date",     "os", c=>log((new Date()).toDateString()+" ")),
         new Prim("time",     "os", c=>log((new Date()).toLocaleTimeString()+" ")),
-        new Prim("delay",    "os", c=>sleep(pop()).then(()=>{})),
+        new Prim("eval",     "os", c=>eval(pop())),                  /// * dangerous, be careful!
         /// @}
         /// @defgroup Debugging ops
         /// @{
