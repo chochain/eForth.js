@@ -410,6 +410,10 @@ window.ForthVM = function(output=console.log) {
         new Prim("here",     "os", c=>push(dict.tail().token)),
         new Prim("words",    "os", c=>_words()),
         new Prim("dump",     "os", c=>{ let n=pop(); _dump(pop(), n) }),
+        new Prim(".s",       "os", c=>{
+            let s = _ss.map(v=>v.toString(_base))
+            log(s.join(' ') + CR)
+        }),
         new Prim("see",      "os", c=>{ let w=tok2w(); console.log(w); _see(w) }),
         new Prim("forget",   "os", c=>{
             _fence=Math.max(tok2w().token, find("boot").token+1)
