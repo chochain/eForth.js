@@ -484,8 +484,12 @@ window.addEventListener('load', async ()=>{              ///< load event handler
     for (let i = 0; i < slst.length; i++) {              /// * walk thru script elements
         let s = slst[i]
         if (s.type != 'application/forth') continue      /// * handle embedded Forth 
-        if (s.src) await fetch(s.src)                    /// * handle nested scripts
-        else       vm.exec(s.innerText)
+        if (s.src) {                                     /// * handle nested scripts
+            await fetch(s.src)                           /// * fetch remote Forth script
+                .then(r=>r.text())                       /// * get Forth commands
+                .then(cmd=>vm.exec(cmd))                 /// * send it to Forth VM
+        }
+        else vm.exec(s.innerText)
     }
 })
 
