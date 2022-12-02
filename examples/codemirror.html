@@ -1,0 +1,133 @@
+﻿<html>
+  <head>    
+  <title>eForth.js 8.0</title>
+  <style>
+    h2    { color: #c44; margin: 0; }
+    h3    { color: #fc4; margin: 0; }
+    .tic  { width:100%; text-align:center; background-color:#eee; margin:2px; padding: 5px 0 5px 0; }
+    .tac  { width:90%; text-align:right; color:#484; margin:4px; }
+    .txt  { width:50%; height:100%; margin:4px; display:flex; flex-direction:column; overflow-x:scroll; }
+    .sep  { width:4px; height:100%; border:1px solid gray; cursor:col-resize; }
+    .cmd  { color:#48f; margin: 2px; }
+    .CodeMirror { width:100%; border:1px solid #444; height:auto; }
+  </style>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js'></script>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script>
+  </head>
+  <body>
+    <div style='display:flex; font-size:18px; font-family:monospace; width:100%; height:100%'>
+      <div style='display:flex; flex-direction:column; width:15%; height:100%'>
+        <pre class='tic'>ss</pre>
+        <pre id='ss' class='tac'></pre>
+        <pre class='tic'>dict</pre>
+        <pre id='dc' class='tac'></pre>
+      </div>
+      <div style='display:flex; flex-direction:row; width:85%; height:100%'>
+        <pre id='txt' class='txt'></pre>
+        <div id='sep' class='sep'></div>
+        <div id='edt' class='txt'>
+          <div style='display:flex; width=100%'>
+            <button style='width:10%' onclick='clear_txt()'>clear</button>
+            <input id='tib' style='width:90%' value=''
+               onkeydown='if (13===event.keyCode) forth_eval()'/>
+          </div>
+          <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
+        </div>
+      </div>
+    </div>
+    <script src='eforth.js'></script>
+    <script>
+    const tib = document.getElementById('tib')
+    const txt = document.getElementById('txt')
+    const edt = document.getElementById('edt')
+    const ss = document.getElementById('ss')
+    const dc = document.getElementById('dc')
+    const cm  = CodeMirror.fromTextArea(document.getElementById('cm'), {
+        lineNumbers: true,
+        styleActiveLine: true,
+        mode: 'forth'
+    })
+    cm.setSize('100%','100%')
+    cm.on('copy', (doc)=>{
+        let cmd=doc.getSelection()
+        tib.value = cmd.replace(/[\t|\n]/g,' ')
+        tib.style.backgroundColor = '#fe0'
+        document.activeElement.blur()
+        tib.focus()
+    })
+    // dragger section
+    function drag(p0, sep, p1) {
+        sep.onmousedown = (e)=>{
+            // console.log('mouse down: ' + e.clientX);
+            let m = { mx:e.clientX, my:e.clientY, x:e.offsetLeft, y:e.offsetTop, w0:p0.offsetWidth, w1:p1.offsetWidth }
+            document.onmousemove = (e)=>{
+                // console.log('mouse move: ' + e.clientX);
+                let d = { x:e.clientX - m.mx, y:e.clientY - m.my }
+                d.x = Math.min(Math.max(d.x, -m.w0), m.w1)  // no negative offset
+
+                sep.style.left = m.offsetLeft + d.x + 'px'
+                p0.style.width = (m.w0 + d.x) + 'px'
+                p1.style.width = (m.w1 - d.x) + 'px'
+            }
+            document.onmouseup = ()=>{
+                // console.log('mouse up');
+                document.onmousemove = document.onmouseup = null;
+            }
+        }
+    }
+    function to_txt(t, esc=true) {
+        setTimeout(()=>{
+            txt.innerHTML += esc ? escape(t) : t
+        }, 0)
+    }
+    function clear_txt() {
+        txt.innerHTML=''
+        to_txt('<h2>eForth.js 8.0</h2>')
+    }
+    function escape(s) {
+        return typeof(s)=='string' 
+            ? s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;') : s
+    }
+    drag(txt, document.getElementById('sep'), edt)
+    ///
+    /// Forth section
+    ///
+    let vm = new ForthVM(to_txt)               ///< create Forth VM object
+    console.log(vm)
+    clear_txt()                                /// * set init prompt
+    show_data()                                /// * select showing dictionary first
+
+    function forth_eval() {
+        let cmd=tib.value.replace(/:/g,'<br/>:')
+        if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')
+        to_txt('<pre class="cmd"><em>'+cmd+'</em></pre>', false)
+        try {
+            if (tib.value=='clear') clear_txt()
+            else {
+                vm.exec(tib.value)        /// * handle multi-line input
+                show_data()
+            }
+        }
+        catch(e) { console.log(e.toString()+'\n') }
+        finally  {
+            tib.value=''; tib.style.backgroundColor='white'
+            txt.scrollTop = txt.scrollHeight
+        }
+    }
+    function show_data() {
+        dc.innerHTML = vm.dict.map(v=>v.name+' '+v.token).reverse().join('<br/>')
+        ss.innerHTML = vm.ss.map(v=>v.toString(10)).reverse().join('<br/>')
+    }
+    </script>
+    ///
+    /// embedded Forth demo here
+    ///
+    <script type='application/forth'>
+      cr .( <h3>\ this demo shows embedded Forth</h3> ) cr
+      .( <b>\ list dictionary</b>words ) cr
+      words
+    </script>
+    <script type='application/forth' src='./tests/embed.f'/>
+  </body>
+</html>
