@@ -9,6 +9,7 @@
     <script>
     const txt = document.getElementById('txt')
     const vm  = new ForthVM(to_txt)               ///< create Forth VM object
+    console.log(vm)                               /// * show VM on console
 
     function to_txt(t) {                          ///< output to textarea
         txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
