@@ -4,10 +4,10 @@
   <style>
     h2    { color: #c44; margin: 0; }
     h3    { color: #fc4; margin: 0; }
-    .col  { display:flex; flex-direction:column; font-size:20px; }
+    .col  { display:flex; flex-direction:column; font-size:20px; border:1px solid #ccc }
     .row  { display:flex; width:100%; }
-    .hdr  { width:100%; text-align:center; background-color:#eee; margin:8px; padding:6px; }
-    .lst  { width:96%; text-align:right; color:#484; margin:8px; }
+    .hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
+    .lst  { text-align:right; color:#484; margin:8px; }
     .txt  { display:block; padding:8px; width:100%; overflow-x:scroll; }
     .code { height:36px; width:90%; font-size:24px;  }
     .cmd  { color:#48f; margin: 2px; }
@@ -19,7 +19,11 @@
   </head>
   <body>
     <div class='row'>
-      <div class='col' style='padding:8px; width:85%'>
+      <div class='col' style='width:15%'>
+        <pre class='hdr'>data stack</pre><pre id='ss' class='lst'></pre>
+        <pre class='hdr'>dictionary</pre><pre id='dc' class='lst'></pre>
+      </div>
+      <div class='col' style='width:84%; padding:8px'>
         <div class='row'>
           <button style='width:10%' onclick='edt.style.display="none"'>editor</button>
           <input id='tib' class='code' value=''
@@ -30,10 +34,6 @@
           <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
         </div>
         <pre id='txt' class='txt'></pre>
-      </div>
-      <div class='col'>
-        <pre class='hdr'>data stack</pre><pre id='ss' class='lst'></pre>
-        <pre class='hdr'>dictionary</pre><pre id='dc' class='lst'></pre>
       </div>
     </div>
     <script src='../eforth.js'></script>
@@ -58,6 +58,7 @@
     })
     let rz = new ResizeObserver(e=>{            ///< adjust console height
         txt.style.height = window.innerHeight - txt.offsetTop - 100
+        txt.scrollTop    = txt.scrollHeight
     }).observe(edt)
  
     function to_txt(t, esc=true) {
