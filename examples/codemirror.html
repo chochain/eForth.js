@@ -9,8 +9,9 @@
     .hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
     .lst  { text-align:right; color:#484; margin:8px; }
     .txt  { display:block; padding:8px; width:100%; overflow-x:scroll; }
-    .code { height:36px; width:90%; font-size:24px;  }
+    .code { height:36px; width:90%; font-size:24px; margin:0 2px 0 2px; }
     .cmd  { color:#48f; margin: 2px; }
+    .cat  { padding:6px; background-color:#eee; }
     .CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
   </style>
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
@@ -35,13 +36,14 @@
           <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
         </div>
         <pre id='txt' class='txt'></pre>
+        <div id='cat' class='cat'>abc</div>
       </div>
     </div>
     <script src='../eforth.js'></script>
     <script>
     const tib = document.getElementById('tib')
     const txt = document.getElementById('txt')
-    const edt = document.getElementById('edt')
+    const cat = document.getElementById('cat')
     const ss  = document.getElementById('ss')
     const dc  = document.getElementById('dc')
     const cm  = CodeMirror.fromTextArea(document.getElementById('cm'), {
@@ -60,7 +62,7 @@
     let rz = new ResizeObserver(e=>{            ///< adjust console height
         txt.style.height = window.innerHeight - txt.offsetTop - 100
         txt.scrollTop    = txt.scrollHeight
-    }).observe(edt)
+    }).observe(document.getElementById('edt'))
  
     function to_txt(t, esc=true) {
         const escape = (s)=>{
@@ -73,6 +75,8 @@
     /// Forth section
     ///
     let vm = new ForthVM(to_txt)               ///< create Forth VM object
+    show_data()
+
     function forth_eval() {                    ///< evaludate Forth command
         let cmd = tib.value.replace(/:/g,'<br/>:')            /// * show on a new line
         if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')  /// * remove blank lines
@@ -88,8 +92,21 @@
         txt.scrollTop = txt.scrollHeight
     }
     function show_data() {
-        dc.innerHTML = vm.dict.filter(v=>v.cat=='ud').map(v=>v.name).reverse().join('<br/>')
+        dc.innerHTML = vm.dict.filter(v=>v.cat=='User').map(v=>v.name).reverse().join('<br/>')
         ss.innerHTML = vm.ss.map(v=>v.toString(10)).reverse().join('<br/>')
+        cat.innerHTML= get_voc()
+    }
+    function get_voc() {
+        let x = vm.dict.reduce((r,v)=>{
+            const c = {                            ///< category desc lookup
+                ss: "Stack",  au: "ALU",    eq: "Compare", io: "IO",    li: "Literal",
+                br: "Branch", mm: "Memory", cm: "Compile", db: "Debug", os: "OS"
+            }[v.cat]
+            if (r[c]) r[c].push(v); else r[c] = [ v ]
+            return r
+        }, {})
+        console.log(x)
+        return '['+Object.keys(x).join('] [')+']'  /// * TODO: add tooltip for words
     }
     </script>
     <script type='application/forth'>
@@ -97,6 +114,6 @@
       .( <b>\ list dictionary</b> ) cr
       words
     </script>
-    <script type='application/forth' src='./tests/embed.f'/>
+    <!--script type='application/forth' src='./tests/embed.f'/-->
   </body>
 </html>
