@@ -486,21 +486,21 @@ window.ForthVM = function(output=console.log) {
         })
         log("ok\n")
     }
-}
-///
-/// embedded Forth processor
-///
-window.addEventListener('load', async ()=>{              ///< load event handler
-    let slst = document.getElementsByTagName('script')   ///< get HTMLcollection
-    for (let i = 0; i < slst.length; i++) {              /// * walk thru script elements
-        let s = slst[i]
-        if (s.type != 'application/forth') continue      /// * handle embedded Forth 
-        if (s.src) {                                     /// * handle nested scripts
-            await fetch(s.src)                           /// * fetch remote Forth script
-                .then(r=>r.text())                       /// * get Forth commands
-                .then(cmd=>vm.exec(cmd))                 /// * send it to Forth VM
+    ///
+    /// embedded Forth processor
+    ///
+    window.addEventListener('load', async ()=>{              ///< load event handler
+        let slst = document.getElementsByTagName('script')   ///< get HTMLcollection
+        for (let i = 0; i < slst.length; i++) {              /// * walk thru script elements
+            let s = slst[i]
+            if (s.type != 'application/forth') continue      /// * handle embedded Forth 
+            if (s.src) {                                     /// * handle nested scripts
+                await fetch(s.src)                           /// * fetch remote Forth script
+                    .then(r=>r.text())                       /// * get Forth commands
+                    .then(cmd=>this.exec(cmd))               /// * send it to Forth VM
+            }
+            else this.exec(s.innerText)
         }
-        else vm.exec(s.innerText)
-    }
-})
+    })
+}
 
