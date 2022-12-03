@@ -66,22 +66,19 @@
         }
         txt.innerHTML += esc && typeof(s)=='string' ? escape(t) : t
     }
-    function clear_txt() {
-        txt.innerHTML=''
-        to_txt('<h2>eForth.js 8.0</h2>')
-    }
+    function clear_txt() { txt.innerHTML=''; to_txt('<h2>eForth.js 8.0</h2>') }
     ///
     /// Forth section
     ///
     let vm = new ForthVM(to_txt)               ///< create Forth VM object
     function forth_eval() {                    ///< evaludate Forth command
-        let cmd = tib.value.replace(/:/g,'<br/>:')
-        if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')
-        
+        let cmd = tib.value.replace(/:/g,'<br/>:')            /// * show on a new line
+        if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')  /// * remove blank lines
         to_txt('<pre class="cmd"><em>'+cmd+'</em></pre>', false)
-        if (cmd=='clear') clear_txt()
+        
+        if (tib.value=='clear') clear_txt()
         else {
-            vm.exec(cmd)                      /// * handle multi-line input
+            vm.exec(tib.value)                /// * can handle multi-line input
             show_data()                       /// * display ss and dict
         }
         tib.style.backgroundColor='white'
