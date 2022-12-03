@@ -5,3 +5,5 @@
 see xx cr
 .( <b>xx<b> ) cr
 xx
+.( <b>\ list directory again</b> )
+words
