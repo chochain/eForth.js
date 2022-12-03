@@ -30,7 +30,7 @@ window.ForthVM = function(output=console.log) {
     class Prim {
         constructor(name, cat, xt) {
             this.name  = name             ///< name of the word
-			this.cat   = cat
+			this.cat   = cat              ///< assign category
             this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.token = _fence++         ///< word
@@ -46,7 +46,7 @@ window.ForthVM = function(output=console.log) {
     class Code {
         constructor(name, v=false, xt=null) {
             this.name  = name             ///< name of the word
-			this.cat   = "ud"             ///< user defined word
+			this.cat   = "User"           ///< user defined word
             this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
@@ -241,13 +241,13 @@ window.ForthVM = function(output=console.log) {
         /// @}
         /// @defgroup Logic ops
         /// @{
-        new Prim("0=",    "bi", c=>push(ZERO(pop()))),
-        new Prim("0<",    "bi", c=>push(BOOL(pop() < -EPS))),
-        new Prim("0>",    "bi", c=>push(BOOL(pop() >  EPS))),
-        new Prim("=",     "bi", c=>{ let n=pop(); push(ZERO(pop() - n)) }),
-        new Prim("<",     "bi", c=>{ let n=pop(); push(BOOL((pop() - n) < -EPS)) }),
-        new Prim(">",     "bi", c=>{ let n=pop(); push(BOOL((pop() - n) >  EPS)) }),
-        new Prim("<>",    "bi", c=>{ let n=pop(); push(BOOL(ZERO(pop() - n)==0)) }),
+        new Prim("0=",    "eq", c=>push(ZERO(pop()))),
+        new Prim("0<",    "eq", c=>push(BOOL(pop() < -EPS))),
+        new Prim("0>",    "eq", c=>push(BOOL(pop() >  EPS))),
+        new Prim("=",     "eq", c=>{ let n=pop(); push(ZERO(pop() - n)) }),
+        new Prim("<",     "eq", c=>{ let n=pop(); push(BOOL((pop() - n) < -EPS)) }),
+        new Prim(">",     "eq", c=>{ let n=pop(); push(BOOL((pop() - n) >  EPS)) }),
+        new Prim("<>",    "eq", c=>{ let n=pop(); push(BOOL(ZERO(pop() - n)==0)) }),
         /// @}
         /// @defgroup IO ops
         /// @{
@@ -366,41 +366,56 @@ window.ForthVM = function(output=console.log) {
         /// @}
         /// @defgroup Memory Access ops
         /// @{
-        new Prim("?",        "ma", c=>log(dict[pop()].val[0].toString(_base)+SPC)),
-        new Prim("@",        "ma", c=>push(dict[pop()].val[0])),                              // w -- n
-        new Prim("!",        "ma", c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
-        new Prim("+!",       "ma", c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
-        new Prim("allot",    "ma", c=>{                                                       // n --
+        new Prim("?",        "mm", c=>log(dict[pop()].val[0].toString(_base)+SPC)),
+        new Prim("@",        "mm", c=>push(dict[pop()].val[0])),                              // w -- n
+        new Prim("!",        "mm", c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
+        new Prim("+!",       "mm", c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
+        new Prim("allot",    "mm", c=>{                                                       // n --
             nvar(_dovar, 0)                                                                   // create qf array
             for (let n=pop(), i=1; i<n; i++) dict.tail().val[i]=0 }),                         // fill all slot with 0
-        new Prim("n?",       "ma", c=>{                                                       // w i --
+        new Prim("n?",       "mm", c=>{                                                       // w i --
             let i=pop(); let w=pop(); log(dict[w].val[i].toString(_base)+SPC) }),
-        new Prim("n@",       "ma", c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
-        new Prim("n!",       "ma", c=>{ let i=pop(); let w=pop(); dict[w].val[i]=pop() }),    // n w i --
+        new Prim("n@",       "mm", c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
+        new Prim("n!",       "mm", c=>{ let i=pop(); let w=pop(); dict[w].val[i]=pop() }),    // n w i --
         /// @}
         /// @defgroup Word Defining ops
         /// @{
-        new Immd("exec",     "mc", c=>dict[pop()].exec()),
-        new Prim(":",        "mc", c=>{ dict.add(); _compi=true }),  // new colon word
-        new Immd(";",        "mc", c=>_compi=false),                 // semicolon
-        new Immd("variable", "mc", c=>(dict.add(), nvar(_dovar, 0))),
-        new Immd("constant", "mc", c=>(dict.add(), nvar(_docon, pop()))),
-        new Prim("create",   "mc", c=>dict.add()),                   // create new word
-        new Prim(",",        "mc", c=>{                              // push TOS into qf
+        new Immd("exec",     "cm", c=>dict[pop()].exec()),
+        new Prim(":",        "cm", c=>{ dict.add(); _compi=true }),  // new colon word
+        new Immd(";",        "cm", c=>_compi=false),                 // semicolon
+        new Immd("variable", "cm", c=>(dict.add(), nvar(_dovar, 0))),
+        new Immd("constant", "cm", c=>(dict.add(), nvar(_docon, pop()))),
+        new Prim("create",   "cm", c=>dict.add()),                   // create new word
+        new Prim(",",        "cm", c=>{                              // push TOS into qf
             let pf = dict.tail().pf
             if (pf.length) pf[0].qf.push(pop())                      // append more values
             else           nvar(_dovar, pop())                       // 1st value in qf
         }),
-        new Prim("does",     "mc", c=>{
+        new Prim("does",     "cm", c=>{
             let w=dict.tail(), src=dict[_wp].pf
             for (var i=0; i < src.length; i++) {
                 if (src[i].name=="does") w.pf.push(...src.slice(i+1))
             }
             throw "does"                                             // break from inner interpreter
         }),
-        new Prim("to",       "mc", c=>tok2w().val[0]=pop()),         // update constant
-        new Prim("is",       "mc", c=>{                              // n -- alias a word
+        new Prim("to",       "cm", c=>tok2w().val[0]=pop()),         // update constant
+        new Prim("is",       "cm", c=>{                              // n -- alias a word
             dict.add(); dict.tail().pf = dict[pop()].pf
+        }),
+        /// @}
+        /// @defgroup Debugging ops
+        /// @{
+        new Prim("here",     "db", c=>push(dict.tail().token)),
+        new Prim("words",    "db", c=>_words()),
+        new Prim("dump",     "db", c=>{ let n=pop(); _dump(pop(), n) }),
+        new Prim(".s",       "db", c=>{
+            let s = _ss.map(v=>v.toString(_base))
+            log(s.join(' ') + CR)
+        }),
+        new Prim("see",      "db", c=>{ let w=tok2w(); console.log(w); _see(w) }),
+        new Prim("forget",   "db", c=>{
+            _fence=Math.max(tok2w().token, find("boot").token+1)
+            dict.splice(_fence)
         }),
         /// @}
         /// @defgroup System ops
@@ -412,20 +427,6 @@ window.ForthVM = function(output=console.log) {
         new Prim("time",     "os", c=>log((new Date()).toLocaleTimeString()+" ")),
         new Prim("eval",     "os", c=>eval(pop())),                  /// * dangerous, be careful!
         /// @}
-        /// @defgroup Debugging ops
-        /// @{
-        new Prim("here",     "os", c=>push(dict.tail().token)),
-        new Prim("words",    "os", c=>_words()),
-        new Prim("dump",     "os", c=>{ let n=pop(); _dump(pop(), n) }),
-        new Prim(".s",       "os", c=>{
-            let s = _ss.map(v=>v.toString(_base))
-            log(s.join(' ') + CR)
-        }),
-        new Prim("see",      "os", c=>{ let w=tok2w(); console.log(w); _see(w) }),
-        new Prim("forget",   "os", c=>{
-            _fence=Math.max(tok2w().token, find("boot").token+1)
-            dict.splice(_fence)
-        }),
         new Prim("boot",     "os", c=>{
             dict.splice(_fence=find("boot").token+1)
             _wp   = _rs.length = _ss.length = 0
