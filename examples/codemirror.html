@@ -25,7 +25,8 @@
       </div>
       <div class='col' style='width:84%; padding:8px'>
         <div class='row'>
-          <button style='width:10%' onclick='edt.style.display="none"'>editor</button>
+          <button style='width:10%'
+  		     onclick='edt.style.display=(edt.style.display=="none") ? "block" : "none"'>editor</button>
           <input id='tib' class='code' value=''
              onkeydown='if (13===event.keyCode) forth_eval()'/>
           <button style='width:10%' onclick='clear_txt()'>clear</button>
