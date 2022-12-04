@@ -1,8 +1,13 @@
 'use strict';
 ///
-/// Module - eForth Virtual Machine 
+/// Module - eForth Virtual Machine
+/// Note: supported interface
+///   > let vm = new ForthVM(), or
+///   > let vm = ForthVM()
 ///
 var ForthVM = function(output=console.log) {
+    if (!(this instanceof ForthVM)) return new ForthVM(output);
+    
     const SPC=" ", CR="\n"                ///< string constants
     const EPS=1.0e-6                      ///< comparison epsilon
     ///
