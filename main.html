@@ -9,20 +9,22 @@
     <script type='module'>
     import { ForthVM } from './modules/eforth.js'
     const vm  = new ForthVM(to_txt)
+    const tib = document.getElementById('tib')    ///< terminal input buffer
     const txt = document.getElementById('txt')    ///< text console
     const ss  = document.getElementById('ss')     ///< data stack
 
     function to_txt(t) {                          ///< output to textarea
         txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
     }
-    const tib = document.getElementById('tib')    ///< terminal input buffer
-    tib.addEventListener('keydown', e=>{ if (e.keyCode!=13) return;
-        let cmd = tib.value; tib.value=''
+    function forth_eval(cmd) {
         to_txt('<em class="cmd" style="color:#48f">'+cmd+'</em><br/>')
         if (cmd=='clear') txt.innerHTML = ''
         else vm.exec(cmd)
         ss.innerHTML = 'SS' + JSON.stringify(vm.ss)
-    })
+    }
+    tib.onkeydown = (e)=>{                       ///< add keydown handler
+        if (e.keyCode==13) { forth_eval(tib.value); tib.value = '' }
+    }
     </script>
     <script type='application/forth'>
     .( <h2>\ this is an embedded Forth demo</h2> )
