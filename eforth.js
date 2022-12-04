@@ -30,7 +30,7 @@ window.ForthVM = function(output=console.log) {
     class Prim {
         constructor(name, cat, xt) {
             this.name  = name             ///< name of the word
-			this.cat   = cat              ///< assign category
+            this.cat   = cat              ///< assign category
             this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.token = _fence++         ///< word
@@ -46,7 +46,7 @@ window.ForthVM = function(output=console.log) {
     class Code {
         constructor(name, v=false, xt=null) {
             this.name  = name             ///< name of the word
-			this.cat   = "User"           ///< user defined word
+            this.cat   = "User"           ///< user defined word
             this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
@@ -58,7 +58,7 @@ window.ForthVM = function(output=console.log) {
             if (typeof(v)=="boolean" && v) this.token = _fence++  // new user defined word
             else if (typeof(v)=="string")  this.qf = [ v ]
             else if (typeof(v)=="number")  this.qf = [ v ]
-            
+
             this.pf.tail = function() { return this[this.length-1] }
         }
         exec() {                         /// run colon word
@@ -163,14 +163,14 @@ window.ForthVM = function(output=console.log) {
     /// @{
     const _spaces= (n)=>{ for (let i=0; i<n; i++) log(SPC) }
     const _words = ()=>{
-		let sz = 0
+        let sz = 0
         dict.forEach((w,i)=>{
-			log(w.name+SPC)
-			sz += w.name.length + 1
-			if (sz > 52) { log(CR); sz = 0 }
-		})
+            log(w.name+SPC)
+            sz += w.name.length + 1
+            if (sz > 52) { log(CR); sz = 0 }
+        })
         log(CR)
-	}
+    }
     const _dump = (n0, n1)=>{
         for (let i = n0; i <= n1; i++) {
             let w = dict[i]
