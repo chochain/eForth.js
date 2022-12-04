@@ -206,7 +206,8 @@ export default function ForthVM(output=console.log) {
     ///======================================================================
     /// dictionary intialized with primitive words
     ///
-    let dict = [
+    const _init = ()=>{                                 ///< dictionary constructor
+        dict = [
         /// @defgroup Stack ops
         /// @{
         new Prim("dup",   "ss", c=>push(top())),
@@ -437,19 +438,19 @@ export default function ForthVM(output=console.log) {
             dict.splice(_fence=find("boot").token+1)                /// * purge everything upto 'boot'
             _wp   = _rs.length = _ss.length = 0
             _base = 10
-        })
+        })]
         /// @}
-    ]
-    /// @defgroup Dictionary access methods
-    /// @{
-    dict.add  = function()    {                                     ///< create a new word
-        let s = nxtok();                                            ///< fetch an input token
-        if (s==null) { _compi=false; throw "more input" }
-        dict.push(new Code(s, true))
+        /// @defgroup Dictionary access methods
+        /// @{
+        dict.add  = function()    {                                     ///< create a new word
+            let s = nxtok();                                            ///< fetch an input token
+            if (s==null) { _compi=false; throw "more input" }
+            dict.push(new Code(s, true))
+        }
+        dict.tail = function(i=1) { return this[this.length-i]    }     ///< last entry
+        dict.last = function()    { return dict.tail(2).pf.tail() }     ///< pf of last word created
+        /// @}
     }
-    dict.tail = function(i=1) { return this[this.length-i]    }     ///< last entry
-    dict.last = function()    { return dict.tail(2).pf.tail() }     ///< pf of last word created
-    /// @}
     ///
     /// outer interpreter method
     /// @param tok - one token (or idiom) from input buffer
@@ -476,7 +477,9 @@ export default function ForthVM(output=console.log) {
         }
         else push(n)                                        ///>> or, push number onto stack top
     }
-    let exec = (cmd)=>{                                    ///< outer interpreter
+    let dict = []                                           ///< blank for lazy loading
+    let exec = (cmd)=>{                                     ///< outer interpreter
+        if (dict.length==0) _init()                         /// * construct dict now
         cmd.split("\n").forEach(r=>{                        /// * multi-line input
             _tib=r + SPC; _ntib=0                           /// * capture into TIB
             let tok = ''                                    ///< input idiom
