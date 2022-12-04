@@ -3,12 +3,14 @@
   <body>
     <div style='padding:1%; font-size:20px'>
       <input id='tib' class='bg' style='height:36px; width:100%' value=''/>
-      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'></pre>
+      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'><h3>eForth.js 8.0</h3></pre>
   	  <pre id='ss' class='bg'>SS[ ]</pre>
     </div>
     <script type='module'>
-    import Forth from './modules/eforth.js'       ///< ForthVM is default export
+    import { Forth, embed_forth } from './modules/eforth.js'
     const vm  = new Forth(to_txt)                 ///< so, we can name it anything
+    embed_forth(vm.exec)                          /// * enable embedded Forth
+
     const tib = document.getElementById('tib')    ///< terminal input buffer
     const txt = document.getElementById('txt')    ///< text console
     const ss  = document.getElementById('ss')     ///< data stack
