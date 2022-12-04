@@ -24,9 +24,9 @@
         else vm.exec(cmd)
         ss.innerHTML = 'SS' + JSON.stringify(vm.ss)
     }
-    tib.onkeydown = (e)=>{                       ///< add keydown handler
+    tib.addEventListener('keydown', (e)=>{        ///< add keydown handler
         if (e.keyCode==13) { forth_eval(tib.value); tib.value = '' }
-    }
+    })
     </script>
     <script type='application/forth'>
     .( <h2>\ this is an embedded Forth demo</h2> )
