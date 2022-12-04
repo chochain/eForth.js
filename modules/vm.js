@@ -4,45 +4,35 @@
 ///   > let vm = new ForthVM(), or
 ///   > let vm = ForthVM()
 ///
-import { Prim, Immd, Code, run, boot, forget, does } from './core.js'
+import { Prim, Immd, Code, run, purge, does } from './core.js'
+import * as io    from './io.js'
+import * as os    from './os.js'
+import * as mm    from './mem.js'
+import * as debug from './debug.js'
+
+/// @defgroup Data conversion functions
+/// @{
+const EPS    = 1.0e-6                     ///< comparison epsilon
+const INT    = v=>(v | 0)                 ///< OR takes 32-bit integer
+const BOOL   = t=>(t ? -1 : 0)            ///< Forth true = -1 
+const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
+const NA     = (s)=>s+" not found! "      ///< exception handler
+/// @}
 
 export default function ForthVM(output=console.log) {
     if (!(this instanceof ForthVM)) return new ForthVM(output);
 
-    const SPC=" ", CR="\n"                ///< string constants
-    const EPS=1.0e-6                      ///< comparison epsilon
+    io.init(output)                       /// * initialize output stream
     ///
-    /// Virtual Machine instance variables
-    ///
+    /// @defgroup Virtual Machine instance variables
+    /// @{
     let _ss    = []                       ///< data stack
     let _rs    = []                       ///< return stack
-    let _base  = 10                       ///< numeric radix
     ///
     /// VM control states
     ///
     let _compi = false                    ///< compile flag
     let _ucase = false                    ///< case sensitive find
-    let _tib   ="", _ntib = 0             ///< input buffer
-    ///=====================================================================
-    /// @defgroup IO functions
-    /// @{
-    const log    = (s)=>output(s)                    ///< output port
-    const NA     = (s)=>s+" not found! "             ///< exception handler
-    const nxtok  = (d=SPC)=>{                        ///< assumes tib ends with a blank
-        while (d==SPC &&
-               (_tib[_ntib]==SPC || _tib[_ntib]=="\t")) _ntib++ /// skip leading blanks and tabs
-        let i = _tib.indexOf(d, _ntib)
-        let s = (i==-1) ? null : _tib.substring(_ntib, i); _ntib=i+1
-        return s
-    }
-    const dot_r = (n, v)=>{
-        let s = v.toString(_base)
-        for(let i=0; i+s.length < n; i++) log(SPC)
-        log(s)
-    }
-    const sleep  = (ms)=>{
-        return new Promise(rst=>setTimeout(rst,ms))
-    }
     /// @}
     /// @defgroup Compiler functions
     /// @{
@@ -66,16 +56,10 @@ export default function ForthVM(output=console.log) {
         return null                                 /// * not found
     }
     const tok2w  = ()=>{                            ///< convert token to word
-        let s=nxtok(), w=find(s)
+        let s=io.nxtok(), w=find(s)
         if (w==null) throw NA(s);
         return w
     }
-    /// @}
-    /// @defgroup Data conversion functions
-    /// @{
-    const INT    = v=>(v | 0)                        ///< OR takes 32-bit integer
-    const BOOL   = t=>(t ? -1 : 0)                   ///< Forth true = -1 
-    const ZERO   = v=>BOOL(Math.abs(v) < EPS)        ///< zero floating point
     /// @}
     /// @defgroup Stack op short-hand functions (macros)
     /// @{
@@ -111,43 +95,6 @@ export default function ForthVM(output=console.log) {
         }
     }
     /// @}
-    /// @defgroup Debug functions (can be implemented in front-end)
-    /// @{
-    const _spaces= (n)=>{ for (let i=0; i<n; i++) log(SPC) }
-    const _words = ()=>{                                ///< word op
-        let sz = 0
-        dict.forEach((w,i)=>{                           /// * loop thru all words
-            log(w.name+SPC)
-            sz += w.name.length + 1
-            if (sz > 52) { log(CR); sz = 0 }
-        })
-        log(CR)
-    }
-    const _dump = (n0, n1)=>{                           ///< memory dump op
-        for (let i = n0; i <= n1; i++) {
-            let w = dict[i]
-            log('dict[' + i + ']=("' + w.name + '" ')
-            if (w.xt) log(w.xt.toString(_base))
-            else      log(', pf[' + w.pf.map(w1=>w1.name).toString(_base) + ']')
-            if (w.qf) log(', qf[' + w.qf.toString(_base) + ']')
-            log((w.immd ? 'immd)' : ')') + CR)
-        }
-    }
-    const _see = (w, n=0)=>{                            ///< see op
-        const _show_pf = (pf)=>{
-            if (pf == null || pf.length == 0) return
-            log('['+CR); _spaces(2*(n+1))               /// * indent section
-            pf.forEach(w=>_see(w, n+1))                 /// * recursive call
-            log('] ')                                   /// * close section
-        }
-        log(w.name+SPC)                                 /// * display word name
-        if (w.qf != null && w.qf.length > 0) {          /// * display qf array
-            log('='+JSON.stringify(w.qf)+SPC)
-        }
-        _show_pf(w.pf)                                  /// * if.{pf}, for.{pf}, or begin.{pf}
-        _show_pf(w.pf1)                                 /// * else.{pf1}.then, or .then.{pf1}.next
-        _show_pf(w.pf2)                                 /// * aft.{pf2}.next
-    }
     ///======================================================================
     /// dictionary intialized with primitive words
     ///
@@ -204,18 +151,18 @@ export default function ForthVM(output=console.log) {
         /// @defgroup IO ops
         /// @{
         new Prim("ucase!","io", c=>_ucase=BOOL(ZERO(pop()))),
-        new Prim("base@", "io", c=>push(INT(_base))),
-        new Prim("base!", "io", c=>_base=INT(pop())),
-        new Prim("hex",   "io", c=>_base=16),
-        new Prim("decimal","io",c=>_base=10),
-        new Prim("cr",    "io", c=>log(CR)),
-        new Prim(".",     "io", c=>log(pop().toString(_base)+SPC)),
-        new Prim(".r",    "io", c=>{ let n=pop(); dot_r(n, pop()) }),
-        new Prim("u.r",   "io", c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
-        new Prim("key",   "io", c=>push(nxtok()[0])),
-        new Prim("emit",  "io", c=>log(String.fromCharCode(pop()))),
-        new Prim("space", "io", c=>log(SPC)),
-        new Prim("spaces","io", c=>_spaces(pop())),
+        new Prim("base@", "io", c=>push(io.get_base())),
+        new Prim("base!", "io", c=>io.set_base(pop())),
+        new Prim("hex",   "io", c=>io.set_base(16)),
+        new Prim("decimal","io",c=>io.set_base(10)),
+        new Prim("cr",    "io", c=>io.cr()),
+        new Prim(".",     "io", c=>io.dot(pop())),
+        new Prim(".r",    "io", c=>{ let n=pop(); io.dot_r(n, pop()) }),
+        new Prim("u.r",   "io", c=>{ let n=pop(); io.dot_r(n, pop()&0x7fffffff) }),
+        new Prim("key",   "io", c=>push(io.key())),
+        new Prim("emit",  "io", c=>io.emit(pop())),
+        new Prim("space", "io", c=>io.spaces(1)),
+        new Prim("spaces","io", c=>io.spaces(pop())),
         /// @}
         /// @defgroup Literal ops
         /// @{
@@ -225,14 +172,14 @@ export default function ForthVM(output=console.log) {
         new Prim("]",     "li", c=>_compi=true ),
         new Prim("'",     "li", c=>{ let w=tok2w(); push(w.token) }),
         new Immd("s\"",   "li", c=>{
-            let s = nxtok('"')
+            let s = io.nxtok('"')
             if (_compi) compile(new Code("dostr", s))
             else push(s)                               /// * push string object
         }),
-        new Immd(".\"",   "li", c=>compile(new Code("dolit", nxtok('"')))),
-        new Immd("(",     "li", c=>nxtok(')')),
-        new Immd(".(",    "li", c=>log(nxtok(')'))),
-        new Immd("\\",    "li", c=>_ntib=_tib.length),
+        new Immd(".\"",   "li", c=>compile(new Code("dolit", io.nxtok('"')))),
+        new Immd("(",     "li", c=>io.nxtok(')')),
+        new Immd(".(",    "li", c=>io.log(io.nxtok(')'))),
+        new Immd("\\",    "li", c=>io.clear()),
         /// @}
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
         /// @{
@@ -315,20 +262,21 @@ export default function ForthVM(output=console.log) {
         new Prim("r>",    "br", c=>push(_rs.pop())),   /// * pop from rstack
         new Prim("r@",    "br", c=>push(rtop())),      /// * fetch from rstack
         new Prim("i",     "br", c=>push(rtop())),      /// * same as r@
+        new Prim("exit",  "br", c=>{ throw 'exit' }),  /// * exit inner interpreter
         /// @}
         /// @defgroup Memory Access ops
         /// @{
-        new Prim("?",        "mm", c=>log(dict[pop()].val[0].toString(_base)+SPC)),
-        new Prim("@",        "mm", c=>push(dict[pop()].val[0])),                              // w -- n
-        new Prim("!",        "mm", c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
-        new Prim("+!",       "mm", c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
-        new Prim("allot",    "mm", c=>{                                                       // n --
-            nvar(_dovar, 0)                                                                   // create qf array
-            for (let n=pop(), i=1; i<n; i++) dict.tail().val[i]=0 }),                         // fill all slot with 0
-        new Prim("n?",       "mm", c=>{                                                       // w i --
-            let i=pop(); let w=pop(); log(dict[w].val[i].toString(_base)+SPC) }),
-        new Prim("n@",       "mm", c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
-        new Prim("n!",       "mm", c=>{ let i=pop(); let w=pop(); dict[w].val[i]=pop() }),    // n w i --
+        new Prim("?",     "mm", c=>io.log(mm.at(dict[pop()]))),
+        new Prim("@",     "mm", c=>push(mm.at(dict[pop()]))),                              // w -- n
+        new Prim("!",     "mm", c=>{ let w=pop(); mm.store(dict[w], pop()) }),             // n w  --
+        new Prim("+!",    "mm", c=>{ let w=pop(); mm.storeplus(dict[w], pop()) }),         // n w --
+        new Prim("allot", "mm", c=>{                                                       // n --
+            nvar(_dovar, 0)                                                                // create qf array
+            for (let n=pop(), i=1; i<n; i++) mm.arr_store(dict.tail(), i, 0)
+        }),
+        new Prim("n?",    "mm", c=>{ let i=pop(); io.log(mm.arr_at(dict[pop()], i)) }),                 // w i --
+        new Prim("n@",    "mm", c=>{ let i=pop(); let w = pop(); push(mm.arr_at(dict[w], i)) }),        // w i -- n
+        new Prim("n!",    "mm", c=>{ let i=pop(); let w = pop(); mm.arr_store(dict[w], i, pop()) }),    // n w i --
         /// @}
         /// @defgroup Word Defining ops
         /// @{
@@ -343,6 +291,9 @@ export default function ForthVM(output=console.log) {
             if (pf.length) pf[0].qf.push(pop())                      // append more values
             else           nvar(_dovar, pop())                       // 1st value in qf
         }),
+        new Prim("allot",    "cm", c=>{                                                       // n --
+            nvar(_dovar, 0)                                                                   // create qf array
+            for (let n=pop(), i=1; i<n; i++) dict.tail().val[i]=0 }),                         // fill all slot with 0
         new Prim("does",     "cm", c=>does(dict)),
         new Prim("to",       "cm", c=>tok2w().val[0]=pop()),         // update constant
         new Prim("is",       "cm", c=>{                              // n -- alias a word
@@ -352,28 +303,23 @@ export default function ForthVM(output=console.log) {
         /// @defgroup Debugging ops
         /// @{
         new Prim("here",     "db", c=>push(dict.tail().token)),
-        new Prim("words",    "db", c=>_words()),
-        new Prim("dump",     "db", c=>{ let n=pop(); _dump(pop(), n) }),
-        new Prim(".s",       "db", c=>{
-            let s = _ss.map(v=>v.toString(_base))
-            log(s.join(' ') + CR)
-        }),
-        new Prim("see",      "db", c=>{ let w=tok2w(); console.log(w); _see(w) }),
-        new Prim("forget",   "db", c=>{
-            forget(dict, tok2w(), find("boot"))
-        }),
+        new Prim(".s",       "db", c=>io.dot(_ss)),
+        new Prim("words",    "db", c=>debug.words(dict)),
+        new Prim("dump",     "db", c=>{ let n=pop(); debug.dump(dict, pop(), n) }),
+        new Prim("see",      "db", c=>{ let w=tok2w(); console.log(w); debug.see(w) }),
+        new Prim("forget",   "db", c=>purge(dict, tok2w(), find("boot"))),
         /// @}
         /// @defgroup System ops
         /// @{
-        new Prim("exit",     "os", c=>{ throw "exit" }),             /// * exit inner interpreter
-        new Prim("clock",    "os", c=>{ let n = Date.now(); push(n) }),
-        new Prim("delay",    "os", c=>sleep(pop()).then(()=>{})),
-        new Prim("date",     "os", c=>log((new Date()).toDateString()+" ")),
-        new Prim("time",     "os", c=>log((new Date()).toLocaleTimeString()+" ")),
-        new Prim("eval",     "os", c=>eval(pop())),                 /// * dangerous, be careful!
+        new Prim("clock",    "os", c=>push(os.clock())),
+        new Prim("delay",    "os", c=>os.sleep(pop())),
+        new Prim("date",     "os", c=>io.log(os.date()+" ")),
+        new Prim("time",     "os", c=>io.log(os.time()+" ")),
+        new Prim("eval",     "os", c=>os.js_eval(pop())),           /// * dangerous, be careful!
         /// @}
         new Prim("boot",     "os", c=>{
-            boot(dict, find("boot"))                                /// * purge everything upto 'boot'
+            let b = find("boot")                                    /// * purge everything upto 'boot'
+            purge(dict, b, b)
             _rs.length = _ss.length = 0
             _base = 10
         })]
@@ -381,7 +327,7 @@ export default function ForthVM(output=console.log) {
         /// @defgroup Dictionary access methods
         /// @{
         dict.add  = function()    {                                     ///< create a new word
-            let s = nxtok();                                            ///< fetch an input token
+            let s = io.nxtok();                                         ///< fetch an input token
             if (s==null) { _compi=false; throw "more input" }
             dict.push(new Code(s, true))
         }
@@ -397,17 +343,17 @@ export default function ForthVM(output=console.log) {
         let w = find(tok)                                   /// * search throug dictionary
         if (w != null) {                                    /// * word found?
             if(!_compi || w.immd) {                         /// * in interpret mode?
-                try       { w.exec() }                      ///> execute word
-                catch (e) { log(e) }
+                try       { w.exec()  }                     ///> execute word
+                catch (e) { io.log(e) }
             }
             else compile(w)                                 ///> or compile word
             return
         }
-        let n = _base!=10                                   ///> not word, try as number
+        let n = io.get_base()!=10                           ///> not word, try as number
             ? parseInt(tok, _base)
             : parseFloat(tok)
         if (isNaN(n)) {                                     ///> * not a number?
-            log(tok + "? ")                                 ///>> display prompt
+            io.log(tok + "? ")                              ///>> display prompt
             _compi=false                                    ///>> restore interpret mode
         }
         else if (_compi) {                                  ///> in compile mode?
@@ -419,13 +365,13 @@ export default function ForthVM(output=console.log) {
     let exec = (cmd)=>{                                     ///< outer interpreter
         if (dict.length==0) _init()                         /// * construct dict now
         cmd.split("\n").forEach(r=>{                        /// * multi-line input
-            _tib=r + SPC; _ntib=0                           /// * capture into TIB
-            let tok = ''                                    ///< input idiom
-            while ((tok=nxtok()) != null) {                 /// * loop thru all idioms
+            io.set_tib(r)                                   /// * capture into TIB
+            for (let tok=io.nxtok();                        ///< loop thru input idioms
+                 tok != null; tok=io.nxtok()) {
                 outer(tok)
             }
         })
-        log("ok\n")
+        io.log("ok\n")
     }
     return {
         ss: _ss,                                           ///< data stack
