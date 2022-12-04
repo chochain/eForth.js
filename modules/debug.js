@@ -2,6 +2,7 @@
 /// @{
 import { log, spaces } from './io.js'
 
+const DUMP_WIDTH = 54                               ///< dump control
 const CR = "\n"
 
 export const words = (dict)=>{                      ///< word op
@@ -9,7 +10,7 @@ export const words = (dict)=>{                      ///< word op
     dict.forEach((w,i)=>{                           /// * loop thru all words
         log(w.name+' ')
         sz += w.name.length + 1
-        if (sz > 52) { log(CR); sz = 0 }
+        if (sz > DUMP_WIDTH) { log(CR); sz = 0 }
     })
     log(CR)
 }
