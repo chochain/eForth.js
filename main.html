@@ -7,8 +7,8 @@
   	  <pre id='ss' class='bg'>SS[ ]</pre>
     </div>
     <script type='module'>
-    import { ForthVM } from './modules/eforth.js'
-    const vm  = new ForthVM(to_txt)
+    import Forth from './modules/eforth.js'       ///< ForthVM is default export
+    const vm  = new Forth(to_txt)                 ///< so, we can name it anything
     const tib = document.getElementById('tib')    ///< terminal input buffer
     const txt = document.getElementById('txt')    ///< text console
     const ss  = document.getElementById('ss')     ///< data stack
