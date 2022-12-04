@@ -1,0 +1,41 @@
+﻿<html>
+  <head><style>.bg { padding:8px; font-size:24px; border: 1px solid #888; }</style></head>
+  <body>
+    <div style='padding:1%; font-size:20px'>
+      <input id='tib' class='bg' style='height:36px; width:100%' value=''/>
+      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'></pre>
+  	  <pre id='ss' class='bg'>SS[ ]</pre>
+    </div>
+    <script type='module'>
+    import { ForthVM } from './modules/eforth.js'
+    const vm  = new ForthVM(to_txt)
+    const txt = document.getElementById('txt')    ///< text console
+    const ss  = document.getElementById('ss')     ///< data stack
+
+    function to_txt(t) {                          ///< output to textarea
+        txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
+    }
+    const tib = document.getElementById('tib')    ///< terminal input buffer
+    tib.addEventListener('keydown', e=>{ if (e.keyCode!=13) return;
+        let cmd = tib.value; tib.value=''
+        to_txt('<em class="cmd" style="color:#48f">'+cmd+'</em><br/>')
+        if (cmd=='clear') txt.innerHTML = ''
+        else vm.exec(cmd)
+        ss.innerHTML = 'SS' + JSON.stringify(vm.ss)
+    })
+    </script>
+    <script type='application/forth'>
+    .( <h2>\ this is an embedded Forth demo</h2> )
+    .( <b>\ list dictionary</b> ) cr
+    words
+    .( <b>\ create a word</b><br/>: xx for r@ . next ; ) cr
+    : xx for r@ . next ;
+    .( <b>\ see xx</b> ) cr
+    see xx cr
+    .( <b>\ run xx<b/> ) cr
+    9 xx cr
+    .( <b>\ list it again</b> ) cr
+    words
+    </script>
+  </body>
+</html>
