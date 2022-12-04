@@ -53,17 +53,16 @@ export class Code {
 ///
 /// Forth Inner Interpreter (just one line)
 ///
-export const run    = (p)=>{ try { p.forEach(w=>w.exec()) } catch {} }
-export const boot   = (dict, b)=>dict.splice(_fence=w.token+1)                /// * purge everything upto 'boot'
-export const forget = (dict, w, b)=>{
+export const run   = (pf)=>{ try { pf.forEach(w=>w.exec()) } catch {} }
+export const purge = (dict, w, b)=>{                          ///< purge everything upto 'w'
     _fence=Math.max(w.token, b.token+1)
     dict.splice(_fence)
 }
-export const does = (dict)=>{
+export const does = (dict)=>{                                 ///< handle CREATE...DOES...
     let w=dict.tail(), src=dict[_wp].pf
     for (var i=0; i < src.length; i++) {
         if (src[i].name=="does") w.pf.push(...src.slice(i+1))
     }
-    throw "does"                                                    /// break from inner interpreter
+    throw "does"                                              /// break from inner interpreter
 }    
 
