@@ -25,7 +25,10 @@
         ss.innerHTML = 'SS' + JSON.stringify(vm.ss)
     }
     tib.addEventListener('keydown', (e)=>{        ///< add keydown handler
-        if (e.keyCode==13) { forth_eval(tib.value); tib.value = '' }
+        if (e.keyCode==13) {
+            forth_eval(tib.value); tib.value = ''
+            tib.focus()
+        }
     })
     </script>
     <script type='application/forth'>
