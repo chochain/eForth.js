@@ -6,6 +6,6 @@
 ///
 /// default module interface to JS engine
 ///
-export { default as Forth }       from './vm.js'
+export { default as Forth, VM }   from './vm.js'
 export { default as embed_forth } from './embed.js'
 
