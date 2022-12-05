@@ -19,6 +19,75 @@ const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
 const NA     = (s)=>s+" not found! "      ///< exception handler
 /// @}
 
+class VM {
+	constructor(output=console.log) {
+		let log = output
+	}
+    ///
+    /// @defgroup Virtual Machine instance variables
+    /// @{
+	let dict   = []                       ///< dictionary
+    let _ss    = []                       ///< data stack
+    let _rs    = []                       ///< return stack
+    ///
+    /// VM control states
+    ///
+    let _compi = false                    ///< compile flag
+    let _ucase = false                    ///< case sensitive find
+    /// @}
+    /// @defgroup Compiler functions
+    /// @{
+    comma(w) { dict.tail().pf.push(w) }    ///< add word to pf[]
+    compile(s, v, xt=null) {               ///< compile a word
+        let w = new Code(s, v, xt==null ? find(s).xt : xt)
+        comma(w)
+    }
+    nvar(xt, v) {
+        compile("dovar", v)
+        let t   = dict[dict.length-i]
+		let w   = t.pf[0]                  ///< last work and its pf
+        t.val   = w.qf                     /// * create a val func
+        w.xt    = xt                       /// * set internal func
+        w.token = t.token                  /// * copy token
+    }
+    find(s) {                              ///< search through dictionary
+        for (let i=dict.length-1; i>=0; --i) {  /// * search reversely
+            if (s.localeCompare(           /// * case insensitive
+                dict[i].name, undefined,
+                { sensitivity: _ucase ? 'case' : 'base' }
+            )==0) {
+                return dict[i]             /// * return indexed word
+            }
+        }
+        return null                        /// * not found
+    }
+    /// @}
+    /// @defgroup Outer Interpreter
+    /// @{
+    outer(tok) {                           ///< outer interperter
+        let w = find(tok)                  /// * search throug dictionary
+        if (w != null) {                   /// * word found?
+            if(!_compi || w.immd) {        /// * in interpret mode?
+                try       { w.exec()  }    ///> execute word
+                catch (e) { io.log(e) }
+            }
+            else comma(w)                  ///> or compile word
+            return
+        }
+        let n = io.get_base()!=10          ///> not word, try as number
+            ? parseInt(tok, _base)
+            : parseFloat(tok)
+        if (isNaN(n)) {                    ///> * not a number?
+            io.log(tok + "? ")             ///>> display prompt
+            _compi=false                   ///>> restore interpret mode
+        }
+        else if (_compi) {                 ///> in compile mode?
+            compile("dolit", n)            ///>> compile the number
+        }
+        else push(n)                       ///>> or, push number onto stack top
+    }
+}
+
 export default function ForthVM(output=console.log) {
     if (!(this instanceof ForthVM)) return new ForthVM(output);
 
