@@ -17,7 +17,7 @@ export const key      = () =>{ return io.nxtok()[0] }
 export const emit     = (c)=>log(String.fromCharCode(c))
 export const dot      = (n)=>{
     let a = typeof(n)!='object' ? [ n ] : n
-    log(a.map(v=>v.toString(_base)).join(SPC))
+    log(a.map(v=>v.toString(_base)).join(SPC)+SPC)
 }
 export const dot_r    = (n, v)=>{
     let s = v.toString(_base)
