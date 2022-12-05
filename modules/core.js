@@ -5,6 +5,10 @@ let _wp    = 0                        ///< word pointer
 let _fence = 0                        ///< dict length control
 let _xs    = []                       ///< call frame
 
+///=========================================================================
+///
+/// Forth Inner Interpreter (just one line)
+///
 export class Prim {
     constructor(name, cat, xt) {
         this.name  = name             ///< name of the word
@@ -29,10 +33,6 @@ export class Code {
         this.immd  = false            ///< immediate flag
         this.pf    = []               ///< parameter field
 
-        if (xt==null) {
-            let w = find(name);
-            if (w != null) this.xt = w.xt
-        }
         if (typeof(v)=="boolean" && v) this.token = _fence++  // new user defined word
         else if (typeof(v)=="string")  this.qf = [ v ]
         else if (typeof(v)=="number")  this.qf = [ v ]
@@ -49,10 +49,6 @@ export class Code {
         else this.xt(this);          /// * build-it words
     }
 }
-///=========================================================================
-///
-/// Forth Inner Interpreter (just one line)
-///
 export const run   = (pf)=>{ try { pf.forEach(w=>w.exec()) } catch {} }
 export const purge = (dict, w, b)=>{                          ///< purge everything upto 'w'
     _fence=Math.max(w.token, b.token+1)
