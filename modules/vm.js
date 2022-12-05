@@ -19,24 +19,23 @@ const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
 const NA     = (s)=>s+" not found! "      ///< exception handler
 /// @}
 
-class VM {
+export class VM {
+	/// @defgroup Virtual Machine instance variables
+	/// @{
+	#log   = console.log          ///< output stream
+	dict   = []                   ///< dictionary
+	_ss    = []                   ///< data stack
+	_rs    = []                   ///< return stack
+	/// @}
+	/// @defgroup VM states
+	/// @{
+    _compi = false                ///< compile flag
+	_ucase = false                ///< case sensitive find
+	_base  = 10                   ///< numerical radix
+	/// @}
 	constructor(output=console.log) {
-		let log = output
+		this.log = output
 	}
-    ///
-    /// @defgroup Virtual Machine instance variables
-    /// @{
-	let dict   = []                       ///< dictionary
-    let _ss    = []                       ///< data stack
-    let _rs    = []                       ///< return stack
-    ///
-    /// VM control states
-    ///
-    let _compi = false                    ///< compile flag
-    let _ucase = false                    ///< case sensitive find
-    /// @}
-    /// @defgroup Compiler functions
-    /// @{
     comma(w) { dict.tail().pf.push(w) }    ///< add word to pf[]
     compile(s, v, xt=null) {               ///< compile a word
         let w = new Code(s, v, xt==null ? find(s).xt : xt)
@@ -68,23 +67,23 @@ class VM {
         let w = find(tok)                  /// * search throug dictionary
         if (w != null) {                   /// * word found?
             if(!_compi || w.immd) {        /// * in interpret mode?
-                try       { w.exec()  }    ///> execute word
-                catch (e) { io.log(e) }
+                try       { w.exec() }     ///> execute word
+                catch (e) { log(e)   }
             }
             else comma(w)                  ///> or compile word
             return
         }
-        let n = io.get_base()!=10          ///> not word, try as number
+        let n = _base!=10                  ///> not word, try as number
             ? parseInt(tok, _base)
             : parseFloat(tok)
         if (isNaN(n)) {                    ///> * not a number?
-            io.log(tok + "? ")             ///>> display prompt
+            log(tok + "? ")                ///>> display prompt
             _compi=false                   ///>> restore interpret mode
         }
         else if (_compi) {                 ///> in compile mode?
             compile("dolit", n)            ///>> compile the number
         }
-        else push(n)                       ///>> or, push number onto stack top
+        else _ss.push(n)                   ///>> or, push number onto stack top
     }
 }
 
