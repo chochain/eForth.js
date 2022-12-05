@@ -36,9 +36,13 @@ export default function ForthVM(output=console.log) {
     /// @}
     /// @defgroup Compiler functions
     /// @{
-    const compile= (w)=>dict.tail().pf.push(w)      ///< add word to pf[]
+    const comma   = (w)=>dict.tail().pf.push(w)     ///< add word to pf[]
+    const compile = (s, v, xt=null)=>{              ///< compile a word
+        let w = new Code(s, v, xt==null ? find(s).xt : xt)
+        comma(w)
+    }
     const nvar   = (xt, v)=>{
-        compile(new Code("dovar", v))
+        compile("dovar", v)
         let t = dict.tail(), w = t.pf[0]            ///< last work and its pf
         t.val   = w.qf                              /// * create a val func
         w.xt    = xt                                /// * set internal func
@@ -173,10 +177,10 @@ export default function ForthVM(output=console.log) {
         new Prim("'",     "li", c=>{ let w=tok2w(); push(w.token) }),
         new Immd("s\"",   "li", c=>{
             let s = io.nxtok('"')
-            if (_compi) compile(new Code("dostr", s))
-            else push(s)                               /// * push string object
+            if (_compi) compile("dostr", s)
+            else        push(s)                        /// * push string object
         }),
-        new Immd(".\"",   "li", c=>compile(new Code("dolit", io.nxtok('"')))),
+        new Immd(".\"",   "li", c=>compile("dolit", io.nxtok('"'))),
         new Immd("(",     "li", c=>io.nxtok(')')),
         new Immd(".(",    "li", c=>io.log(io.nxtok(')'))),
         new Immd("\\",    "li", c=>io.clear()),
@@ -184,10 +188,9 @@ export default function ForthVM(output=console.log) {
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
         /// @{
         new Immd("if",    "br", c=>{
-            let w = new Code("_bran", false, _bran)    /// * encode branch opcode
-            w.pf1=[]; w.stage=0                        /// * stage for branching
-            compile(w)
+            compile("_bran", false, _bran)             /// * encode branch opcode
             dict.push(new Code("tmp"))                 /// * as dict.tail()
+            let w = dict.last(); w.pf1=[]; w.stage=0   /// * stage for branching
         }),
         new Immd("else",  "br", c=>{
             let w=dict.last(), tmp=dict.tail()
@@ -211,7 +214,7 @@ export default function ForthVM(output=console.log) {
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{pf1}.repeat
         /// @{
         new Immd("begin", "br", c=>{
-            compile(new Code("_loop", false, _loop))   /// * encode _loop opcode
+            compile("_loop", false, _loop)             /// * encode _loop opcode
             dict.push(new Code("tmp"))                 /// * create a tmp holder
             let w = dict.last()
             w.pf1=[]; w.stage=0                        /// * create branching pf
@@ -241,8 +244,8 @@ export default function ForthVM(output=console.log) {
         /// @brief for.{pf}.next, for.{pf}.aft.{pf1}.then.{pf2}.next
         /// @{
         new Immd("for",   "br", c=>{                   /// * for...next
-            compile(new Code(">r"));                   /// * push I onto rstack
-            compile(new Code("_for", false, _for))     /// * encode _for opcode
+            compile(">r", false)                       /// * push I onto rstack
+            compile("_for", false, _for)               /// * encode _for opcode
             dict.push(new Code("tmp"))                 /// * create tmp holder
             let w=dict.last()
             w.stage=0; w.pf1=[]
@@ -346,7 +349,7 @@ export default function ForthVM(output=console.log) {
                 try       { w.exec()  }                     ///> execute word
                 catch (e) { io.log(e) }
             }
-            else compile(w)                                 ///> or compile word
+            else comma(w)                                   ///> or compile word
             return
         }
         let n = io.get_base()!=10                           ///> not word, try as number
@@ -357,7 +360,7 @@ export default function ForthVM(output=console.log) {
             _compi=false                                    ///>> restore interpret mode
         }
         else if (_compi) {                                  ///> in compile mode?
-            compile(new Code("dolit", n))                   ///>> compile the number
+            compile("dolit", n)                             ///>> compile the number
         }
         else push(n)                                        ///>> or, push number onto stack top
     }
