@@ -1,9 +1,9 @@
 ///
 /// Primitive and Immediate word classes (to simplify Dr. Ting's)
 ///
-let _wp    = 0                        ///< word pointer
-let _fence = 0                        ///< dict length control
-let _xs    = []                       ///< call frame
+let _wp    = 0                             ///< word pointer
+let _fence = 0                             ///< dict length control
+let _xs    = []                            ///< call frame
 
 ///=========================================================================
 ///
@@ -11,11 +11,11 @@ let _xs    = []                       ///< call frame
 ///
 export class Prim {
     constructor(name, cat, xt) {
-        this.name  = name             ///< name of the word
-        this.cat   = cat              ///< assign category
-        this.xt    = xt               ///< function pointer
-        this.immd  = false            ///< immediate flag
-        this.token = _fence++         ///< word
+        this.name  = name                  ///< name of the word
+        this.cat   = cat                   ///< assign category
+        this.xt    = xt                    ///< function pointer
+        this.immd  = false                 ///< immediate flag
+        this.token = _fence++              ///< word
     }
     exec() { this.xt(this) }
 }
@@ -27,11 +27,11 @@ export class Immd extends Prim {
 ///
 export class Code {
     constructor(name, v=false, xt=null) {
-        this.name  = name             ///< name of the word
-        this.cat   = "User"           ///< user defined word
-        this.xt    = xt               ///< function pointer
-        this.immd  = false            ///< immediate flag
-        this.pf    = []               ///< parameter field
+        this.name  = name                 ///< name of the word
+        this.cat   = "User"               ///< user defined word
+        this.xt    = xt                   ///< function pointer
+        this.immd  = false                ///< immediate flag
+        this.pf    = []                   ///< parameter field
 
         if (typeof(v)=="boolean" && v) this.token = _fence++  // new user defined word
         else if (typeof(v)=="string")  this.qf = [ v ]
@@ -39,26 +39,26 @@ export class Code {
         
         this.pf.tail = function() { return this[this.length-1] }
     }
-    exec() {                         ///< execute a word (recursively)
-        if (this.xt == null) {       /// * user define word
-            _xs.push(_wp)            /// * setup call frame
+    exec() {                              ///< execute a word (recursively)
+        if (this.xt == null) {            /// * user define word
+            _xs.push(_wp)                 /// * setup call frame
             _wp = this.token
             run(this.pf)
-            _wp = _xs.pop()          /// * restore call frame
+            _wp = _xs.pop()               /// * restore call frame
         }
-        else this.xt(this);          /// * build-it words
+        else this.xt(this);               /// * build-it words
     }
 }
 export const run   = (pf)=>{ try { pf.forEach(w=>w.exec()) } catch {} }
-export const purge = (dict, w, b)=>{                          ///< purge everything upto 'w'
+export const purge = (dict, w, b)=>{      ///< purge everything upto 'w'
     _fence=Math.max(w.token, b.token+1)
     dict.splice(_fence)
 }
-export const does = (dict)=>{                                 ///< handle CREATE...DOES...
+export const does = (dict)=>{             ///< handle CREATE...DOES...
     let w=dict.tail(), src=dict[_wp].pf
     for (var i=0; i < src.length; i++) {
         if (src[i].name=="does") w.pf.push(...src.slice(i+1))
     }
-    throw "does"                                              /// break from inner interpreter
+    throw "does"                          /// break from inner interpreter
 }    
 
