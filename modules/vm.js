@@ -6,6 +6,8 @@
 ///
 import { INT, ZERO, Code, run } from './core.js'
 
+const NA = (s)=>s+" not found! "           ///< exception handler
+
 export class VM {
     /// @defgroup Virtual Machine instance variables
     /// @{
@@ -27,7 +29,7 @@ export class VM {
         this.log   = io.log                /// * proxy logging 
         this.tok   = io.nxtok              /// * proxy tokenizer
         this.tib   = io.set_tib            /// * proxy input buffer
-        this.reset()
+        this.reset()                       /// * reset VM states
     }
     reset() {
         this.rs.length = this.ss.length = 0

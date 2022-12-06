@@ -1,9 +1,9 @@
 ///
 /// Primitive and Immediate word classes (to simplify Dr. Ting's)
 ///
-let _wp    = 0                             ///< word pointer
-let _fence = 0                             ///< dict length control
-let _xs    = []                            ///< call frame
+let _wp    = 0                                   ///< word pointer
+let _fence = 0                                   ///< dict length control
+let _xs    = []                                  ///< call frame
 
 /// @defgroup Data conversion functions
 /// @{
@@ -11,7 +11,6 @@ export const EPS    = 1.0e-6                     ///< comparison epsilon
 export const INT    = v=>(v | 0)                 ///< OR takes 32-bit integer
 export const BOOL   = t=>(t ? -1 : 0)            ///< Forth true = -1
 export const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
-export const NA     = (s)=>s+" not found! "      ///< exception handler
 /// @}
 ///=========================================================================
 ///
