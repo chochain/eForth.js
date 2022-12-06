@@ -1,7 +1,5 @@
 /// @defgroup Debug functions (can be implemented in front-end)
 /// @{
-import { log, spaces } from './io.js'
-
 const DUMP_WIDTH = 54                               ///< dump control
 const CR = "\n"
 
@@ -25,11 +23,14 @@ export const dump = (vm, n0, n1)=>{                ///< memory dump op
     }
 }
 export const see = (vm, w, n=0)=>{                  ///< see op
+    const _indent = (n)=>{
+        for (let i=0; i < 2*(n+1); i++) vm.log(' ')
+    }
     const _show_pf = (pf)=>{
         if (pf == null || pf.length == 0) return
-        vm.log("["+CR); spaces(2*(n+1))             /// * indent section
+        vm.log("["+CR); _indent()                   /// * indent section
         pf.forEach(w=>see(w, n+1))                  /// * recursive call
-        log('] ')                                   /// * close section
+        vm.log('] ')                                /// * close section
     }
     vm.log(w.name+' ')                              /// * display word name
     if (w.qf != null && w.qf.length > 0) {          /// * display qf array
