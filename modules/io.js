@@ -1,18 +1,19 @@
+import { Prim } from './core.js'
 ///=====================================================================
 /// @defgroup IO functions
 /// @{
-const SPC  = ' ', CR="\n"                               ///< string constants
+const SPC  = ' ', CR="\n"                                   ///< string constants
 
 let _out   = console.log
-let _base  = 10                                         ///< numeric radix
-let _tib   = "", _ntib = 0                              ///< input buffer
+let _base  = 10                                             ///< numeric radix
+let _ucase = false                                          ///< case sensitivity
+let _tib   = "", _ntib = 0                                  ///< input buffer
 
-export const init     = (output=console.log)=>_out=output
 export const set_base = (b)=>_base=(b | 0)
 export const get_base = () =>{ return _base | 0 }
-export const set_tib  = (r)=>{ _tib=r + SPC; _ntib=0 }  ///< capture into TIB
+export const set_tib  = (r)=>{ _tib=r + SPC; _ntib=0 }      ///< capture into TIB
 
-export const log      = (s)=>_out(s)                    ///< output port
+export const log      = (s)=>_out(s)                        ///< output port
 export const key      = () =>{ return io.nxtok()[0] }
 export const emit     = (c)=>log(String.fromCharCode(c))
 export const dot      = (n)=>{
@@ -33,4 +34,26 @@ export const nxtok    = (d=SPC)=>{                          ///< assumes tib end
     let i = _tib.indexOf(d, _ntib)
     let s = (i==-1) ? null : _tib.substring(_ntib, i); _ntib=i+1
     return s
+}
+export const init = (output=console.log)=>_out=output
+export const voc  = (vm)=>{
+    const push = v=>vm.ss.push(v)
+    return [
+        /// @defgroup IO ops
+        /// @{
+        new Prim("ucase!","io", c=>_ucase=BOOL(ZERO(pop()))),
+        new Prim("base@", "io", c=>push(get_base())),
+        new Prim("base!", "io", c=>set_base(pop())),
+        new Prim("hex",   "io", c=>set_base(16)),
+        new Prim("decimal","io",c=>set_base(10)),
+        new Prim("cr",    "io", c=>log(CR)),
+        new Prim(".",     "io", c=>dot(pop())),
+        new Prim(".r",    "io", c=>{ let n=pop(); dot_r(n, pop()) }),
+        new Prim("u.r",   "io", c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
+        new Prim("key",   "io", c=>push(key())),
+        new Prim("emit",  "io", c=>emit(pop())),
+        new Prim("space", "io", c=>spaces(1)),
+        new Prim("spaces","io", c=>spaces(pop())),
+        /// @}
+    ]
 }
