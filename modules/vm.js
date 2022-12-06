@@ -38,12 +38,9 @@ export class VM {
         this.compi = this.ucase = false
         this.base = 10
     }
-    add(s) {                               ///< 
-        if (s==null) { this.compi=false; throw "more input" }
-        this.dict.push(new Code(s, true))
-    }
-    comma(w) {                             ///< compile w into pf[]
-        this.dict[this.dict.length - 1].pf.push(w)
+    add(s)    { this.dict.push(new Code(s, true)) } ///< add a word to dictionary
+    comma(w)  {
+		this.dict[this.dict.length - 1].pf.push(w)  ///< compile w into pf[]
     }
     compile(s, v, xt=null) {               ///< compile a word
         let w = new Code(s, v, xt==null ? this.find(s).xt : xt)
@@ -69,6 +66,8 @@ export class VM {
         }
         return null                        /// * not found
     }
+	tail(i=1)  { return this.dict[this.dict.length - i] }    ///< last entry
+	last()     { return this.tail(2).pf.tail() }             ///< pf of last word created
     /// @defgroup Outer Interpreter
     /// @{
     outer(tok) {                           ///< outer interperter
@@ -76,6 +75,7 @@ export class VM {
         let cc = this.compi                /// * compile mode
         if (w != null) {                   /// * word found?
             if(!cc || w.immd) {            /// * in interpret mode?
+				console.log(w)
                 try       { w.exec() }     ///> execute word
                 catch (e) { this.log(e) }
             }
@@ -98,7 +98,7 @@ export class VM {
     /// @{
     _dec_i()  { this.rs[this.rs.length - 1] -= 1 }      ///< decrement I
     _bran(c)  { run(ZERO(pop()) ? c.pf1 : c.pf) }       ///< branch op
-    _dofor(c) {                                         ///< for..loop op
+    _for(c) {                                           ///< for..loop op
         do { run(c.pf) }
         while (c.stage==0 && this._dec_i() >= 0)        ///< for.{pf}.next only
         while (c.stage>0) {                             /// * aft
