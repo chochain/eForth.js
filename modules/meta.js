@@ -7,7 +7,7 @@ export const voc = (vm)=>{
     const dovar  = c=>vm.ss.push(c.token)                                  ///< variable op
     const vm_add = (compi=false)=>{
         let s = vm.tok();                                                  ///< fetch an input token
-        if (s==null) { this.compi=false; throw "more input" }
+        if (s==null) { vm.compi=false; throw "more input" }
         vm.add(s)
         vm.compi = compi
     }
