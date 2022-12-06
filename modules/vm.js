@@ -43,14 +43,14 @@ export class VM {
         this.dict.push(new Code(s, true))
     }
     comma(w) {                             ///< compile w into pf[]
-        this.dict.tail().pf.push(w)
+        this.dict[this.dict.length - 1].pf.push(w)
     }
     compile(s, v, xt=null) {               ///< compile a word
         let w = new Code(s, v, xt==null ? this.find(s).xt : xt)
-        comma(w)
+        this.comma(w)
     }
     nvar(xt, v) {
-        compile("dovar", v)
+        this.compile("dovar", v)
         let t   = this.dict[this.dict.length-i]
         let w   = t.pf[0]                  ///< last work and its pf
         t.val   = w.qf                     /// * create a val func
@@ -76,7 +76,6 @@ export class VM {
         let cc = this.compi                /// * compile mode
         if (w != null) {                   /// * word found?
             if(!cc || w.immd) {            /// * in interpret mode?
-                console.log(w)
                 try       { w.exec() }     ///> execute word
                 catch (e) { this.log(e) }
             }
