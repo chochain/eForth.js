@@ -1,5 +1,4 @@
 import { Code, run } from './core.js'
-import { VM } from './vm.js'
 /// @}
 /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
 /// @{
