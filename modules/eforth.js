@@ -23,12 +23,12 @@ export function Forth(output=console.log) {
             dict.init(vm)                  /// * construct dict now
         }
         cmd.split("\n").forEach(r=>{       /// * multi-line input
-            io.set_tib(r)                  /// * capture into TIB
-            for (let tok=io.nxtok(); tok != null; tok=io.nxtok()) {
+            vm.tib(r)                      /// * capture into TIB
+            for (let tok=vm.tok(); tok != null; tok=vm.tok()) {
                 vm.outer(tok)
             }
         })
-        io.log("ok\n")
+        vm.log("ok\n")
     }
     return {
         ss:   vm.ss,                       ///< data stack
