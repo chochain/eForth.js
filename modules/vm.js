@@ -10,7 +10,9 @@ export class VM {
     /// @defgroup Virtual Machine instance variables
     /// @{
     log    = console.log                   ///< output stream
-    nxtok  = null                          ///< next token
+    tok    = null                          ///< next token
+    tib    = null                          ///< set tib buffer
+    
     dict   = []                            ///< dictionary
     ss     = []                            ///< data stack
     rs     = []                            ///< return stack
@@ -22,8 +24,9 @@ export class VM {
     base  = 10                             ///< numerical radix
     /// @}
     constructor(io) {
-        this.log   = io.log
-        this.nxtok = io.nxtok
+        this.log   = io.log                /// * proxy logging 
+        this.tok   = io.nxtok              /// * proxy tokenizer
+        this.tib   = io.set_tib            /// * proxy input buffer
         this.reset()
     }
     reset() {
@@ -59,6 +62,11 @@ export class VM {
             }
         }
         return null                        /// * not found
+    }
+    tok2w() {                               ///< convert token to word
+        let s=this.tok(), w=this.find(s)
+        if (w==null) throw NA(s);
+        return w
     }
 	tail(i=1)  { return this.dict[this.dict.length - i] }    ///< last entry
 	last()     { return this.tail(2).pf.tail() }             ///< pf of last word created
