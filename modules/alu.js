@@ -1,4 +1,4 @@
-import { Prim } from './core.js'
+import { INT, BOOL, ZERO, Prim } from './core.js'
 
 export const voc = (vm)=>{
     const top    = (n=1)=>vm.ss[vm.ss.length - INT(n)]

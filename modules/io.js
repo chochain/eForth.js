@@ -1,4 +1,4 @@
-import { Prim } from './core.js'
+import { BOOL, ZERO, Prim } from './core.js'
 ///=====================================================================
 /// @defgroup IO functions
 /// @{
