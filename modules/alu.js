@@ -10,6 +10,7 @@ export const voc = (vm)=>{
         vm.ss.splice(vm.ss.length - n, 1)
         return v
     }
+    const splice = (s,n,i)=>vm.ss.splice(s,n,i)
     return [
         /// @defgroup Stack ops
         /// @{
@@ -18,12 +19,12 @@ export const voc = (vm)=>{
         new Prim("over",  "ss", c=>push(top(2))),
         new Prim("swap",  "ss", c=>push(remove(2))),
         new Prim("rot",   "ss", c=>push(remove(3))),
-        new Prim("-rot",  "ss", c=>vm.ss.splice(-2, 0, pop())),
+        new Prim("-rot",  "ss", c=>splice(-2, 0, pop())),
         new Prim("pick",  "ss", c=>{ let i=pop(), n=top(i+1); push(n) }),
         new Prim("roll",  "ss", c=>{ let i=pop(), n=remove(i+1); push(n) }),
         new Prim("nip",   "ss", c=>remove(2)),
         new Prim("2dup",  "ss", c=>{ push(top(2)); push(top(2)) }),
-        new Prim("2drop", "ss", c=>vm.ss.splice(-2)),
+        new Prim("2drop", "ss", c=>splice(-2)),
         new Prim("2over", "ss", c=>{ push(top(4)); push(top(4)) }),
         new Prim("2swap", "ss", c=>{ push(remove(4)); push(remove(4)) }),
         /// @}
