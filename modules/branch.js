@@ -1,4 +1,4 @@
-import { Prim, Immd, Code } from './core.js'
+import { INT, Prim, Immd, Code } from './core.js'
 /// @}
 /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
 /// @{
@@ -78,6 +78,7 @@ const _next = (vm)=>{
     vm.dict.pop()
 }
 export const voc = (vm)=>{
+    const rtop = (n=1)=>vm.rs[vm.rs.length - INT(n)]
     return [
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
         /// @{
