@@ -5,23 +5,23 @@ import { Code, run } from './core.js'
 export const _if = (vm)=>{
     vm.compile("_bran", false, vm._bran)       /// * encode branch opcode
     vm.dict.push(new Code("tmp"))              /// * as dict.tail()
-    let w = vm.dict.last()
+    let w = vm.last()
     w.pf1=[]; w.stage=0                        /// * stage for branching
 }
-export const _else = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+export const _else = (vm)=>{
+    let w=vm.last(), tmp=vm.tail()
     w.pf.push(...tmp.pf); w.stage=1
     tmp.pf.length = 0
 }
-export const _then = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+export const _then = (vm)=>{
+    let w=vm.last(), tmp=vm.tail()
     if (w.stage==0) {
         w.pf.push(...tmp.pf)                   /// * copy tmp.pf into branch
-        dict.pop()                             /// * drop tmp
+        vm.dict.pop()                          /// * drop tmp
     }
     else {
         w.pf1.push(...tmp.pf)
-        if (w.stage==1) dict.pop()             /// * drop tmp
+        if (w.stage==1) vm.dict.pop()          /// * drop tmp
         else tmp.pf.length=0                   /// * for...aft...then
     }
 }
@@ -32,28 +32,28 @@ export const _then = (dict)=>{
 export const _begin = (vm)=>{
     vm.compile("_loop", false, vm._loop)       /// * encode _loop opcode
     vm.dict.push(new Code("tmp"))              /// * create a tmp holder
-    let w = vm.dict.last()
+    let w = vm.last()
     w.pf1=[]; w.stage=0                        /// * create branching pf
 }
 export const _while = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+    let w=vm.last(), tmp=vm.tail()
     w.pf.push(...tmp.pf); w.stage=2            /// * begin.{pf}.f.while
     tmp.pf.length = 0
 }
-export const _repeat = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+export const _repeat = (vm)=>{
+    let w=vm.last(), tmp=vm.tail()
     w.pf1.push(...tmp.pf)                      /// * while.{pf1}.repeat
-    dict.pop()
+    vm.dict.pop()
 }
-export const _again = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+export const _again = (vm)=>{
+    let w=vm.last(), tmp=vm.tail()
     w.pf.push(...tmp.pf); w.stage=1            /// * begin.{pf}.again
-    dict.pop()
+    vm.dict.pop()
 }
-export const _until = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+export const _until = (vm)=>{
+    let w=vm.last(), tmp=vm.tail()
     w.pf.push(...tmp.pf)                       /// * begin.{pf}.f.until
-    dict.pop()
+    vm.dict.pop()
 }
 /// @}
 /// @defgroup Loop ops
@@ -61,19 +61,19 @@ export const _until = (dict)=>{
 /// @{
 export const _for = (vm)=>{
     vm.compile(">r", false)                    /// * push I onto rstack
-    vm.compile("_for", false, _dofor)          /// * encode _for opcode
+    vm.compile("_for", false, vm._for)         /// * encode _for opcode
     vm.dict.push(new Code("tmp"))              /// * create tmp holder
-    let w=vm.dict.last()
+    let w=vm.last()
     w.stage=0; w.pf1=[]
 }
-export const _aft = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+export const _aft = (vm)=>{
+    let w=vm.last(), tmp=vm.tail()
     w.pf.push(...tmp.pf); w.stage=3; w.pf2=[]  /// * for.{pf}.aft
     tmp.pf.length=0
 }
-export const _next = (dict)=>{
-    let w=dict.last(), tmp=dict.tail()
+export const _next = (vm)=>{
+    let w=vm.last(), tmp=vm.tail()
     if (w.stage==0) w.pf.push(...tmp.pf)       /// * for.{pf}.next
     else            w.pf2.push(...tmp.pf)      /// * .then.{pf2}.next
-    dict.pop()
+    vm.dict.pop()
 }
