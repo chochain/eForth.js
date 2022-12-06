@@ -4,21 +4,13 @@
 ///   > let vm = new ForthVM(), or
 ///   > let vm = ForthVM()
 ///
-import { Code, run } from './core.js'
-
-/// @defgroup Data conversion functions
-/// @{
-const EPS    = 1.0e-6                     ///< comparison epsilon
-const INT    = v=>(v | 0)                 ///< OR takes 32-bit integer
-const BOOL   = t=>(t ? -1 : 0)            ///< Forth true = -1
-const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
-const NA     = (s)=>s+" not found! "      ///< exception handler
-/// @}
+import { INT, ZERO, Code, run } from './core.js'
 
 export class VM {
     /// @defgroup Virtual Machine instance variables
     /// @{
     log    = console.log                   ///< output stream
+    nxtok  = null                          ///< next token
     dict   = []                            ///< dictionary
     ss     = []                            ///< data stack
     rs     = []                            ///< return stack
@@ -30,7 +22,8 @@ export class VM {
     base  = 10                             ///< numerical radix
     /// @}
     constructor(io) {
-        this.log = io.log
+        this.log   = io.log
+        this.nxtok = io.nxtok
         this.reset()
     }
     reset() {
