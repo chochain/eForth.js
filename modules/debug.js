@@ -44,6 +44,8 @@ const _see = (vm, w, n=0)=>{                  ///< see op
     _show_pf(w.pf2)                                 /// * aft.{pf2}.next
 }
 export const voc = (vm) => {
+    const push = (v)=> vm.ss.push(v)
+    const pop  = ()=>{ return vm.ss.pop() }
     return [
         /// @}
         /// @defgroup Debugging ops
@@ -52,8 +54,8 @@ export const voc = (vm) => {
         new Prim(".s",       "db", c=>io.dot(vm.ss)),
         new Prim("words",    "db", c=>_words(vm)),
         new Prim("dump",     "db", c=>{ let n=pop(); _dump(vm, pop(), n) }),
-        new Prim("see",      "db", c=>{ let w=tok2w(); console.log(w); _see(vm, w) }),
-        new Prim("forget",   "db", c=>purge(vm.dict, tok2w(), find("boot"))),
+        new Prim("see",      "db", c=>{ let w=vm.tok2w(); console.log(w); _see(vm, w) }),
+        new Prim("forget",   "db", c=>purge(vm.dict, vm.tok2w(), vm.find("boot"))),
         /// @}
     ]
 }
