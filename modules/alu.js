@@ -1,5 +1,6 @@
-import { INT, BOOL, ZERO, Prim } from './core.js'
-
+import { EPS, INT, BOOL, ZERO, Prim } from './core.js'
+/// @defgroup ALU words
+/// @{
 export const voc = (vm)=>{
     const top    = (n=1)=>vm.ss[vm.ss.length - INT(n)]
     const push   = v    =>vm.ss.push(v)
@@ -60,3 +61,4 @@ export const voc = (vm)=>{
         /// @}
     ]
 }
+/// @}
