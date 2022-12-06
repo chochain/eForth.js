@@ -39,6 +39,7 @@ export class VM {
         this.base = 10
     }
     add(s)    { this.dict.push(new Code(s, true)) } ///< add a word to dictionary
+    extend(d) { d.forEach(c=>this.dict.push(c)) }   ///< extending dictionary
     comma(w)  {
 		this.dict[this.dict.length - 1].pf.push(w)  ///< compile w into pf[]
     }
