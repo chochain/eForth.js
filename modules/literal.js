@@ -16,10 +16,9 @@ export const voc = (vm)=>{
     return [
         /// @defgroup Literal ops
         /// @{
-        new Prim("dolit", "li", c=>vm.log(c.qf[0])),    /// * integer literal or string
-        new Prim("dostr", "li", c=>push(c.qf[0])),      /// * string literal token
+        new Prim("dolit", "li", c=>push(c.qf[0])),     /// * integer literal or string
         new Immd(".\"",   "li", c=>lit("dolit", vm.log)),
-        new Immd("s\"",   "li", c=>lit("dostr", push)),
+        new Immd("s\"",   "li", c=>lit("dolit", push)),
         new Immd("(",     "li", c=>vm.tok(')')),
         new Immd(".(",    "li", c=>vm.log(vm.tok(')'))),
         new Immd("\\",    "li", c=>vm.xtib()),
