@@ -14,6 +14,7 @@ export class VM {
     log    = console.log                   ///< output stream
     tok    = null                          ///< next token
     tib    = null                          ///< set tib buffer
+    xtib   = null                          ///< clear tib buffer
     
     dict   = []                            ///< dictionary
     ss     = []                            ///< data stack
@@ -26,10 +27,13 @@ export class VM {
     base  = 10                             ///< numerical radix
     /// @}
     constructor(io) {
-        this.log   = io.log                /// * proxy logging 
-        this.tok   = io.nxtok              /// * proxy tokenizer
-        this.tib   = io.set_tib            /// * proxy input buffer
-        this.reset()                       /// * reset VM states
+        /// IO method facade
+        this.log   = io.log                /// * logging 
+        this.tok   = io.nxtok              /// * tokenizer
+        this.tib   = io.set_tib            /// * set input buffer
+        this.xtib  = io.clear              /// * clear input buffer
+        /// reset VM states
+        this.reset()
     }
     reset() {
         this.rs.length = this.ss.length = 0
@@ -65,9 +69,9 @@ export class VM {
         }
         return null                        /// * not found
     }
-    tok2w() {                               ///< convert token to word
-        let s=this.tok(), w=this.find(s)
-        if (w==null) throw NA(s);
+    tok2w() {                              ///< convert token to word
+        let w = this.find(this.tok())      /// * search thru dictionary
+        if (w==null) throw NA(s);          /// * error: if token not found
         return w
     }
 	tail(i=1)  { return this.dict[this.dict.length - i] }    ///< last entry
@@ -78,8 +82,8 @@ export class VM {
         let w  = this.find(tok)            /// * search throug dictionary
         let cc = this.compi                /// * compile mode
         if (w != null) {                   /// * word found?
+            console.log('parse=>'+w.name)
             if(!cc || w.immd) {            /// * in interpret mode?
-				console.log(w)
                 try       { w.exec() }     ///> execute word
                 catch (e) { this.log(e) }
             }
@@ -89,6 +93,7 @@ export class VM {
         let n = this.base!=10              ///> not word, try as number
             ? parseInt(tok, this.base)
             : parseFloat(tok)
+        console.log('number=>'+n)
         if (isNaN(n)) {                    ///> * not a number?
             this.log(tok + "? ")           ///>> display prompt
             this.compi=false               ///>> restore interpret mode
