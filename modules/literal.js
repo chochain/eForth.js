@@ -10,7 +10,7 @@ export const voc = (vm)=>{
         new Immd("s\"",   "li", c=>{
             let s = vm.tok('"')
             if (s != null) {
-                if (vm.compi) vm.compile("dostr", s)
+                if (vm.compi) vm.compile("dostr", null, s)
                 else push(s)                           /// * push string object
             }
             else {
@@ -18,7 +18,7 @@ export const voc = (vm)=>{
                 vm.xtib()                             /// * clear input buffer
             }
         }),
-        new Immd(".\"",   "li", c=>vm.compile("dolit", vm.tok('"'))),
+        new Immd(".\"",   "li", c=>vm.compile("dolit", null, vm.tok('"'))),
         new Immd("(",     "li", c=>vm.tok(')')),
         new Immd(".(",    "li", c=>vm.log(vm.tok(')'))),
         new Immd("\\",    "li", c=>vm.xtib()),
