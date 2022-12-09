@@ -19,9 +19,9 @@ export function Forth(output=console.log) {
             dict_setup(vm)                 /// * construct dict now
         }
         cmd.split("\n").forEach(r=>{       /// * multi-line input
-            vm.tib(r)                      /// * capture into TIB
+            vm.tib(r)                      /// * capture input stream into TIB
             for (let tok=vm.tok(); tok != null; tok=vm.tok()) {
-                vm.outer(tok)
+                vm.outer(tok)              /// * send token to outer intepreter
             }
         })
         vm.log("ok\n")

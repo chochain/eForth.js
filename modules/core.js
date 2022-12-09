@@ -47,7 +47,6 @@ export class Code {
         this.pf.tail = function() { return this[this.length-1] }
     }
     exec() {                              ///< execute a word (recursively)
-        console.log('exec=>'); console.log(this)
         if (this.xt == null) {            /// * user define word
             _xs.push(_wp)                 /// * setup call frame
             _wp = this.token
