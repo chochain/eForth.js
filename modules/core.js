@@ -47,16 +47,19 @@ export class Code {
         this.pf.tail = function() { return this[this.length-1] }
     }
     exec() {                              ///< execute a word (recursively)
+        console.log('w='+this.name)
         if (this.xt == null) {            /// * user define word
             _xs.push(_wp)                 /// * setup call frame
             _wp = this.token
-            run(this.pf)
+            try {                         /// * inner interpreter
+                this.pf.forEach(w=>w.exec())
+            }
+            catch {}
             _wp = _xs.pop()               /// * restore call frame
         }
         else this.xt(this);               /// * build-in words
     }
 }
-export const run   = (pf)=>{ try { pf.forEach(w=>w.exec()) } catch {} }
 export const purge = (dict, w, b)=>{      ///< purge everything upto 'w'
     _fence=Math.max(w.token, b.token+1)
     dict.splice(_fence)
