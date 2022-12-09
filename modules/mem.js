@@ -2,40 +2,21 @@ import { Prim } from './core.js'
 ///
 /// @defgroup Memory Access ops
 /// @{
-const _fetch     = (c)=>{ return c.val[0] }
-const _store     = (c, v)=>c.val[0]=v
-const _storeplus = (c, v)=>c.val[0]+=v
-const _afetch    = (c, i)=>{ return c.val[i] }
-const _astore    = (c, i, v)=>c.val[i]=v
-
 export const voc = (vm)=>{
-    const log   = vm.log
-    const push  = v=>vm.ss.push(v)
-    const pop   = ()=>{ return vm.ss.pop() }
-    const dovar = c=>push(c.token)                                         ///< variable op
+    const val  = i=>vm.dict[i].val
+    const log  = vm.log
+    const push = v=>vm.ss.push(v)
+    const pop  = ()=>{ return vm.ss.pop() }
     return [
         /// @defgroup Memory Access ops
         /// @{
-        new Prim("?",     "mm", c=>log(_fetch(vm.dict[pop()]))),
-        new Prim("@",     "mm", c=>push(_fetch(vm.dict[pop()]))),                        // w -- n
-        new Prim("!",     "mm", c=>{ let w=pop(); _store(vm.dict[w], pop()) }),          // n w  --
-        new Prim("+!",    "mm", c=>{ let w=pop(); _storeplus(vm.dict[w], pop()) }),      // n w --
-        new Prim("allot", "mm", c=>{                                                     // n --
-            vm.nvar(dovar, 0)                                                            // create qf array
-            for (let n=pop(), i=1; i<n; i++) _astore(vm.tail(), i, 0)
-        }),
-        new Prim("n?",    "mm", c=>{                                       // w i --
-			let i=pop()
-			log(_afetch(vm.dict[pop()], i))
-		}),
-        new Prim("n@",    "mm", c=>{                                       // w i -- n
-			let i=pop(), w = pop()
-			push(_afetch(vm.dict[w], i))
-		}),
-        new Prim("n!",    "mm", c=>{                                       // n w i --
-			let i=pop(), w = pop()
-			_astore(vm.dict[w], i, pop())
-		})
+        new Prim("?",  "mm", c=>log(val(pop()))),
+        new Prim("@",  "mm", c=>push(val(pop()))),                      // w -- n
+        new Prim("!",  "mm", c=>{ let w=pop(); val(w)[0]=pop() }),      // n w  --
+        new Prim("+!", "mm", c=>{ let w=pop(); val(w)[0]+=pop() }),     // n w --
+        new Prim("n?", "mm", c=>{ let i=pop(); log(val(pop())[i]) }),   // w i --
+        new Prim("n@", "mm", c=>{ let i=pop(); push(val(pop())[i]) }),  // w i -- n
+        new Prim("n!", "mm", c=>{ let i=pop(); val(pop())[i] = pop() }) // n w i --
         /// @}
     ]
 }
