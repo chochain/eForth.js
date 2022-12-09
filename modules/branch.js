@@ -1,15 +1,41 @@
-import { INT, Prim, Immd, Code, run } from './core.js'
+import { INT, ZERO, Prim, Immd, Code, run } from './core.js'
 
 export const voc = (vm)=>{
     const push = v=>vm.ss.push(v)                        ///< macros
     const pop  = ()=>{ return vm.ss.pop() }
     const rtop = (n=1)=>vm.rs[vm.rs.length - INT(n)]
+    ///
+    /// internal branching methods
+    ///
+    const dec_i= ()=>{                                   ///< decrement I
+        return (vm.rs[vm.rs.length - 1] -= 1)
+    } 
+    const bran = c=>{ run(ZERO(pop()) ? c.pf1 : c.pf) }  ///< branch method
+    const loop = c=>{                                    ///< loop method
+        do { run(c.pf) }                                 /// * for.{pf}.
+        while (c.stage==0 && dec_i() >= 0)               /// * .next only
+        while (c.stage>0) {                              /// * aft
+            run(c.pf2)                                   /// * aft.{pf2}.next
+            if (dec_i() < 0) break
+            run(c.pf1)                                   /// * then.{pf1}.next
+        }
+        vm.rs.pop()                                      /// * pop off I
+    }
+    const cycle = c=>{                                   ///< cycle method
+        while (true) {
+            run(c.pf)                                    /// * begin.{pf}.
+            if (c.stage==0 && INT(pop())!=0) break       /// * until
+            if (c.stage==1) continue                     /// * again
+            if (c.stage==2 && ZERO(pop())) break         /// * while
+            run(c.pf1)                                   /// * .{pf1}.until
+        }
+    }
     
     return [
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
         /// @{
         new Immd("if",    "br", c=>{
-            vm.compile("_bran", c1=>vm.bran(c1))         /// * encode branch opcode
+            vm.compile("bran", bran)                     /// * encode branch methods
             vm.dict.push(new Code("tmp"))                /// * as dict.tail()
             let w = vm.last()
             w.pf1=[]; w.stage=0                          /// * stage for branching
@@ -36,7 +62,7 @@ export const voc = (vm)=>{
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{pf1}.repeat
         /// @{
         new Immd("begin", "br", c=>{
-            vm.compile("cycle", c1=>vm.cycle(c1))        /// * encode _loop opcode
+            vm.compile("cycle", cycle)                   /// * encode cycle function
             vm.dict.push(new Code("tmp"))                /// * create a tmp holder
             let w = vm.last()
             w.pf1=[]; w.stage=0                          /// * create branching pf
@@ -67,7 +93,7 @@ export const voc = (vm)=>{
         /// @{
         new Immd("for",   "br", c=>{
             vm.compile(">r")                             /// * push I onto rstack
-            vm.compile("loop", c1=>vm.loop(c1))          /// * encode _for opcode
+            vm.compile("loop", loop)                     /// * encode loop function
             vm.dict.push(new Code("tmp"))                /// * create tmp holder
             let w=vm.last()
             w.stage=0; w.pf1=[]

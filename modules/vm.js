@@ -40,18 +40,16 @@ export class VM {
         this.compi = this.ucase = false
         this.base = 10
     }
-    add(s)    { this.dict.push(new Code(s, null, true)) } ///< add a word to dictionary
-    extend(d) { d.forEach(c=>this.dict.push(c)) }         ///< extending dictionary
-    comma(w)  {
-		this.dict[this.dict.length - 1].pf.push(w)  ///< compile w into pf[]
-    }
-    compile(s, xt=null, v=false) {                  ///< compile a word
+    add(s)    { this.dict.push(new Code(s, null, true)) }       ///< add a word to dictionary
+    extend(d) { d.forEach(c=>this.dict.push(c)) }               ///< extending dictionary
+    comma(w)  { this.dict[this.dict.length - 1].pf.push(w) }    ///< add w into pf[] 
+    compile(s, xt=null, v=false) {                              ///< compile a word
         let w = new Code(s, xt!=null ? xt : this.find(s).xt, v)
         this.comma(w)
     }
     nvar(xt, v) {
         this.compile("dovar", xt, v)
-        let t   = this.dict[this.dict.length-i]
+        let t   = this.dict[this.dict.length - 1]
         let w   = t.pf[0]                  ///< last work and its pf
         t.val   = w.qf                     /// * create a val func
         w.xt    = xt                       /// * set internal func
@@ -82,7 +80,6 @@ export class VM {
         let w  = this.find(tok)            /// * search throug dictionary
         let cc = this.compi                /// * compile mode
         if (w != null) {                   /// * word found?
-            console.log('parse=>'+w.name)
             if(!cc || w.immd) {            /// * in interpret mode?
                 try       { w.exec() }     ///> execute word
                 catch (e) { this.log(e) }
@@ -93,7 +90,6 @@ export class VM {
         let n = this.base!=10              ///> not word, try as number
             ? parseInt(tok, this.base)
             : parseFloat(tok)
-        console.log('number=>'+n)
         if (isNaN(n)) {                    ///> * not a number?
             this.log(tok + "? ")           ///>> display prompt
             this.compi=false               ///>> restore interpret mode
@@ -103,29 +99,4 @@ export class VM {
         }
         else this.ss.push(n)               ///>> or, push number onto stack top
     }
-    /// @defgroup Built-in for branching functions
-    /// @{
-    dec_i()  { return (this.rs[this.rs.length - 1] -= 1) } ///< decrement I
-    bran(c)  { run(ZERO(this.ss.pop()) ? c.pf1 : c.pf) }   ///< branch op
-    loop(c) {                                              ///< for..loop op
-        console.log(c)
-        do { run(c.pf) }
-        while (c.stage==0 && this.dec_i() >= 0)            ///< for.{pf}.next only
-        while (c.stage>0) {                                /// * aft
-            run(c.pf2)                                     /// * aft.{pf2}.next
-            if (this.dec_i() < 0) break
-            run(c.pf1)                                     /// * then.{pf1}.next
-        }
-        this.rs.pop()                                      /// * pop off I
-    }
-    cycle(c) {                                              ///< begin..util op
-        while (true) {
-            run(c.pf)                                      /// * begin.{pf}.
-            if (c.stage==0 && INT(pop())!=0) break         /// * until
-            if (c.stage==1) continue                       /// * again
-            if (c.stage==2 && ZERO(pop())) break           /// * while
-            run(c.pf1)                                     /// * .{pf1}.until
-        }
-    }
-    /// @}
 }
