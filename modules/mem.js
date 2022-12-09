@@ -10,8 +10,8 @@ export const voc = (vm)=>{
     return [
         /// @defgroup Memory Access ops
         /// @{
-        new Prim("?",  "mm", c=>log(val(pop()))),
-        new Prim("@",  "mm", c=>push(val(pop()))),                      // w -- n
+        new Prim("?",  "mm", c=>log(val(pop())[0])),
+        new Prim("@",  "mm", c=>push(val(pop())[0])),                   // w -- n
         new Prim("!",  "mm", c=>{ let w=pop(); val(w)[0]=pop() }),      // n w  --
         new Prim("+!", "mm", c=>{ let w=pop(); val(w)[0]+=pop() }),     // n w --
         new Prim("n?", "mm", c=>{ let i=pop(); log(val(pop())[i]) }),   // w i --
