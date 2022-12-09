@@ -10,11 +10,12 @@ let _tib   = "", _ntib = 0                                  ///< input buffer
 export const init    = (output=console.log)=>_out=output    ///< initialize output port
 export const set_tib = (r)=>{ _tib=r + SPC; _ntib=0 }       ///< capture into TIB
 export const clear   = () =>_ntib=_tib.length               ///< clear input buffer
-export const nxtok   = (d=SPC)=>{                           ///< 
+export const nxtok   = (d=SPC)=>{                           ///< fetch next idiom/token
     while (d==SPC &&                                        /// * assumes tib ends with a blank
            (_tib[_ntib]==SPC || _tib[_ntib]=="\t")) _ntib++ /// * skip leading blanks and tabs
     let i = _tib.indexOf(d, _ntib)
-    let s = (i==-1) ? null : _tib.substring(_ntib, i); _ntib=i+1
+    let s = (i==-1) ? null : _tib.substring(_ntib, i)
+    _ntib = i+1                                             /// * advance or reset _ntib
     return s
 }
 export const log = (s)=>_out(s)                             ///< output port
