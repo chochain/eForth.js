@@ -4,7 +4,7 @@
 ///   > let vm = new ForthVM(), or
 ///   > let vm = ForthVM()
 ///
-import { INT, ZERO, Code, run } from './core.js'
+import { Code } from './core.js'
 
 const NA = (s)=>s+" not found! "           ///< exception handler
 
@@ -40,9 +40,11 @@ export class VM {
         this.compi = this.ucase = false
         this.base = 10
     }
+	tail(i=1) { return this.dict[this.dict.length - i] }        ///< last entry
+	last()    { return this.tail(2).pf.tail() }                 ///< pf of last word created
     add(s)    { this.dict.push(new Code(s, null, true)) }       ///< add a word to dictionary
     extend(d) { d.forEach(c=>this.dict.push(c)) }               ///< extending dictionary
-    comma(w)  { this.dict[this.dict.length - 1].pf.push(w) }    ///< add w into pf[] 
+    comma(w)  { this.tail().pf.push(w) }                        ///< add w into pf[] 
     compile(s, xt=null, v=false) {                              ///< compile a word
         let w = new Code(s, xt!=null ? xt : this.find(s).xt, v)
         this.comma(w)
@@ -72,8 +74,6 @@ export class VM {
         if (w==null) throw NA(s);          /// * error: if token not found
         return w
     }
-	tail(i=1)  { return this.dict[this.dict.length - i] }    ///< last entry
-	last()     { return this.tail(2).pf.tail() }             ///< pf of last word created
     /// @defgroup Outer Interpreter
     /// @{
     outer(tok) {                           ///< outer interperter
