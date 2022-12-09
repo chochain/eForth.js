@@ -1,4 +1,6 @@
-import { INT, ZERO, Prim, Immd, Code, run } from './core.js'
+import { INT, ZERO, Prim, Immd, Code } from './core.js'
+
+const run = (pf)=>{ try { pf.forEach(w=>w.exec()) } catch {} }
 
 export const voc = (vm)=>{
     const push = v=>vm.ss.push(v)                        ///< macros
@@ -12,8 +14,8 @@ export const voc = (vm)=>{
     } 
     const bran = c=>{ run(ZERO(pop()) ? c.pf1 : c.pf) }  ///< branch method
     const loop = c=>{                                    ///< loop method
-        do { run(c.pf) }                                 /// * for.{pf}.
-        while (c.stage==0 && dec_i() >= 0)               /// * .next only
+        do { run(c.pf) } while (                         /// * for.{pf}.next only
+            c.stage==0 && dec_i() >=0)
         while (c.stage>0) {                              /// * aft
             run(c.pf2)                                   /// * aft.{pf2}.next
             if (dec_i() < 0) break
