@@ -37,7 +37,7 @@ export const voc = (vm)=>{                                  ///< vocabulary
         new Prim("decimal","io",c=>vm.base = 10),
         new Prim("cr",    "io", c=>log(CR)),
         new Prim(".",     "io", c=>{
-            let a = typeof(n)!='object' ? [ n ] : n
+            let n = pop(), a = typeof(n)!='object' ? [ n ] : n
             log(a.map(v=>v.toString(vm.base)).join(SPC)+SPC)
         }),
         new Prim(".r",    "io", c=>{ let n=pop(); dot_r(n, pop()) }),
