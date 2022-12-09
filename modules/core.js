@@ -61,11 +61,11 @@ export const purge = (dict, w, b)=>{      ///< purge everything upto 'w'
     _fence=Math.max(w.token, b.token+1)
     dict.splice(_fence)
 }
-export const does = (dict)=>{             ///< handle CREATE...DOES...
-    let w=dict.tail(), src=dict[_wp].pf
+export const does = (vm)=>{               ///< handle CREATE...DOES...
+    let w=vm.tail(), src=vm.dict[_wp].pf
     for (var i=0; i < src.length; i++) {
         if (src[i].name=="does") w.pf.push(...src.slice(i+1))
     }
-    throw "does"                          /// break from inner interpreter
+    throw "does"                          /// skip inner interpreter
 }    
 
