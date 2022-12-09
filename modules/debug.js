@@ -14,9 +14,9 @@ const _words = (vm)=>{                              ///< word op
     })
     log(CR)
 }
-const _dump = (vm, n0, n1)=>{                       ///< memory dump op
+const _dump = (vm, n0, sz)=>{                       ///< memory dump op
 	let log = vm.log
-    for (let i = n0; i <= n1; i++) {
+    for (let i = n0; i <= n0+sz; i++) {
         let w = vm.dict[i]
         log('['+i+(w.immd ? ']*=' : ']="') + w.name + '", ')
         if (w.xt) log(w.xt)
@@ -52,7 +52,7 @@ export const voc = (vm) => {
         new Prim("here",     "db", c=>push(vm.tail().token)),
         new Prim(".s",       "db", c=>vm.log(JSON.stringify(vm.ss)+CR)),
         new Prim("words",    "db", c=>_words(vm)),
-        new Prim("dump",     "db", c=>{ let n1=pop(); _dump(vm, pop(), n1) }),
+        new Prim("dump",     "db", c=>{ let n=pop(); _dump(vm, pop(), n) }),
         new Prim("see",      "db", c=>{ let w=vm.tok2w(); console.log(w); _see(vm, w) }),
         new Prim("forget",   "db", c=>purge(vm.dict, vm.tok2w(), vm.find("boot"))),
         /// @}
