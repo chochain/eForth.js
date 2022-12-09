@@ -33,7 +33,7 @@ export class Immd extends Prim {
 /// Colon word class
 ///
 export class Code {
-    constructor(name, v=false, xt=null) {
+    constructor(name, xt=null, v=false) {
         this.name  = name                 ///< name of the word
         this.cat   = "User"               ///< user defined word
         this.xt    = xt                   ///< function pointer
@@ -47,13 +47,14 @@ export class Code {
         this.pf.tail = function() { return this[this.length-1] }
     }
     exec() {                              ///< execute a word (recursively)
+        console.log('exec=>'); console.log(this)
         if (this.xt == null) {            /// * user define word
             _xs.push(_wp)                 /// * setup call frame
             _wp = this.token
             run(this.pf)
             _wp = _xs.pop()               /// * restore call frame
         }
-        else this.xt(this);               /// * build-it words
+        else this.xt(this);               /// * build-in words
     }
 }
 export const run   = (pf)=>{ try { pf.forEach(w=>w.exec()) } catch {} }
