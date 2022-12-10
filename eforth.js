@@ -139,17 +139,7 @@ window.ForthVM = function(output=console.log) {
     const _docon = c=>push(c.qf[0])
     const _dovar = c=>push(c.token)
     const _bran  = c=>_run(ZERO(pop()) ? c.pf1 : c.pf)
-    const _for   = c=>{
-        do { _run(c.pf) }
-        while (c.stage==0 && dec_i() >= 0)         /// for.{pf}.next only
-        while (c.stage>0) {                        /// aft
-            _run(c.pf2)                            /// aft.{pf2}.next
-            if (dec_i() < 0) break
-            _run(c.pf1)                            /// then.{pf1}.next
-        }
-        _rs.pop()                                  /// pop off I
-    }
-    const _loop  = c=>{
+    const _cycle = c=>{
         while (true) {
             _run(c.pf)                             /// begin.{pf}.
             if (c.stage==0 && INT(pop())!=0) break /// until
@@ -157,6 +147,16 @@ window.ForthVM = function(output=console.log) {
             if (c.stage==2 && ZERO(pop())) break   /// while
             _run(c.pf1)                            /// .{pf1}.until
         }
+    }
+    const _loop  = c=>{
+        do { _run(c.pf) } while (
+            c.stage==0 && dec_i() >= 0)            /// for.{pf}.next only
+        while (c.stage>0) {                        /// aft
+            _run(c.pf2)                            /// aft.{pf2}.next
+            if (dec_i() < 0) break
+            _run(c.pf1)                            /// then.{pf1}.next
+        }
+        _rs.pop()                                  /// pop off I
     }
     /// @}
     /// @defgroup Debug functions (can be implemented in front-end)
@@ -171,30 +171,29 @@ window.ForthVM = function(output=console.log) {
         })
         log(CR)
     }
-    const _dump = (n0, n1)=>{
-        for (let i = n0; i <= n1; i++) {
+    const _dump = (n0, sz)=>{
+        for (let i = n0; i <= n0+sz; i++) {
             let w = dict[i]
-            log('dict[' + i + ']=("' + w.name + '" ')
-            if (w.xt) log(w.xt.toString(_base))
-            else      log(', pf[' + w.pf.map(w1=>w1.name).toString(_base) + ']')
-            if (w.qf) log(', qf[' + w.qf.toString(_base) + ']')
-            log((w.immd ? 'immd)' : ')') + CR)
+            log('['+i+(w.immd ? ']*=' : ']="') + w.name + '", ')
+            if (w.xt) log(w.xt)
+            else      log('pf='+JSON.stringify(w.pf))   /// * user defined word
+            log(CR)
         }
     }
     const _see = (w, n=0)=>{
         const _show_pf = (pf)=>{
             if (pf == null || pf.length == 0) return
-            log('['+CR); _spaces(2*(n+1))          /// * indent section
-            pf.forEach(w=>_see(w, n+1))            /// * recursive call
+            log("["+CR); _spaces(2*(n+1))          /// * indent section
+            pf.forEach(w1=>_see(w1, n+1))          /// * recursive call
             log('] ')                              /// * close section
         }
-        log(w.name+SPC)                            /// * display word name
+        log(w.name+' ')                            /// * display word name
         if (w.qf != null && w.qf.length > 0) {     /// * display qf array
-            log('='+JSON.stringify(w.qf)+SPC)
+            log('='+JSON.stringify(w.qf)+' ')
         }
-        _show_pf(w.pf)
-        _show_pf(w.pf1)
-        _show_pf(w.pf2)
+        _show_pf(w.pf)                             /// * if.{pf}, for.{pf}, or begin.{pf}
+        _show_pf(w.pf1)                            /// * else.{pf1}.then, or .then.{pf1}.next
+        _show_pf(w.pf2)                            /// * aft.{pf2}.next
     }
     /// @}
     ///======================================================================
@@ -267,17 +266,18 @@ window.ForthVM = function(output=console.log) {
         /// @}
         /// @defgroup Literal ops
         /// @{
-        new Prim("dolit", "li", c=>push(c.qf[0])),    /// integer literal or string
-        new Prim("dostr", "li", c=>push(c.token)),    /// string literal token
-        new Immd("[",     "li", c=>_compi=false ),
-        new Prim("]",     "li", c=>_compi=true ),
-        new Prim("'",     "li", c=>{ let w=tok2w(); push(w.token) }),
+        new Prim("dotstr","li", c=>log(c.qf[0])),    /// display string
+        new Prim("dolit", "li", c=>push(c.qf[0])),   /// integer literal or string
+        new Immd(".\"",   "li", c=>{
+            let s = nxtok('"')
+            if (_compi) compile(new Code("dotstr", s))
+            else log(s)
+        }),
         new Immd("s\"",   "li", c=>{
             let s = nxtok('"')
-            if (_compi) compile(new Code("dostr", s))
+            if (_compi) compile(new Code("dolit", s))
             else push(s)                             /// * push string object
         }),
-        new Immd(".\"",   "li", c=>compile(new Code("dolit", nxtok('"')))),
         new Immd("(",     "li", c=>nxtok(')')),
         new Immd(".(",    "li", c=>log(nxtok(')'))),
         new Immd("\\",    "li", c=>_ntib=_tib.length),
@@ -312,7 +312,7 @@ window.ForthVM = function(output=console.log) {
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{pf1}.repeat
         /// @{
         new Immd("begin", "br", c=>{
-            compile(new Code("_loop", false, _loop))   /// encode _loop opcode
+            compile(new Code("_cycle", false, _cycle)) /// encode _loop opcode
             dict.push(new Code("tmp"))                 /// create a tmp holder
             let w = dict.last()
             w.pf1=[]; w.stage=0                        /// create branching pf
@@ -343,7 +343,7 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Immd("for",   "br", c=>{                   /// for...next
             compile(new Code(">r"));                   /// push I onto rstack
-            compile(new Code("_for", false, _for))     /// encode _for opcode
+            compile(new Code("_loop", false, _loop))   /// encode _for opcode
             dict.push(new Code("tmp"))                 /// create tmp holder
             let w=dict.last()
             w.stage=0; w.pf1=[]
@@ -370,9 +370,6 @@ window.ForthVM = function(output=console.log) {
         new Prim("@",        "mm", c=>push(dict[pop()].val[0])),                              // w -- n
         new Prim("!",        "mm", c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
         new Prim("+!",       "mm", c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
-        new Prim("allot",    "mm", c=>{                                                       // n --
-            nvar(_dovar, 0)                                                                   // create qf array
-            for (let n=pop(), i=1; i<n; i++) dict.tail().val[i]=0 }),                         // fill all slot with 0
         new Prim("n?",       "mm", c=>{                                                       // w i --
             let i=pop(); let w=pop(); log(dict[w].val[i].toString(_base)+SPC) }),
         new Prim("n@",       "mm", c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
@@ -380,6 +377,9 @@ window.ForthVM = function(output=console.log) {
         /// @}
         /// @defgroup Word Defining ops
         /// @{
+        new Immd("[",        "cm", c=>_compi=false ),
+        new Prim("]",        "cm", c=>_compi=true ),
+        new Prim("'",        "cm", c=>{ let w=tok2w(); push(w.token) }),
         new Immd("exec",     "cm", c=>dict[pop()].exec()),
         new Prim(":",        "cm", c=>{ dict.add(); _compi=true }),  // new colon word
         new Immd(";",        "cm", c=>_compi=false),                 // semicolon
@@ -391,10 +391,18 @@ window.ForthVM = function(output=console.log) {
             if (pf.length) pf[0].qf.push(pop())                      // append more values
             else           nvar(_dovar, pop())                       // 1st value in qf
         }),
+        new Prim("allot",    "cm", c=>{                              // n --
+            let w = dict.tail()
+            nvar(_dovar, 0)                                          // create qf array
+            for (let n=pop(), i=1; i<n; i++) w.val[i]=0              // fill all slot with 0
+        }),
         new Prim("does",     "cm", c=>{
             let w=dict.tail(), src=dict[_wp].pf
             for (var i=0; i < src.length; i++) {
-                if (src[i].name=="does") w.pf.push(...src.slice(i+1))
+                if (src[i].name=="does") {
+                    w.pf.push(...src.slice(i+1))
+                    break
+                }
             }
             throw "does"                                             // break from inner interpreter
         }),
@@ -408,10 +416,7 @@ window.ForthVM = function(output=console.log) {
         new Prim("here",     "db", c=>push(dict.tail().token)),
         new Prim("words",    "db", c=>_words()),
         new Prim("dump",     "db", c=>{ let n=pop(); _dump(pop(), n) }),
-        new Prim(".s",       "db", c=>{
-            let s = _ss.map(v=>v.toString(_base))
-            log(s.join(' ') + CR)
-        }),
+        new Prim(".s",       "db", c=>log(JSON.stringify(_ss)+CR)),
         new Prim("see",      "db", c=>{ let w=tok2w(); console.log(w); _see(w) }),
         new Prim("forget",   "db", c=>{
             _fence=Math.max(tok2w().token, find("boot").token+1)
