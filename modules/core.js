@@ -1,9 +1,7 @@
 ///
 /// Primitive and Immediate word classes (to simplify Dr. Ting's)
 ///
-let _wp    = 0                                   ///< word pointer
 let _fence = 0                                   ///< dict length control
-let _xs    = []                                  ///< call frame
 
 /// @defgroup Data conversion functions
 /// @{
@@ -46,29 +44,21 @@ export class Code {
         
         this.pf.tail = function() { return this[this.length-1] }
     }
-    exec() {                              ///< execute a word (recursively)
-        console.log('w='+this.name)
+    exec(vm) {                            ///< execute a word (recursively)
         if (this.xt == null) {            /// * user define word
-            _xs.push(_wp)                 /// * setup call frame
-            _wp = this.token
+            vm.rs.push(vm.wp)             /// * setup call frame
+            vm.wp = this.token
             try {                         /// * inner interpreter
-                this.pf.forEach(w=>w.exec())
+                this.pf.forEach(w=>w.exec(vm))
             }
-            catch {}
-            _wp = _xs.pop()               /// * restore call frame
+            catch {}                      /// * catch 'does' and 'exit'
+            vm.wp = vm.rs.pop()           /// * restore call frame
         }
         else this.xt(this);               /// * build-in words
     }
 }
 export const purge = (dict, w, b)=>{      ///< purge everything upto 'w'
-    _fence=Math.max(w.token, b.token+1)
-    dict.splice(_fence)
+    _fence=Math.max(w.token, b.token+1)   /// * set purge range
+    dict.splice(_fence)                   /// * purge words from dictionary
 }
-export const does = (vm)=>{               ///< handle CREATE...DOES...
-    let w=vm.tail(), src=vm.dict[_wp].pf
-    for (var i=0; i < src.length; i++) {
-        if (src[i].name=="does") w.pf.push(...src.slice(i+1))
-    }
-    throw "does"                          /// skip inner interpreter
-}    
 
