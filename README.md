@@ -4,6 +4,12 @@ With Javascript implementation, Forth can be run from within a single web page.
 
 Good news! **eforth.js** is the only file you need! Well, if you insist, maybe an extra index.html to wrap it up. Copy both of them from the root directory shown above to your local directory. Click on index.html and you have a Forth engine ready to play.
 
+Should you care about modulization in fashion of the ES6's new feature, a tad slower but code is easier to maintain
+* check the /modules directory for individual functional areas.
+* main.html in the root is provided as an example to import modules
+* note that, without a bundler (i.g. Webpack, Browsify, ...) to tie modules together, one will need a web server to push all the modules to your web-browser
+  * a script serv.py in /tests directory is provided to kick off a Python3's simple server for the purpose.
+
 ## History - a project with interesting lineage.
 * It started back in 2011 when **Cheahshen Yap** from Taiwan FIG sent the 100-line kernel, named jeForth, to **Dr. Ting**.
 * **Sam Suan Chen**, took over the codebase (called project-k) and produced a graphic demo in SVFIG. The project took on its own path [here](https://github.com/hcchengithub/project-k) now.
