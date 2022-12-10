@@ -1,7 +1,5 @@
 import { INT, ZERO, Prim, Immd, Code } from './core.js'
 
-const run = (pf)=>{ try { pf.forEach(w=>w.exec()) } catch {} }
-
 export const voc = (vm)=>{
     const push = v=>vm.ss.push(v)                        ///< macros
     const pop  = ()=>{ return vm.ss.pop() }
@@ -9,6 +7,7 @@ export const voc = (vm)=>{
     ///
     /// internal branching methods
     ///
+    const run  = (pf)=>{ try { pf.forEach(w=>w.exec(vm)) } catch {} }
     const dec_i= ()=>{                                   ///< decrement I
         return (vm.rs[vm.rs.length - 1] -= 1)
     } 
@@ -36,18 +35,18 @@ export const voc = (vm)=>{
     return [
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
         /// @{
-        new Immd("if",    "br", c=>{
+        new Immd("if",   "br", c=>{
             vm.compile("bran", bran)                     /// * encode branch methods
             vm.dict.push(new Code("tmp"))                /// * as dict.tail()
             let w = vm.last()
             w.pf1=[]; w.stage=0                          /// * stage for branching
         }),
-        new Immd("else",  "br", c=>{
+        new Immd("else", "br", c=>{
             let w=vm.last(), tmp=vm.tail()
             w.pf.push(...tmp.pf); w.stage=1
             tmp.pf.length = 0
         }),
-        new Immd("then",  "br", c=>{
+        new Immd("then", "br", c=>{
             let w=vm.last(), tmp=vm.tail()
             if (w.stage==0) {
                 w.pf.push(...tmp.pf)                     /// * copy tmp.pf into branch
