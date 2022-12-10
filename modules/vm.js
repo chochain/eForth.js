@@ -19,6 +19,7 @@ export class VM {
     dict   = []                            ///< dictionary
     ss     = []                            ///< data stack
     rs     = []                            ///< return stack
+    wp     = 0                             ///< current word pointer
     /// @}
     /// @defgroup VM states
     /// @{
@@ -81,7 +82,7 @@ export class VM {
         let cc = this.compi                /// * compile mode
         if (w != null) {                   /// * word found?
             if(!cc || w.immd) {            /// * in interpret mode?
-                try       { w.exec() }     ///> execute word
+                try       { w.exec(this) } ///> execute word
                 catch (e) { this.log(e) }
             }
             else this.comma(w)             ///> or compile word
