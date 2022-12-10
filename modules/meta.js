@@ -1,4 +1,5 @@
-import { Prim, Immd, does } from './core.js'
+import { Prim, Immd } from './core.js'
+
 /// @defgroup Word Defining ops
 /// @{
 export const voc = (vm)=>{
@@ -37,7 +38,16 @@ export const voc = (vm)=>{
             vm.nvar(dovar, 0)                                    /// * create qf array
             for (let n=pop(), i=1; i<n; i++) t.val[i]=0          /// * fill all slot with 0
         }),
-        new Prim("does",     "cm", c=>does(vm, c)),              ///< create..does..
+        new Prim("does",     "cm", c=>{                          ///< handle create..does..
+            let w=vm.tail(), src=vm.dict[vm.wp].pf
+            for (var i=0; i < src.length; i++) {
+                if (src[i].name=="does") {
+                    w.pf.push(...src.slice(i+1))
+                    break
+                }
+            }
+            throw "does"                                         /// skip inner interpreter
+        }),
         new Prim("to",       "cm", c=>vm.tok2w().val[0]=pop()),  ///< update constant
         new Prim("is",       "cm", c=>{                          ///< alias a word
             vm_add()
