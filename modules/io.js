@@ -45,7 +45,7 @@ export const voc = (vm)=>{                                  ///< vocabulary
         new Prim("key",   "io", c=>push(nxtok()[0])),
         new Prim("emit",  "io", c=>log(String.fromCharCode(pop()))),
         new Prim("space", "io", c=>log(SPC)),
-        new Prim("spaces","io", c=>{ for (let i=0; i<n; i++) log(SPC) }),
+        new Prim("spaces","io", c=>{ for (let n=pop(), i=0; i<n; i++) log(SPC) }),
         /// @}
     ]
 }
