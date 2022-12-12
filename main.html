@@ -1,10 +1,10 @@
 ﻿<html>
-  <head><style>.bg { padding:8px; font-size:24px; border: 1px solid #888; }</style></head>
+  <head><style>.bg { padding:8px; font-size:24px; margin:0; }</style></head>
   <body>
     <div style='padding:1%; font-size:20px'>
+      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'><h2>eForth.js 8.0</h2></pre>
       <input id='tib' class='bg' style='height:36px; width:100%' value=''/>
-      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'><h3>eForth.js 8.0</h3></pre>
-  	  <pre id='ss' class='bg'>SS[ ]</pre>
+  	  <pre id='ss' class='ss'>[  ]</pre>
     </div>
     <script type='module'>
     import { Forth, embed_forth } from './modules/eforth.js'
@@ -19,20 +19,20 @@
         txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
     }
     function forth_eval(cmd) {
-        to_txt('<em class="cmd" style="color:#48f">'+cmd+'</em><br/>')
-        if (cmd=='clear') txt.innerHTML = ''
-        else vm.exec(cmd)
-        ss.innerHTML = 'SS' + JSON.stringify(vm.ss)
+        to_txt('<em style="color:#48f">'+cmd+'</em><br/>')
+        if (cmd=='clear') txt.innerHTML = '<h2>eForth.js 8.0</h2>'
+        else              vm.exec(cmd)
+        ss.innerHTML = '[ ' + vm.ss.map(v=>v.toString(vm.base)).join(' ') + ' ]'
     }
-    tib.addEventListener('keydown', (e)=>{        ///< add keydown handler
+    tib.onkeydown = (e)=>{        ///< add keydown handler
         if (e.keyCode==13) {
             forth_eval(tib.value); tib.value = ''
             tib.focus()
         }
-    })
+    }
     </script>
     <script type='application/forth'>
-    .( <h2>\ this is an embedded Forth demo</h2> )
+    .( <h3>\ this is an embedded Forth demo</h3> )
     .( <b>\ list dictionary</b> ) cr
     words
     .( <b>\ create a word</b><br/>: xx for r@ . next ; ) cr
