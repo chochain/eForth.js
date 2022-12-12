@@ -7,11 +7,11 @@
     .col  { display:flex; flex-direction:column; font-size:20px; border:1px solid #ccc }
     .row  { display:flex; width:100%; }
     .hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
-    .lst  { text-align:right; color:#484; margin:8px; }
-    .txt  { display:block; padding:8px; width:100%; overflow-x:scroll; }
+    .dict { text-align:left; color:#484; margin:4px; font-family:monospace; overflow-wrap:auto; }
     .code { height:36px; width:90%; font-size:24px; margin:0 2px 0 2px; }
     .cmd  { color:#48f; margin: 2px; }
-    .cat  { padding:6px; background-color:#eee; }
+    .txt  { display:block; padding:8px; width:100%; font-family:monospace; overflow-x:scroll; }
+    .ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; }
     .CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
   </style>
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
@@ -19,39 +19,35 @@
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script>
   </head>
   <body>
-    <div class='row'>
+    <div class='row' style='height:100%'>
       <div class='col' style='width:15%'>
-        <pre class='hdr'>data stack</pre><pre id='ss' class='lst'></pre>
-        <pre class='hdr'>dictionary</pre><pre id='dc' class='lst'></pre>
+        <pre class='hdr'>dictionary</pre><pre id='dc' class='dict'></pre>
       </div>
       <div class='col' style='width:84%; padding:8px'>
         <div class='row'>
           <button style='width:10%'
-  		     onclick='edt.style.display=(edt.style.display=="none") ? "block" : "none"'>editor</button>
-          <input id='tib' class='code' value=''
-             onkeydown='if (13===event.keyCode) forth_eval()'/>
+  		     onclick='edt.style.display=(edt.style.display=="none") ? "block" : "none"'>Editor</button>
+          <input id='tib' class='code' value='' />
           <button style='width:10%' onclick='clear_txt()'>clear</button>
         </div>
         <div id='edt'>
           <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
         </div>
-        <pre id='txt' class='txt'></pre>
-        <div id='cat' class='cat'>abc</div>
+        <div id='txt' class='txt'></div>
+        <div id='ss' class='ss'>[]</div>
       </div>
     </div>
     <script src='../eforth.js'></script>
     <script>
+    const dc  = document.getElementById('dc')
     const tib = document.getElementById('tib')
     const txt = document.getElementById('txt')
-    const cat = document.getElementById('cat')
     const ss  = document.getElementById('ss')
-    const dc  = document.getElementById('dc')
     const cm  = CodeMirror.fromTextArea(document.getElementById('cm'), {
         lineNumbers: true,
         styleActiveLine: true,
         mode: 'forth'
     })
-    cm.setSize('100%','100%')
     cm.on('copy', (doc)=>{
         let cmd=doc.getSelection()
         tib.value = cmd.replace(/[\t|\n]/g,' ')
@@ -59,10 +55,20 @@
         document.activeElement.blur()
         tib.focus()
     })
+    tib.onkeydown = (e)=>{
+        if (13==e.keyCode) {
+            forth_eval(tib.value)
+            tib.style.backgroundColor='white'
+            tib.value = ''
+            txt.scrollTop = txt.scrollHeight
+            tib.focus()
+        }
+    }
+      
     let rz = new ResizeObserver(e=>{            ///< adjust console height
-        txt.style.height = window.innerHeight - txt.offsetTop - 100
+        edt.style.height = cm.innerHeight
         txt.scrollTop    = txt.scrollHeight
-    }).observe(document.getElementById('edt'))
+    }).observe(document.getElementById('cm'))
  
     function to_txt(t, esc=true) {
         const escape = (s)=>{
@@ -71,30 +77,25 @@
         txt.innerHTML += esc && typeof(s)=='string' ? escape(t) : t
     }
     function clear_txt() { txt.innerHTML=''; to_txt('<h2>eForth.js 8.0</h2>') }
+    function show_cmd(cmd) {
+        let htm = cmd.replace(/:/g,'<br/>:')                  /// * show on a new line
+        if (htm.indexOf('<br/>')==0) htm.replace('<br/>','')  /// * remove blank lines
+        to_txt('<pre class="cmd"><em>'+htm+'</em></pre>', false)
+    }
     ///
     /// Forth section
     ///
     let vm = new ForthVM(to_txt)               ///< create Forth VM object
-    show_data()
+    clear_txt()
 
-    function forth_eval() {                    ///< evaludate Forth command
-        let cmd = tib.value.replace(/:/g,'<br/>:')            /// * show on a new line
-        if (cmd.indexOf('<br/>')==0) cmd.replace('<br/>','')  /// * remove blank lines
-        to_txt('<pre class="cmd"><em>'+cmd+'</em></pre>', false)
-        
-        if (tib.value=='clear') clear_txt()
+    function forth_eval(cmd) {                 ///< evaludate Forth command
+        show_cmd(cmd)
+        if (cmd=='clear') clear_txt()
         else {
-            vm.exec(tib.value)                /// * can handle multi-line input
-            show_data()                       /// * display ss and dict
+            vm.exec(cmd)                       /// * can handle multi-line input
+            ss.innerHTML = vm.ss.map(v=>v.toString(vm.base)).join(' ')
+            dc.innerHTML = get_voc()
         }
-        tib.style.backgroundColor='white'
-        tib.value = ''
-        txt.scrollTop = txt.scrollHeight
-    }
-    function show_data() {
-        dc.innerHTML = vm.dict.filter(v=>v.cat=='User').map(v=>v.name).reverse().join('<br/>')
-        ss.innerHTML = vm.ss.map(v=>v.toString(10)).reverse().join('<br/>')
-        cat.innerHTML= get_voc()
     }
     function get_voc() {
         let x = vm.dict.reduce((r,v)=>{
@@ -105,8 +106,7 @@
             if (r[c]) r[c].push(v); else r[c] = [ v ]
             return r
         }, {})
-        console.log(x)
-        return '['+Object.keys(x).join('] [')+']'  /// * TODO: add tooltip for words
+        return Object.keys(x).sort().join('<br/>') /// * TODO: add tooltip for words
     }
     </script>
     <script type='application/forth'>
