@@ -20,8 +20,8 @@
     function forth_eval(cmd) {
         to_txt('<em class="cmd" style="color:#48f">'+cmd+'</em><br/>')
         if (cmd=='clear') txt.innerHTML = ''
-        else vm.exec(cmd)
-		ss.innerHTML = 'SS' + JSON.stringify(vm.ss)
+        else              vm.exec(cmd)
+		ss.innerHTML = 'SS[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
     }
     </script>
     <script type='application/forth'>
