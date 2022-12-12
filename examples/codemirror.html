@@ -8,7 +8,7 @@
     .row  { display:flex; width:100%; }
     .hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
     .dict { text-align:left; color:#484; margin:4px; font-family:monospace; overflow-wrap:auto; }
-    .code { height:36px; width:90%; font-size:24px; margin:0 2px 0 2px; }
+    .code { height:36px; width:95%; font-size:24px; margin:0 2px 3px 2px; }
     .cmd  { color:#48f; margin: 2px; }
     .txt  { display:block; padding:8px; width:100%; font-family:monospace; overflow-x:scroll; }
     .ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; }
@@ -24,17 +24,16 @@
         <pre class='hdr'>dictionary</pre><pre id='dc' class='dict'></pre>
       </div>
       <div class='col' style='width:84%; padding:8px'>
-        <div class='row'>
-          <button style='width:10%'
-  		     onclick='edt.style.display=(edt.style.display=="none") ? "block" : "none"'>Editor</button>
-          <input id='tib' class='code' value='' />
-          <button style='width:10%' onclick='clear_txt()'>clear</button>
-        </div>
         <div id='edt'>
           <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
         </div>
         <div id='txt' class='txt'></div>
-        <div id='ss' class='ss'>[]</div>
+        <div class='row'>
+          <input id='tib' class='code' value='' />
+          <button style='height:36px; width:5%'
+  		     onclick='edt.style.display=(edt.style.display=="none") ? "block" : "none"'><b>Edit</b></button>
+        </div>
+        <div id='ss' class='ss'>[ ]</div>
       </div>
     </div>
     <script src='../eforth.js'></script>
@@ -74,7 +73,7 @@
         const escape = (s)=>{
             return s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;')
         }
-        txt.innerHTML += esc && typeof(s)=='string' ? escape(t) : t
+        txt.innerHTML += esc && typeof(t)=='string' ? escape(t) : t
     }
     function clear_txt() { txt.innerHTML=''; to_txt('<h2>eForth.js 8.0</h2>') }
     function show_cmd(cmd) {
@@ -93,7 +92,7 @@
         if (cmd=='clear') clear_txt()
         else {
             vm.exec(cmd)                       /// * can handle multi-line input
-            ss.innerHTML = vm.ss.map(v=>v.toString(vm.base)).join(' ')
+            ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
             dc.innerHTML = get_voc()
         }
     }
