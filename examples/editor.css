@@ -1,0 +1,43 @@
+.CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
+
+h2    { color: #c44; margin: 0; }
+h3    { color: #fc4; margin: 0; }
+.col  { display:flex; flex-direction:column; font-size:20px; border:1px solid #ccc }
+.row  { display:flex; width:100%; }
+.hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
+.dict { text-align:left; color:#484; margin:4px; font-family:monospace; overflow-wrap:auto; }
+.code { height:36px; width:95%; font-size:24px; margin:0 2px 3px 2px; }
+.cmd  { color:#48f; margin: 2px; }
+.txt  { display:block; padding:8px; width:100%; font-family:monospace; overflow-x:scroll; }
+.ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; }
+
+/* tree */
+ul.tree li      { list-style-type: none; position: relative; }
+ul.tree li ul   { display: none; }
+ul.tree li ul a { color: #444; }
+ul.tree li.open > ul { display: block; margin:0 -2em; }
+ul.tree li a    { color: #008; text-decoration: none; }
+ul.tree li a:before {
+    height: 1em; padding:0 .1em; font-size: .8em; display: block;
+    position: absolute; left: -1.5em; top: .2em;
+}
+ul.tree li > a:not(:last-child):before      { content: '+'; }
+ul.tree li.open > a:not(:last-child):before { content: '-'; }
+
+/* tooltip */
+.tip         { position: relative; display: inline-block; }
+.tip .tiptip {
+    visibility: hidden;
+    color: #fff; background-color: #555; text-align: center;
+    padding: 0.1em 1em 0.1em 0.5em; border-radius: 6px;
+    position: absolute;                    /* position the tooltip text */
+    z-index: 999; bottom: 125%; left: 50%; margin-left: 0px;
+    opacity: 0; transition: opacity 0.6s;  /* fade in tooltip */
+}
+.tip:hover .tiptip  { visibility: visible; opacity: 0.8; }
+.tip .tiptip::after {                      /* tooltip arrow */
+  content : "";
+  position: absolute; top: 100%; left: 1em;
+  margin-left: -5px; border-width: 5px; border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
