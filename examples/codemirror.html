@@ -1,39 +1,20 @@
 ﻿<html>
   <head>    
   <title>eForth.js 8.0</title>
-  <style>
-    h2    { color: #c44; margin: 0; }
-    h3    { color: #fc4; margin: 0; }
-    .col  { display:flex; flex-direction:column; font-size:20px; border:1px solid #ccc }
-    .row  { display:flex; width:100%; }
-    .hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
-    .dict { text-align:left; color:#484; margin:4px; font-family:monospace; overflow-wrap:auto; }
-    .code { height:36px; width:95%; font-size:24px; margin:0 2px 3px 2px; }
-    .cmd  { color:#48f; margin: 2px; }
-    .txt  { display:block; padding:8px; width:100%; font-family:monospace; overflow-x:scroll; }
-    .ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; }
-    .CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
-    ul.tree li { list-style-type: none; position: relative; }
-    ul.tree li ul { display: none; }
-    ul.tree li.open > ul { display: block; }
-    ul.tree li a { color: black; text-decoration: none; }
-    ul.tree li a:before {
-        height: 1em; padding:0 .1em; font-size: .8em; display: block;
-        position: absolute; left: -1.3em; top: .2em;
-    }
-    ul.tree li > a:not(:last-child):before { content: '+'; }
-    ul.tree li.open > a:not(:last-child):before { content: '-'; }
-  </style>
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js'></script>
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script>
+  <link rel='stylesheet' href='editor.css'></link>
+  <script type='text/javascript' src='forth_voc.js'></script>
   </head>
   <body>
     <div class='row' style='height:100%'>
-      <div class='col' style='width:15%'>
-        <pre class='hdr'>dictionary</pre><pre id='dc' class='dict'></pre>
+      <div class='col' style='z-index:1; width:15%;'>
+        <pre class='hdr'>dictionary</pre>
+        <pre id='usr' class='dict'></pre>
+        <pre id='dc' class='dict'></pre>
       </div>
-      <div class='col' style='width:84%; padding:8px'>
+      <div class='col' style='z-index:0; width:84%; padding:8px'>
         <div id='edt'>
           <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
         </div>
@@ -48,6 +29,7 @@
     </div>
     <script src='../eforth.js'></script>
     <script>
+    const usr = document.getElementById('usr')
     const dc  = document.getElementById('dc')
     const tib = document.getElementById('tib')
     const txt = document.getElementById('txt')
@@ -73,8 +55,7 @@
             tib.focus()
         }
     }
-      
-    let rz = new ResizeObserver(e=>{            ///< adjust console height
+    const rz = new ResizeObserver(e=>{            ///< adjust console height
         edt.style.height = cm.innerHeight
         txt.scrollTop    = txt.scrollHeight
     }).observe(document.getElementById('cm'))
@@ -91,46 +72,12 @@
         if (htm.indexOf('<br/>')==0) htm.replace('<br/>','')  /// * remove blank lines
         to_txt('<pre class="cmd"><em>'+htm+'</em></pre>', false)
     }
-    function show_dict() {
-        dc.innerHTML = voc_tree()
-        document.querySelectorAll('ul.tree a:not(:last-child)').forEach(ul=>{
-            ul.onclick = e=>{
-                var pa = e.target.parentElement
-                var cl = pa.classList
-                if(cl.contains("open")) {
-                    cl.remove('open')
-                    pa.querySelectorAll(':scope .open').forEach(c=>{
-                        c.classList.remove('open')
-                    })
-                }
-                else cl.add('open')
-                e.preventDefault()
-            }
-        })
-    }
-    function voc_tree() {
-        let x = vm.dict.reduce((r,v)=>{
-            const c = {                            ///< category desc lookup
-                ss: "Stack",  au: "ALU",    eq: "Compare", io: "IO",    li: "Literal",
-                br: "Branch", mm: "Memory", cm: "Compile", db: "Debug", os: "OS"
-            }[v.cat]
-            if (r[c]) r[c].push(v); else r[c] = [ v ]
-            return r
-        }, {})
-        let div = ''
-        Object.keys(x).sort().forEach(k=>{
-            div += '<ul class="tree"><li><a href="#">' + k + '</a><ul>'
-            x[k].forEach(v=>{ div += '<li><a href="#">'+v.name+'</a></li>' })
-            div += '</ul></li></ul>'
-        })
-        return div
-    }
     ///
     /// Forth section
     ///
     let vm = new ForthVM(to_txt)               ///< create Forth VM object
-    clear_txt()
-    show_dict()
+    clear_txt()                                /// * init console area
+    show_voc(dc)                               /// * Forth word tree in sidebar
 
     function forth_eval(cmd) {                 ///< evaludate Forth command
         show_cmd(cmd)
@@ -138,7 +85,7 @@
         else {
             vm.exec(cmd)                       /// * can handle multi-line input
             ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
-            show_dict()
+            usr.innerHTML = colon_words()
         }
     }
     </script>
