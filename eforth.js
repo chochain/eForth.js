@@ -28,9 +28,8 @@ window.ForthVM = function(output=console.log) {
     /// Primitive and Immediate word classes (to simplify Dr. Ting's)
     ///
     class Prim {
-        constructor(name, cat, xt) {
+        constructor(name, xt) {
             this.name  = name             ///< name of the word
-            this.cat   = cat              ///< assign category
             this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.token = _fence++         ///< word
@@ -38,7 +37,7 @@ window.ForthVM = function(output=console.log) {
         exec() { this.xt(this) }
     }
     class Immd extends Prim {
-        constructor(name, cat, xt) { super(name, cat, xt); this.immd=true }
+        constructor(name, xt) { super(name, xt); this.immd=true }
     }
     ///
     /// Colon word class
@@ -46,7 +45,6 @@ window.ForthVM = function(output=console.log) {
     class Code {
         constructor(name, v=false, xt=null) {
             this.name  = name             ///< name of the word
-            this.cat   = "User"           ///< user defined word
             this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
@@ -202,100 +200,100 @@ window.ForthVM = function(output=console.log) {
     let dict = [
         /// @defgroup Stack ops
         /// @{
-        new Prim("dup",   "ss", c=>push(top())),
-        new Prim("drop",  "ss", c=>pop()),
-        new Prim("over",  "ss", c=>push(top(2))),
-        new Prim("swap",  "ss", c=>push(remove(2))),
-        new Prim("rot",   "ss", c=>push(remove(3))),
-        new Prim("-rot",  "ss", c=>_ss.splice(-2, 0, pop())),
-        new Prim("pick",  "ss", c=>{ let i=pop(), n=top(i+1); push(n) }),
-        new Prim("roll",  "ss", c=>{ let i=pop(), n=remove(i+1); push(n) }),
-        new Prim("nip",   "ss", c=>remove(2)),
-        new Prim("2dup",  "ss", c=>{ push(top(2)); push(top(2)) }),
-        new Prim("2drop", "ss", c=>_ss.splice(-2)),
-        new Prim("2over", "ss", c=>{ push(top(4)); push(top(4)) }),
-        new Prim("2swap", "ss", c=>{ push(remove(4)); push(remove(4)) }),
+        new Prim("dup",   c=>push(top())),
+        new Prim("drop",  c=>pop()),
+        new Prim("over",  c=>push(top(2))),
+        new Prim("swap",  c=>push(remove(2))),
+        new Prim("rot",   c=>push(remove(3))),
+        new Prim("-rot",  c=>_ss.splice(-2, 0, pop())),
+        new Prim("pick",  c=>{ let i=pop(), n=top(i+1); push(n) }),
+        new Prim("roll",  c=>{ let i=pop(), n=remove(i+1); push(n) }),
+        new Prim("nip",   c=>remove(2)),
+        new Prim("2dup",  c=>{ push(top(2)); push(top(2)) }),
+        new Prim("2drop", c=>_ss.splice(-2)),
+        new Prim("2over", c=>{ push(top(4)); push(top(4)) }),
+        new Prim("2swap", c=>{ push(remove(4)); push(remove(4)) }),
         /// @}
         /// @defgroup Arithmetic ops
         /// @{
-        new Prim("+",     "au", c=>{ let n=pop(); push(pop() + n) }),
-        new Prim("-",     "au", c=>{ let n=pop(); push(pop() - n) }),
-        new Prim("*",     "au", c=>{ let n=pop(); push(pop() * n) }),
-        new Prim("/",     "au", c=>{ let n=pop(); push(pop() / n) }),
-        new Prim("mod",   "au", c=>{ let n=pop(); push(pop() % n) }),          // * note: 4.5 3 mod => 1.5
-        new Prim("*/",    "au", c=>{ let n=pop(); push(pop() * pop() / n) }),
-        new Prim("*/mod", "au", c=>{
+        new Prim("+",     c=>{ let n=pop(); push(pop() + n) }),
+        new Prim("-",     c=>{ let n=pop(); push(pop() - n) }),
+        new Prim("*",     c=>{ let n=pop(); push(pop() * n) }),
+        new Prim("/",     c=>{ let n=pop(); push(pop() / n) }),
+        new Prim("mod",   c=>{ let n=pop(); push(pop() % n) }),          // * note: 4.5 3 mod => 1.5
+        new Prim("*/",    c=>{ let n=pop(); push(pop() * pop() / n) }),
+        new Prim("*/mod", c=>{
             let n=pop(), m=pop() * pop();
             push(m % n); push(INT(m / n))
         }),
         /// @}
         /// @defgroup Bit-wise ops (auto convert to 32-bit by Javascript)
         /// @{
-        new Prim("int",   "au", c=>push(INT(pop()))),                          // * convert float to integer
-        new Prim("and",   "au", c=>push(pop() & pop())),
-        new Prim("or",    "au", c=>push(pop() | pop())),
-        new Prim("xor",   "au", c=>push(pop() ^ pop())),
-        new Prim("negate","au", c=>push(-pop())),
-        new Prim("abs",   "au", c=>push(Math.abs(pop()))),
+        new Prim("int",   c=>push(INT(pop()))),                          // * convert float to integer
+        new Prim("and",   c=>push(pop() & pop())),
+        new Prim("or",    c=>push(pop() | pop())),
+        new Prim("xor",   c=>push(pop() ^ pop())),
+        new Prim("negate",c=>push(-pop())),
+        new Prim("abs",   c=>push(Math.abs(pop()))),
         /// @}
         /// @defgroup Logic ops
         /// @{
-        new Prim("0=",    "eq", c=>push(ZERO(pop()))),
-        new Prim("0<",    "eq", c=>push(BOOL(pop() < -EPS))),
-        new Prim("0>",    "eq", c=>push(BOOL(pop() >  EPS))),
-        new Prim("=",     "eq", c=>{ let n=pop(); push(ZERO(pop() - n)) }),
-        new Prim("<",     "eq", c=>{ let n=pop(); push(BOOL((pop() - n) < -EPS)) }),
-        new Prim(">",     "eq", c=>{ let n=pop(); push(BOOL((pop() - n) >  EPS)) }),
-        new Prim("<>",    "eq", c=>{ let n=pop(); push(BOOL(ZERO(pop() - n)==0)) }),
+        new Prim("0=",    c=>push(ZERO(pop()))),
+        new Prim("0<",    c=>push(BOOL(pop() < -EPS))),
+        new Prim("0>",    c=>push(BOOL(pop() >  EPS))),
+        new Prim("=",     c=>{ let n=pop(); push(ZERO(pop() - n)) }),
+        new Prim("<",     c=>{ let n=pop(); push(BOOL((pop() - n) < -EPS)) }),
+        new Prim(">",     c=>{ let n=pop(); push(BOOL((pop() - n) >  EPS)) }),
+        new Prim("<>",    c=>{ let n=pop(); push(BOOL(ZERO(pop() - n)==0)) }),
         /// @}
         /// @defgroup IO ops
         /// @{
-        new Prim("ucase!","io", c=>_ucase=BOOL(ZERO(pop()))),
-        new Prim("base@", "io", c=>push(INT(_base))),
-        new Prim("base!", "io", c=>_base=INT(pop())),
-        new Prim("hex",   "io", c=>_base=16),
-        new Prim("decimal","io",c=>_base=10),
-        new Prim("cr",    "io", c=>log(CR)),
-        new Prim(".",     "io", c=>log(pop().toString(_base)+SPC)),
-        new Prim(".r",    "io", c=>{ let n=pop(); dot_r(n, pop()) }),
-        new Prim("u.r",   "io", c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
-        new Prim("key",   "io", c=>push(nxtok()[0])),
-        new Prim("emit",  "io", c=>log(String.fromCharCode(pop()))),
-        new Prim("space", "io", c=>log(SPC)),
-        new Prim("spaces","io", c=>_spaces(pop())),
+        new Prim("ucase!",c=>_ucase=BOOL(ZERO(pop()))),
+        new Prim("base@", c=>push(INT(_base))),
+        new Prim("base!", c=>_base=INT(pop())),
+        new Prim("hex",   c=>_base=16),
+        new Prim("decimal",c=>_base=10),
+        new Prim("cr",    c=>log(CR)),
+        new Prim(".",     c=>log(pop().toString(_base)+SPC)),
+        new Prim(".r",    c=>{ let n=pop(); dot_r(n, pop()) }),
+        new Prim("u.r",   c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
+        new Prim("key",   c=>push(nxtok()[0])),
+        new Prim("emit",  c=>log(String.fromCharCode(pop()))),
+        new Prim("space", c=>log(SPC)),
+        new Prim("spaces",c=>_spaces(pop())),
         /// @}
         /// @defgroup Literal ops
         /// @{
-        new Prim("dotstr","li", c=>log(c.qf[0])),    /// display string
-        new Prim("dolit", "li", c=>push(c.qf[0])),   /// integer literal or string
-        new Immd(".\"",   "li", c=>{
+        new Prim("dotstr",c=>log(c.qf[0])),    /// display string
+        new Prim("dolit", c=>push(c.qf[0])),   /// integer literal or string
+        new Immd(".\"",   c=>{
             let s = nxtok('"')
             if (_compi) compile(new Code("dotstr", s))
             else log(s)
         }),
-        new Immd("s\"",   "li", c=>{
+        new Immd("s\"",   c=>{
             let s = nxtok('"')
             if (_compi) compile(new Code("dolit", s))
             else push(s)                             /// * push string object
         }),
-        new Immd("(",     "li", c=>nxtok(')')),
-        new Immd(".(",    "li", c=>log(nxtok(')'))),
-        new Immd("\\",    "li", c=>_ntib=_tib.length),
+        new Immd("(",     c=>nxtok(')')),
+        new Immd(".(",    c=>log(nxtok(')'))),
+        new Immd("\\",    c=>_ntib=_tib.length),
         /// @}
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{pf1}.then
         /// @{
-        new Immd("if",    "br", c=>{
+        new Immd("if",    c=>{
             let w = new Code("_bran", false, _bran)  // encode branch opcode
             w.pf1=[]; w.stage=0                      // stage for branching
             compile(w)
             dict.push(new Code("tmp"))               // as dict.tail()
         }),
-        new Immd("else",  "br", c=>{
+        new Immd("else",  c=>{
             let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=1
             tmp.pf.length = 0
         }),
-        new Immd("then",  "br", c=>{
+        new Immd("then",  c=>{
             let w=dict.last(), tmp=dict.tail()
             if (w.stage==0) {
                 w.pf.push(...tmp.pf)                 // copy tmp.pf into branch
@@ -311,28 +309,28 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Loop ops
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{pf1}.repeat
         /// @{
-        new Immd("begin", "br", c=>{
+        new Immd("begin", c=>{
             compile(new Code("_cycle", false, _cycle)) /// encode _loop opcode
             dict.push(new Code("tmp"))                 /// create a tmp holder
             let w = dict.last()
             w.pf1=[]; w.stage=0                        /// create branching pf
         }),
-        new Immd("while", "br", c=>{
+        new Immd("while", c=>{
             let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=2            /// begin.{pf}.f.while
             tmp.pf.length = 0
         }),
-        new Immd("repeat", "br", c=>{
+        new Immd("repeat", c=>{
             let w=dict.last(), tmp=dict.tail()
             w.pf1.push(...tmp.pf)                      /// while.{pf1}.repeat
             dict.pop()
         }),
-        new Immd("again", "br", c=>{
+        new Immd("again", c=>{
             let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=1            /// begin.{pf}.again
             dict.pop()
         }),
-        new Immd("until", "br", c=>{
+        new Immd("until", c=>{
             let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf)                       /// begin.{pf}.f.until
             dict.pop()
@@ -341,62 +339,60 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Loop ops
         /// @brief for.{pf}.next, for.{pf}.aft.{pf1}.then.{pf2}.next
         /// @{
-        new Immd("for",   "br", c=>{                   /// for...next
+        new Immd("for",   c=>{                         /// for...next
             compile(new Code(">r"));                   /// push I onto rstack
             compile(new Code("_loop", false, _loop))   /// encode _for opcode
             dict.push(new Code("tmp"))                 /// create tmp holder
             let w=dict.last()
             w.stage=0; w.pf1=[]
         }),
-        new Immd("aft",   "br", c=>{
+        new Immd("aft",   c=>{
             let w=dict.last(), tmp=dict.tail()
             w.pf.push(...tmp.pf); w.stage=3; w.pf2=[]  /// for.{pf}.aft
             tmp.pf.length=0
         }),
-        new Immd("next",  "br", c=>{
+        new Immd("next",  c=>{
             let w=dict.last(), tmp=dict.tail()
             if (w.stage==0) w.pf.push(...tmp.pf)       /// for.{pf}.next
             else            w.pf2.push(...tmp.pf)      /// .then.{pf2}.next
             dict.pop()
         }),
-        new Prim(">r",    "br", c=>_rs.push(pop())),   /// push into rstack
-        new Prim("r>",    "br", c=>push(_rs.pop())),   /// pop from rstack
-        new Prim("r@",    "br", c=>push(rtop())),      /// fetch from rstack
-        new Prim("i",     "br", c=>push(rtop())),      /// same as r@
+        new Prim(">r",    c=>_rs.push(pop())),         /// push into rstack
+        new Prim("r>",    c=>push(_rs.pop())),         /// pop from rstack
+        new Prim("r@",    c=>push(rtop())),            /// fetch from rstack
+        new Prim("i",     c=>push(rtop())),            /// same as r@
         /// @}
         /// @defgroup Memory Access ops
         /// @{
-        new Prim("?",        "mm", c=>log(dict[pop()].val[0].toString(_base)+SPC)),
-        new Prim("@",        "mm", c=>push(dict[pop()].val[0])),                              // w -- n
-        new Prim("!",        "mm", c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
-        new Prim("+!",       "mm", c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
-        new Prim("n?",       "mm", c=>{                                                       // w i --
-            let i=pop(); let w=pop(); log(dict[w].val[i].toString(_base)+SPC) }),
-        new Prim("n@",       "mm", c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
-        new Prim("n!",       "mm", c=>{ let i=pop(); let w=pop(); dict[w].val[i]=pop() }),    // n w i --
+        new Prim("?",     c=>log(dict[pop()].val[0].toString(_base)+SPC)),
+        new Prim("@",     c=>push(dict[pop()].val[0])),                              // w -- n
+        new Prim("!",     c=>{ let w=pop(); dict[w].val[0]=pop() }),                 // n w  --
+        new Prim("+!",    c=>{ let w=pop(); dict[w].val[0]+=pop() }),                // n w --
+        new Prim("n@",    c=>{ let i=pop(); let w=pop(); push(dict[w].val[i]) }),    // w i -- n
+        new Prim("n!",    c=>{ let i=pop(); let w=pop(); dict[w].val[i]=pop() }),    // n w i --
         /// @}
         /// @defgroup Word Defining ops
         /// @{
-        new Immd("[",        "cm", c=>_compi=false ),
-        new Prim("]",        "cm", c=>_compi=true ),
-        new Prim("'",        "cm", c=>{ let w=tok2w(); push(w.token) }),
-        new Immd("exec",     "cm", c=>dict[pop()].exec()),
-        new Prim(":",        "cm", c=>{ dict.add(); _compi=true }),  // new colon word
-        new Immd(";",        "cm", c=>_compi=false),                 // semicolon
-        new Immd("variable", "cm", c=>(dict.add(), nvar(_dovar, 0))),
-        new Immd("constant", "cm", c=>(dict.add(), nvar(_docon, pop()))),
-        new Prim("create",   "cm", c=>dict.add()),                   // create new word
-        new Prim(",",        "cm", c=>{                              // push TOS into qf
+        new Immd("[",        c=>_compi=false ),
+        new Prim("]",        c=>_compi=true ),
+        new Prim("'",        c=>{ let w=tok2w(); push(w.token) }),
+        new Immd("exec",     c=>dict[pop()].exec()),
+        new Prim(":",        c=>{ dict.add(); _compi=true }),  // new colon word
+        new Immd(";",        c=>_compi=false),                 // semicolon
+        new Immd("variable", c=>(dict.add(), nvar(_dovar, 0))),
+        new Immd("constant", c=>(dict.add(), nvar(_docon, pop()))),
+        new Prim("create",   c=>dict.add()),                   // create new word
+        new Prim(",",        c=>{                              // push TOS into qf
             let pf = dict.tail().pf
-            if (pf.length) pf[0].qf.push(pop())                      // append more values
-            else           nvar(_dovar, pop())                       // 1st value in qf
+            if (pf.length) pf[0].qf.push(pop())                // append more values
+            else           nvar(_dovar, pop())                 // 1st value in qf
         }),
-        new Prim("allot",    "cm", c=>{                              // n --
+        new Prim("allot",    c=>{                              // n --
             let w = dict.tail()
-            nvar(_dovar, 0)                                          // create qf array
-            for (let n=pop(), i=1; i<n; i++) w.val[i]=0              // fill all slot with 0
+            nvar(_dovar, 0)                                    // create qf array
+            for (let n=pop(), i=1; i<n; i++) w.val[i]=0        // fill all slot with 0
         }),
-        new Prim("does",     "cm", c=>{
+        new Prim("does",     c=>{
             let w=dict.tail(), src=dict[_wp].pf
             for (var i=0; i < src.length; i++) {
                 if (src[i].name=="does") {
@@ -404,35 +400,35 @@ window.ForthVM = function(output=console.log) {
                     break
                 }
             }
-            throw "does"                                             // break from inner interpreter
+            throw "does"                                       // break from inner interpreter
         }),
-        new Prim("to",       "cm", c=>tok2w().val[0]=pop()),         // update constant
-        new Prim("is",       "cm", c=>{                              // n -- alias a word
+        new Prim("to",       c=>tok2w().val[0]=pop()),         // update constant
+        new Prim("is",       c=>{                              // n -- alias a word
             dict.add(); dict.tail().pf = dict[pop()].pf
         }),
         /// @}
         /// @defgroup Debugging ops
         /// @{
-        new Prim("here",     "db", c=>push(dict.tail().token)),
-        new Prim("words",    "db", c=>_words()),
-        new Prim("dump",     "db", c=>{ let n=pop(); _dump(pop(), n) }),
-        new Prim("see",      "db", c=>{ let w=tok2w(); console.log(w); _see(w) }),
-        new Prim(".s",       "db", c=>log(JSON.stringify(_ss)+CR)),
-        new Prim("forget",   "db", c=>{
+        new Prim("here",     c=>push(dict.tail().token)),
+        new Prim("words",    c=>_words()),
+        new Prim("dump",     c=>{ let n=pop(); _dump(pop(), n) }),
+        new Prim("see",      c=>{ let w=tok2w(); console.log(w); _see(w) }),
+        new Prim(".s",       c=>log(JSON.stringify(_ss)+CR)),
+        new Prim("forget",   c=>{
             _fence=Math.max(tok2w().token, find("boot").token+1)
             dict.splice(_fence)
         }),
         /// @}
         /// @defgroup System ops
         /// @{
-        new Prim("exit",     "os", c=>{ throw "exit" }),             // exit inner interpreter
-        new Prim("clock",    "os", c=>{ let n = Date.now(); push(n) }),
-        new Prim("delay",    "os", c=>sleep(pop()).then(()=>{})),
-        new Prim("date",     "os", c=>log((new Date()).toDateString()+" ")),
-        new Prim("time",     "os", c=>log((new Date()).toLocaleTimeString()+" ")),
-        new Prim("eval",     "os", c=>eval(pop())),                  /// * dangerous, be careful!
+        new Prim("exit",     c=>{ throw "exit" }),             // exit inner interpreter
+        new Prim("clock",    c=>{ let n = Date.now(); push(n) }),
+        new Prim("delay",    c=>sleep(pop()).then(()=>{})),
+        new Prim("date",     c=>log((new Date()).toDateString()+" ")),
+        new Prim("time",     c=>log((new Date()).toLocaleTimeString()+" ")),
+        new Prim("eval",     c=>eval(pop())),                  /// * dangerous, be careful!
         /// @}
-        new Prim("boot",     "os", c=>{
+        new Prim("boot",     c=>{
             dict.splice(_fence=find("boot").token+1)
             _wp   = _rs.length = _ss.length = 0
             _base = 10
