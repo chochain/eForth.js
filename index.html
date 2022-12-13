@@ -2,7 +2,7 @@
   <head><style>.bg { padding:8px; font-size:24px; margin:0; }</style></head>
   <body>
     <div style='padding:1%; font-size:20px'>
-      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'><h2>eForth.js 8.0</h2></pre>
+      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'><h2>eForth.js - <em>Forth in Javascript</em></h2></pre>
       <input id='tib' class='bg' style='height:36px; width:100%' value=''
         onkeydown='if (13===event.keyCode) { forth_eval(tib.value); tib.value="" }'/>
   	  <pre id='ss' class='bg' style='background-color:#eee'>[  ]</pre>
@@ -25,17 +25,16 @@
     }
     </script>
     <script type='application/forth'>
-    .( <h2>\ this is an embedded Forth demo</h2> )
-    .( <b>\ list dictionary</b> ) cr
+    .( <h3>\ it also can embed Forth in HTML</h3> )
+    .( <b>\ for example, listing dictionary here</b> ) cr
     words
-    .( <b>\ create a word</b><br/>: xx for r@ . next ; ) cr
+    cr .( <b>\ create a word xx</b><br/>: xx for r@ . next ; ) cr
     : xx for r@ . next ;
-    .( <b>\ see xx</b> ) cr
-    see xx cr
-    .( <b>\ run xx<b/> ) cr
-    9 xx cr
-    .( <b>\ list it again</b> ) cr
-    words
+    cr .( <b>\ see xx</b> ) cr
+    see xx cr cr
+    .( <b>\ run xx<b/><br/>5 xx ) cr
+    5 xx cr cr
+    .( <b>\ so your Forth 'app' can start on-load</b> ) cr
     </script>
   </body>
 </html>
