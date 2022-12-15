@@ -1,6 +1,7 @@
 ﻿<html>
   <head>    
-  <title>eForth.js 8.0</title>
+  <title>eForth.js</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js'></script>
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script>
@@ -9,32 +10,46 @@
   </head>
   <body>
     <div class='row' style='height:100%'>
-      <div class='col' style='z-index:1; width:15%;'>
+      <div id='dir' class='col' style='display:none; z-index:1; width:15%;'>
         <pre class='hdr'>dictionary</pre>
         <pre id='usr' class='dict'></pre>
         <pre id='dc' class='dict'></pre>
       </div>
-      <div class='col' style='z-index:0; width:84%; padding:8px'>
-        <div id='edt'>
+      <div class='col' style='z-index:0; width:100%; padding:8px'>
+        <div class='title'>
+          <span style='float:left' onclick='toggle("dir")'><i class='material-icons'>menu_open</i></span>
+          <span class='logo' style='float:left'><b>eForth 8.0</b> - <em>Forth in Javascript</em></span>
+          <span style='float:right' onclick='toggle("gra")'><i class='material-icons'>perm_media</i></span>
+          <span style='float:right' onclick='(toggle("edt"),cm_refresh())'><i class='material-icons'>edit_square</i></span>
+          <span style='float:right' onclick='toggle("ss")'><i class='material-icons'>border_color</i></span>
+        </div>
+        <div id='edt' class='row' style='display:none'>
+          <div class='menu'>
+            <i class='material-icons'>menu</i>
+            <i class='material-icons'>search</i>
+            <i class='material-icons'>output</i>
+            <i class='material-icons'>folder</i>
+            <i class='material-icons'>drive_file_move_rtl</i>
+            <i class='material-icons'>download</i>
+            <i class='material-icons'>directions_run</i>
+          </div>
           <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
         </div>
         <div id='txt' class='txt'></div>
-        <div class='row'>
-          <input id='tib' class='code' value='' />
-          <button style='height:36px; width:5%'
-  		     onclick='edt.style.display=(edt.style.display=="none") ? "block" : "none"'><b>Edit</b></button>
-        </div>
+        <div><input id='tib' class='code' value='' /></div>
         <div id='ss' class='ss'>[ ]</div>
+      </div>
+      <div id='gra' class='col' style='display:none; width:100%'>
+        <canvas id='can'></div>
       </div>
     </div>
     <script src='../eforth.js'></script>
     <script>
-    const usr = document.getElementById('usr')
-    const dc  = document.getElementById('dc')
-    const tib = document.getElementById('tib')
-    const txt = document.getElementById('txt')
-    const ss  = document.getElementById('ss')
-    const cm  = CodeMirror.fromTextArea(document.getElementById('cm'), {
+    const $ = (s)=>s[0]=='#' && !s.includes(' ') ?      /* ala jQuery */
+        document.querySelector(s) : document.querySelectorAll(s)
+    const dir = $('#dir'), usr = $('#usr'), dc = $('#dc')
+    const tib = $('#tib'), txt = $('#txt'), ss = $('#ss')
+    const cm  = CodeMirror.fromTextArea($('#cm'), {
         lineNumbers: true,
         styleActiveLine: true,
         mode: 'forth'
@@ -58,19 +73,25 @@
     const rz = new ResizeObserver(e=>{            ///< adjust console height
         edt.style.height = cm.innerHeight
         txt.scrollTop    = txt.scrollHeight
-    }).observe(document.getElementById('cm'))
- 
+    }).observe($('#cm'))
+    function toggle(id) {
+        let sty = $('#'+id).style
+        sty.display = sty.display=='none' ? 'flex' : 'none'
+    }
+    function cm_refresh() {                       /// * fix line number issue
+        $('#edt > .CodeMirror').forEach(e=>e.CodeMirror.refresh())
+    }
     function to_txt(t, esc=true) {
         const escape = (s)=>{
             return s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;')
         }
         txt.innerHTML += esc && typeof(t)=='string' ? escape(t) : t
     }
-    function clear_txt() { txt.innerHTML=''; to_txt('<h2>eForth.js 8.0</h2>') }
+    function clear_txt() { txt.innerHTML='' }
     function show_cmd(cmd) {
         let htm = cmd.replace(/:/g,'<br/>:')                  /// * show on a new line
         if (htm.indexOf('<br/>')==0) htm.replace('<br/>','')  /// * remove blank lines
-        to_txt('<pre class="cmd"><em>'+htm+'</em></pre>', false)
+        to_txt(`<pre class="cmd"><em>${htm}</em></pre>`, false)
     }
     ///
     /// Forth section
