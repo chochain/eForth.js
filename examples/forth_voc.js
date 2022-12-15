@@ -1,17 +1,17 @@
 var _forth_voc = {
-    "'"       : [ 'cm', '( -- w )',     'Return token of next synonym outside colon synonym' ],
+    "'"       : [ 'cm', '( -- w )',     'Return token of next idiom' ],
     '-'       : [ 'au', '( a b -- c )', 'Subtract tos from 2nd item' ],
     '!'       : [ 'mm', '( n w -- )',   'Store n in variable at w' ],
     ','       : [ 'cm', '( n -- )',     'Compile number n to pf field of newest word' ],
-    '."'      : [ 'li', '( -- )',       'Compile next synonym as a string literal for display' ],
+    '."'      : [ 'li', '( -- )',       'display input between quotes (") as a string literal' ],
     '.s'      : [ 'db', '( -- )',       'Display data stack content' ],
-    's"'      : [ 'li', '( -- w )',     'Compile next synonym as a string literal' ],
+    '"'       : [ 'li', '( -- w )',     'Compile input between quotes (") as a string literal to TOS' ],
     '('       : [ 'li', '( -- )',       'Comment to the next )' ],
     '*'       : [ 'au', '( a b -- c )', 'Multiply two tos items' ],
     '*/'      : [ 'au', '( a b c -- d )',   'd = a * b / c' ],
     '*/mod'   : [ 'au', '( a b c -- d e )', 'd = (a*b) % c, e = (a*b)/c' ],
     '.'       : [ 'io', '( a -- )',     'Display number or string a on tos' ],
-    '.('      : [ 'li', '( -- )',       'Display next synonym up to next )' ],
+    '.('      : [ 'li', '( -- )',       'Display next idiom up to next )' ],
     '.r'      : [ 'io', '( a n -- )',   'Display a in n columns' ],
     '/'       : [ 'au', '( a b -- c )', 'Divide 2nd item by tos' ],
     ':'       : [ 'cm', '( -- )',       'Define a new colon word' ],
@@ -80,10 +80,10 @@ var _forth_voc = {
     'exit'    : [ 'os', '( -- )',       'Unnest a list' ],
     'exp'     : [ 'ex', '( a -- b )',   'Return exponential of tos' ],
     'eval'    : [ 'os', '( -- )',       'Javascript.eval string on tos (dangerous, use with care)' ],
-    'find'    : [ 'db', '( -- w )',     'Return token of next synonym' ],
+    'find'    : [ 'db', '( -- w )',     'Return token of next idiom' ],
     'floor'   : [ 'ex', '( a -- n )',   'Floor tos to integer' ],
     'for'     : [ 'br', '( n -- )',     'Repeat following loop n+1 times' ],
-    'forget'  : [ 'db', '( -- )',       'Trim dictionary back to the following synonym' ],
+    'forget'  : [ 'db', '( -- )',       'Trim dictionary back to the following idiom' ],
     'here'    : [ 'db', '( -- w )',     'Return top of dictionary' ],
     'hex'     : [ 'io', '( -- )',       'Change to hexadecimal base' ],
     'i'       : [ 'br', '( -- a )',     'Duplicate top of return stack to tos' ],
@@ -114,7 +114,8 @@ var _forth_voc = {
     'roll'    : [ 'ss', '( i -- a )',   'Roll ith tos item to top' ],
     'rot'     : [ 'ss', '( a b c -- b c a )', 'Rotata 3rd tos item to top' ],
     '-rot'    : [ 'ss', '( a b c -- c a b )', 'Rotate tos to 3rd position' ],
-    'see'     : [ 'db', '( -- )',       'Disassemble the following synonym' ],
+    's"'      : [ 'li', '( -- w )',     'Compile next idiom as a string literal' ],
+    'see'     : [ 'db', '( -- )',       'Disassemble the following idiom' ],
     'sin'     : [ 'ex', '( a -- b )',   'Return sine of tos' ],
     'space'   : [ 'io', '( -- )',       'Display a space' ],
     'spaces'  : [ 'io', '( n -- )',     'Display n spaces' ],
@@ -179,7 +180,7 @@ function show_voc(div) {
     })
 }
 function colon_words() {
-    let div = '<ul>'
+    let div = '<ul class="colon">'
     for (let i = vm.dict.length - 1;
          i >= 0 && vm.dict[i].name != 'boot'; --i) {
         div += `<li>${vm.dict[i].name}</li>`
