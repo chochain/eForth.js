@@ -142,7 +142,7 @@ window.ForthVM = function(output=console.log) {
         else push(s)                               /// push string object
     }
     const _bran  = c=>_run(ZERO(pop()) ? c.pf1 : c.pf)
-    const _cycle = c=>{
+    const _again = c=>{
         while (true) {
             _run(c.pf)                             /// begin.{pf}.
             if (c.stage==0 && INT(pop())!=0) break /// until
@@ -151,7 +151,7 @@ window.ForthVM = function(output=console.log) {
             _run(c.pf1)                            /// .{pf1}.until
         }
     }
-    const _loop  = c=>{
+    const _dofor = c=>{
         do { _run(c.pf) } while (
             c.stage==0 && dec_i() >= 0)            /// for.{pf}.next only
         while (c.stage>0) {                        /// aft
@@ -314,7 +314,7 @@ window.ForthVM = function(output=console.log) {
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{pf1}.repeat
         /// @{
         new Immd('begin', c=>{
-            compile(new Code('_cycle', false, _cycle)) /// encode _loop opcode
+            compile(new Code('_again', false, _again)) /// encode _again opcode
             dict.push(new Code("tmp"))                 /// create a tmp holder
             let w = dict.last()
             w.pf1=[]; w.stage=0                        /// create branching pf
@@ -345,7 +345,7 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Immd('for',   c=>{                         /// for...next
             compile(new Code('>r'));                   /// push I onto rstack
-            compile(new Code('_loop', false, _loop))   /// encode _for opcode
+            compile(new Code('_dofor', false, _dofor)) /// encode _for opcode
             dict.push(new Code('_tmp'))                /// create tmp holder
             let w=dict.last()
             w.stage=0; w.pf1=[]
