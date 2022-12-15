@@ -136,6 +136,11 @@ window.ForthVM = function(output=console.log) {
     /// @{
     const _docon = c=>push(c.qf[0])
     const _dovar = c=>push(c.token)
+    const _dostr = c=>{
+        let s = nxtok('"')
+        if (_compi) compile(new Code("dolit", s))
+        else push(s)                             /// * push string object
+    }
     const _bran  = c=>_run(ZERO(pop()) ? c.pf1 : c.pf)
     const _cycle = c=>{
         while (true) {
@@ -271,11 +276,8 @@ window.ForthVM = function(output=console.log) {
             if (_compi) compile(new Code("dotstr", s))
             else log(s)
         }),
-        new Immd("s\"",   c=>{
-            let s = nxtok('"')
-            if (_compi) compile(new Code("dolit", s))
-            else push(s)                             /// * push string object
-        }),
+        new Immd("\"",    c=>_dostr()),        /// * push string as TOS
+//        new Immd("s\"",   c=>_dostr()),      /// * deprecated
         new Immd("(",     c=>nxtok(')')),
         new Immd(".(",    c=>log(nxtok(')'))),
         new Immd("\\",    c=>_ntib=_tib.length),
