@@ -31,9 +31,9 @@
             <i class='material-icons'>folder</i>
             <i class='material-icons'>drive_file_move_rtl</i>
             <i class='material-icons'>download</i>
-            <i class='material-icons'>directions_run</i>
+            <i onclick='forth_eval(cm.getSelection())' class='material-icons'>directions_run</i>
           </div>
-          <textarea id='cm'>\ type command into the input buffer above, or&#013;\ write your code here&#013;\ highlight the code you want to execute&#013;\ Ctrl-C to copy into the input buffer above&#013;\ then hit <return> to execute</textarea>
+          <textarea id='cm'>\ type command into the input buffer below, or here&#013;\ to execute - highlight the code and hit <Ctrl-Enter></textarea>
         </div>
         <div id='txt' class='txt'></div>
         <div><input id='tib' class='code' value='' /></div>
@@ -49,17 +49,12 @@
         document.querySelector(s) : document.querySelectorAll(s)
     const dir = $('#dir'), usr = $('#usr'), dc = $('#dc')
     const tib = $('#tib'), txt = $('#txt'), ss = $('#ss')
+    const run = (doc)=>forth_eval(doc.getSelection())
     const cm  = CodeMirror.fromTextArea($('#cm'), {
         lineNumbers: true,
         styleActiveLine: true,
-        mode: 'forth'
-    })
-    cm.on('copy', (doc)=>{
-        let cmd=doc.getSelection()
-        tib.value = cmd.replace(/[\t|\n]/g,' ')
-        tib.style.backgroundColor = '#fe0'
-        document.activeElement.blur()
-        tib.focus()
+        mode: 'forth',
+        extraKeys: { 'Ctrl-Enter': (e)=>forth_eval(e.getSelection()) }
     })
     tib.onkeydown = (e)=>{
         if (13==e.keyCode) {
