@@ -7,8 +7,8 @@
   <link rel='stylesheet' href='../tests/codemirror.min.css'></link>
   <script type='text/javascript' src='../tests/codemirror.min.js'></script>
   <script type='text/javascript' src='../tests/forth.min.js'></script>
-  <link rel='stylesheet' href='editor.css'></link>
-  <script type='text/javascript' src='forth_voc.js'></script>
+  <link rel='stylesheet' href='../src/eforth8.css'></link>
+  <script type='text/javascript' src='../src/forth_voc.js'></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   </head>
   <body>
@@ -94,7 +94,7 @@
         rdr.onload = (e)=>cm.setValue(e.target.result)
         rdr.readAsText(fn);
     }
-      function file_save() {
+    function file_save() {
         let blob = new Blob([ cm.getValue() ], { type: 'text/plain' })
         let lnk  = $('#fsave')
         let fn   = prompt('Save to file name', $('#fname').innerHTML)
@@ -104,8 +104,7 @@
             window.webkitURL.createObjectURL(blob) :
             window.URL.createObjectURL(blob)
         lnk.click()
-      }
-          
+    }
     function to_txt(t, esc=true) {
         const escape = (s)=>{
             return s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;')
