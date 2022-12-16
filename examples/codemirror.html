@@ -33,7 +33,7 @@
             <i class='material-icons'>download</i>
             <i onclick='forth_eval(cm.getSelection())' class='material-icons'>directions_run</i>
           </div>
-          <textarea id='cm'>\ type command into the input buffer below, or here&#013;\ to execute - highlight the code and hit <Ctrl-Enter></textarea>
+          <textarea id='cm'>\ highlight the code and hit <Ctrl-Enter> to run</textarea>
         </div>
         <div id='txt' class='txt'></div>
         <div><input id='tib' class='code' value='' /></div>
@@ -51,24 +51,21 @@
     const tib = $('#tib'), txt = $('#txt'), ss = $('#ss')
     const run = (doc)=>forth_eval(doc.getSelection())
     const cm  = CodeMirror.fromTextArea($('#cm'), {
-        lineNumbers: true,
-        styleActiveLine: true,
-        mode: 'forth',
+        lineNumbers: true, styleActiveLine: true,
+        mode: 'forth',                            /// * Forth language
         extraKeys: { 'Ctrl-Enter': (e)=>forth_eval(e.getSelection()) }
     })
-    tib.onkeydown = (e)=>{
-        if (13==e.keyCode) {
-            forth_eval(tib.value)
-            tib.style.backgroundColor='white'
-            tib.value = ''
-            txt.scrollTop = txt.scrollHeight
-            tib.focus()
-        }
-    }
-    const rz = new ResizeObserver(e=>{            ///< adjust console height
+    const rz  = new ResizeObserver(e=>{           ///< adjust console height
         edt.style.height = cm.innerHeight
         txt.scrollTop    = txt.scrollHeight
     }).observe($('#cm'))
+    tib.onkeydown = (e)=>{                        ///< console input
+        if (13!=e.keyCode) return
+        forth_eval(tib.value)
+        tib.value = ''
+        txt.scrollTop = txt.scrollHeight          /// * scroll down
+        tib.focus()
+    }
     function toggle(id) {
         let sty = $('#'+id).style
         sty.display = sty.display=='none' ? 'flex' : 'none'

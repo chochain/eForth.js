@@ -26,7 +26,7 @@ h3    { color: #fc4; margin: 0; }
 .CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
 .title   { display:block; padding:6px; margin-right:-2px; background-color:#ec8; }
 .title i { padding:2px; }
-.title i:hover { background-color:#fff; padding:2px; }
+.title i:hover { background-color:#ff8; padding:2px; }
 .menu    { display: flex; flex-direction:column; width:32px; }
 .menu i  { float:right; background-color:#fff; padding:2px; }
 .menu i:hover { background-color:#ddd; padding:2px; }
