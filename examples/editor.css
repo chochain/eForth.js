@@ -27,8 +27,9 @@ h3    { color: #fc4; margin: 0; }
 .title   { display:block; padding:6px; margin-right:-2px; background-color:#ec8; }
 .title i { padding:2px; }
 .title i:hover { background-color:#ff8; padding:2px; }
-.menu    { display: flex; flex-direction:column; width:32px; }
-.menu i  { float:right; background-color:#fff; padding:2px; }
+.menu      { display: flex; flex-direction:column; width:28px; padding:4px; }
+.menu span { height:4px; background-color:#eee; margin: 3px 0 3px 0; }
+.menu i    { float:right; background-color:#fff; padding:2px; }
 .menu i:hover { background-color:#ddd; padding:2px; }
 
 /* tree */
