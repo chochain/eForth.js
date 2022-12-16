@@ -22,12 +22,14 @@
           <span style='float:right' onclick='toggle("gra")'><i class='material-icons'>perm_media</i></span>
           <span style='float:right' onclick='(toggle("edt"),cm_refresh())'><i class='material-icons'>edit_square</i></span>
           <span style='float:right' onclick='toggle("ss")'><i class='material-icons'>border_color</i></span>
+          <span style='float:right' id='fname'></span>
         </div>
         <div id='edt' class='row' style='display:none'>
+          <input id='fopen' type='file' onclick='file_load(this.files)' style='display:none'/>
           <div class='menu'>
             <i class='material-icons'>menu</i>
             <i class='material-icons'>search</i>
-            <i class='material-icons'>output</i>
+            <i class='material-icons' onclick='$("#fopen").click()'>output</i>
             <i class='material-icons'>folder</i>
             <i class='material-icons'>drive_file_move_rtl</i>
             <i class='material-icons'>download</i>
@@ -59,6 +61,7 @@
         edt.style.height = cm.innerHeight
         txt.scrollTop    = txt.scrollHeight
     }).observe($('#cm'))
+      
     tib.onkeydown = (e)=>{                        ///< console input
         if (13!=e.keyCode) return
         forth_eval(tib.value)
@@ -72,6 +75,14 @@
     }
     function cm_refresh() {                       /// * fix line number issue
         $('#edt > .CodeMirror').forEach(e=>e.CodeMirror.refresh())
+    }
+    function file_load(flst) {
+        if (flst.length != 1) return
+        let fh = flst[0]
+        $('#fname').innerText = '[ '+fh.name+' ]'
+        let rdr = new FileReader()
+        rdr.onload = (e)=>cm.setValue(e.target.result)
+        rdr.readAsText(fh);
     }
     function to_txt(t, esc=true) {
         const escape = (s)=>{
