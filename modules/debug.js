@@ -13,9 +13,11 @@ export const voc = (vm) => {
     const words = ()=>{                            ///< word op
         let sz  = 0
         vm.dict.forEach((w,i)=>{                   /// * loop thru all words
-            log(w.name+' ')
-            sz += w.name.length + 1
-            if (sz > DUMP_WIDTH) { log(CR); sz = 0 }
+            if (w.name[0]!='_') {                  /// * if not hidden words
+                log(w.name+' ')
+                sz += w.name.length + 1
+                if (sz > DUMP_WIDTH) { log(CR); sz = 0 }
+            }
         })
         log(CR)
     }
