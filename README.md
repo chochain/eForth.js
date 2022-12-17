@@ -6,8 +6,8 @@ Provided here is <em style='color:#fc4'>**eforth.js**</em>, the only file you ne
 
 We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be fancier! Checkout under src/eforth8.html which I'm still working on... 
  <pre><img
-   width='25%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>...<img
-   width='25%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
+   width='24%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>...<img
+   width='30%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
 
 Also, should you care about modulization in fashion of the ES6's new feature, i.e. source code is easier to maintain especially if it is part of a bigger project
 * check the /modules directory for individual functional areas.
