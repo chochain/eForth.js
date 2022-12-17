@@ -1,8 +1,7 @@
-///
-/// Primitive and Immediate word classes (to simplify Dr. Ting's)
+/// @file
+/// @brief eForth - Core classes
 ///
 let _fence = 0                                   ///< dict length control
-
 /// @defgroup Data conversion functions
 /// @{
 export const EPS    = 1.0e-6                     ///< comparison epsilon
@@ -11,13 +10,11 @@ export const BOOL   = t=>(t ? -1 : 0)            ///< Forth true = -1
 export const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
 /// @}
 ///=========================================================================
-///
-/// Forth Inner Interpreter (just one line)
+/// Primitive and Immediate word classes
 ///
 export class Prim {
-    constructor(name, cat, xt) {
+    constructor(name, xt) {
         this.name  = name                  ///< name of the word
-        this.cat   = cat                   ///< assign category
         this.xt    = xt                    ///< function pointer
         this.immd  = false                 ///< immediate flag
         this.token = _fence++              ///< word
@@ -25,7 +22,7 @@ export class Prim {
     exec() { this.xt(this) }
 }
 export class Immd extends Prim {
-    constructor(name, cat, xt) { super(name, cat, xt); this.immd=true }
+    constructor(name, xt) { super(name, xt); this.immd=true }
 }
 ///
 /// Colon word class
@@ -33,14 +30,13 @@ export class Immd extends Prim {
 export class Code {
     constructor(name, xt=null, v=false) {
         this.name  = name                 ///< name of the word
-        this.cat   = "User"               ///< user defined word
         this.xt    = xt                   ///< function pointer
         this.immd  = false                ///< immediate flag
         this.pf    = []                   ///< parameter field
 
-        if (typeof(v)=="boolean" && v) this.token = _fence++  // new user defined word
-        else if (typeof(v)=="string")  this.qf = [ v ]
-        else if (typeof(v)=="number")  this.qf = [ v ]
+        if (typeof(v)=='boolean' && v) this.token = _fence++  // new user defined word
+        else if (typeof(v)=='string')  this.qf = [ v ]
+        else if (typeof(v)=='number')  this.qf = [ v ]
         
         this.pf.tail = function() { return this[this.length-1] }
     }
