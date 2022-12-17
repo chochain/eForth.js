@@ -22,9 +22,9 @@ h3    { color: #fc4; margin: 0; }
 .code { height:36px; width:100%; font-size:24px; padding:6px; margin-bottom:3px; }
 .cmd  { color:#48f; margin: 2px; }
 .txt  { display:block; padding:8px; width:auto; font-family:monospace; overflow-y:scroll; }
-.ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; margin-right:-1px; }
+.ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; width:auto; }
 .CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
-.title   { display:block; padding:6px; margin-right:-2px; background-color:#ec8; }
+.title   { display:block; padding:6px; width:auto; background-color:#ec8; }
 .title i { padding:2px; }
 .title i:hover { background-color:#ff8; padding:2px; }
 .menu      { display: flex; flex-direction:column; width:28px; padding:4px; }
