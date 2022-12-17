@@ -4,7 +4,7 @@
 import { Prim, purge } from './core.js'
 
 const DUMP_WIDTH = 54                              ///< dump control
-const CR = "\n"
+const CR = '\n'
 
 export const voc = (vm) => {
     const log   = vm.log

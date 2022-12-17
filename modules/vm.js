@@ -1,4 +1,3 @@
-///
 /// @file
 /// @brief Module - eForth Virtual Machine
 /// Note: supported interface
@@ -44,7 +43,7 @@ export class VM {
     }
 	tail(i=1) { return this.dict[this.dict.length - i] }        ///< last entry
 	last()    { return this.tail(2).pf.tail() }                 ///< pf of last word created
-    add(s)    { this.dict.push(new Code(s, null, true)) }       ///< add a word to dictionary
+    add(s)    { this.dict.push(new Code(s, null, true)) }       ///< add a colon word to dictionary
     extend(d) { d.forEach(c=>this.dict.push(c)) }               ///< extending dictionary
     comma(w)  { this.tail().pf.push(w) }                        ///< add w into pf[] 
     compile(s, xt=null, v=false) {                              ///< compile a word
@@ -52,7 +51,7 @@ export class VM {
         this.comma(w)
     }
     nvar(xt, v) {
-        this.compile("dovar", xt, v)
+        this.compile('dovar', xt, v)
         let t   = this.tail()              ///< last dictionary word 
         let w   = t.pf[0]                  ///< pf of last word
         t.val   = w.qf                     /// * create a val func
@@ -93,11 +92,11 @@ export class VM {
             ? parseInt(tok, this.base)
             : parseFloat(tok)
         if (isNaN(n)) {                    ///> * not a number?
-            this.log(tok + "? ")           ///>> display prompt
+            this.log(tok + '? ')           ///>> display prompt
             this.compi=false               ///>> restore interpret mode
         }
         else if (cc) {                     ///> in compile mode?
-            this.compile("dolit", null, n) ///>> compile the number
+            this.compile('dolit', null, n) ///>> compile the number
         }
         else this.ss.push(n)               ///>> or, push number onto stack top
     }
