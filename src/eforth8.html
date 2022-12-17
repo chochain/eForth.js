@@ -8,9 +8,9 @@
   <script type='text/javascript' src='../tests/codemirror.min.js'></script>
   <script type='text/javascript' src='../tests/forth.min.js'></script>
   <link rel='stylesheet' href='../src/eforth8.css'></link>
-  <link rel='stylesheet' href='../src/menu.css'></link>
   <script type='text/javascript' src='../src/forth_voc.js'></script>
-  <script type='text/javascript' src='../src/menu.js'></script>
+  <!--link rel='stylesheet' href='../src/menu.css'></link>
+  <script type='text/javascript' src='../src/menu.js'></script-->
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   </head>
   <body>
@@ -50,7 +50,7 @@
         <div id='ss' class='ss'>[ ]</div>
       </div>
       <div id='gra' class='col' style='display:none; width:100%'>
-        <button class="sec_btn" onclick="menu_open('menu');">Add to feature vector</button>
+        <!--button class="sec_btn" onclick="menu_open('menu');">Add to feature vector</button>
         <div class="menu_pac" id='menu'>
           <div class="menu" id="menu-0">
             <div class="menu_bottom">New feature vector</div>
@@ -75,7 +75,7 @@
             <div>Aggregators</div>
             <div class="menu_top menu_icon no_space" onclick="menu_prev(event);"><i class="material-icons">arrow_back</i>Back</div>
           </div>
-        </div>
+        </div-->
         <canvas id='can'></div>
       </div>
     <script src='../eforth.js'></script>
@@ -162,10 +162,10 @@
     }
     </script>
     <script type='application/forth'>
-      cr .( <h3>\ this demo shows embedded Forth</h3> ) cr
+      cr .( <h3>\ this demo shows embedded Forth here</h3> ) cr
       .( <b>\ list dictionary</b> ) cr
       words
     </script>
-    <!--script type='application/forth' src='./tests/embed.f'/-->
+    <script type='application/forth' src='../tests/embed.f'/>
   </body>
 </html>
