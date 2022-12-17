@@ -164,7 +164,7 @@ window.ForthVM = function(output=console.log) {
     /// @}
     /// @defgroup Debug functions (can be implemented in front-end)
     /// @{
-    const _spaces= (n)=>{ for (let i=0; i<n; i++) log(SPC) }
+    const _spaces= (n=1)=>{ for (let i=0; i<n; i++) log(SPC) }
     const _words = ()=>{
         let sz = 0
         dict.forEach((w,i)=>{
@@ -365,6 +365,7 @@ window.ForthVM = function(output=console.log) {
         new Prim('r>',    c=>push(_rs.pop())),         /// pop from rstack
         new Prim('r@',    c=>push(rtop())),            /// fetch from rstack
         new Prim('i',     c=>push(rtop())),            /// same as r@
+        new Prim('exit',  c=>{ throw 'exit' }),        /// exit inner interpreter
         /// @}
         /// @defgroup Memory Access ops
         /// @{
@@ -414,10 +415,10 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Debugging ops
         /// @{
         new Prim('here',     c=>push(dict.tail().token)),
+        new Prim('.s',       c=>log(JSON.stringify(_ss)+CR)),
         new Prim('words',    c=>_words()),
         new Prim('dump',     c=>{ let n=pop(); _dump(pop(), n) }),
         new Prim('see',      c=>{ let w=tok2w(); console.log(w); _see(w) }),
-        new Prim('.s',       c=>log(JSON.stringify(_ss)+CR)),
         new Prim('forget',   c=>{
             _fence=Math.max(tok2w().token, find('boot').token+1)
             dict.splice(_fence)
@@ -425,7 +426,6 @@ window.ForthVM = function(output=console.log) {
         /// @}
         /// @defgroup System ops
         /// @{
-        new Prim('exit',     c=>{ throw 'exit' }),             // exit inner interpreter
         new Prim('clock',    c=>{ let n = Date.now(); push(n) }),
         new Prim('delay',    c=>sleep(pop()).then(()=>{})),
         new Prim('date',     c=>push((new Date()).toDateString())),
