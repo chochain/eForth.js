@@ -4,12 +4,12 @@ With a Javascript implementation, the entire Forth can be had in a single browse
 
 Provided here is <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, if you insist, maybe an extra <em>**index.html**</em> to wrap it up or to customize to your heart's content. Simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a Forth engine ready to play. Without surprise, you should get something like the left hand side snip below.
 
-We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be fancier! Checkout under src/eforth8.html which I'm still working on... 
+We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be more mordern! Checkout src/eforth8.html as a demo that I'm still working on. With the same <em style='color:#fc4'>**eforth.js**</em>, you can create whatever presentation you fancy...
  <pre><img
    width='24%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>.....<img
    width='36%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
 
-Also, should you care about modulization in fashion of the ES6's new feature, i.e. source code is easier to maintain especially if it is part of a bigger project
+Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a larger project, or maybe you care for modulization in fashion of the ES6's new feature i.e. ease of source code maintenance
 * check the /modules directory for individual functional areas.
 * <em>eforth_w_module.html</em> in the root is provided as an example to import modules
 * note that, without a bundler (i.g. Webpack, Browsify, ...) to tie modules together, one will need a web server to push all the modules to your web-browser
