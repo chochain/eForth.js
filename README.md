@@ -1,15 +1,19 @@
-# eForth.js - eForth in Javascript
+# eForth.js - <em>Forth in Javascript</em>
 
-With Javascript implementation, Forth can be run from within a single web page.
+With a 100% Javascript implementation, Forth can be run from within just a single web page on your desktop or even cellphone.
 
-Good news! **eforth.js** is the only file you need! Well, if you insist, maybe an extra index.html to wrap it up. Copy both of them from the root directory shown above to your local directory. Click on index.html and you have a Forth engine ready to play.
+The good news is that <em style='color:#fc4'>**eforth.js**</em> is the only file you need! Well, if you insist, maybe an extra <em>**index.html**</em> to wrap it up. Copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a Forth engine ready to play. Here's what you should get
+ <pre><img width='25%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'></pre>
 
 Should you care about modulization in fashion of the ES6's new feature, a tad slower but code is easier to maintain
 * check the /modules directory for individual functional areas.
-* main.html in the root is provided as an example to import modules
+* <em>eforth_w_module.html</em> in the root is provided as an example to import modules
 * note that, without a bundler (i.g. Webpack, Browsify, ...) to tie modules together, one will need a web server to push all the modules to your web-browser
-  * a script serv.py in /tests directory is provided to kick off a Python3's simple server for the purpose.
-
+  * a script serv.py in /tests directory is provided to kick off a Python3's simple server for the purpose. i.e.
+    <pre>> <em>python3 tests/serv.py</em> from root directory to start you web server
+    > enter <em>http://localhost:8000/eforth_w_module.html</em> into your browser
+    </pre>
+    
 ## History - a project with interesting lineage.
 * It started back in 2011 when **Cheahshen Yap** from Taiwan FIG sent the 100-line kernel, named jeForth, to **Dr. Ting**.
 * **Sam Suan Chen**, took over the codebase (called project-k) and produced a graphic demo in SVFIG. The project took on its own path [here](https://github.com/hcchengithub/project-k) now.
