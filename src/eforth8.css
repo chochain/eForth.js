@@ -21,7 +21,7 @@ h3    { color: #fc4; margin: 0; }
 .dict { text-align:left; color:#484; margin:4px; font-family:monospace; overflow-wrap:auto; }
 .code { height:36px; width:100%; font-size:24px; padding:6px; margin-bottom:3px; }
 .cmd  { color:#48f; margin: 2px; }
-.txt  { display:block; padding:8px; width:100%; font-family:monospace; overflow-x:scroll; }
+.txt  { display:block; padding:8px; width:auto; font-family:monospace; overflow-y:scroll; }
 .ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; margin-right:-1px; }
 .CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
 .title   { display:block; padding:6px; margin-right:-2px; background-color:#ec8; }
