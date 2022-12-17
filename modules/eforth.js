@@ -6,23 +6,19 @@
 ///   > let vm = Forth()
 ///
 export { default as embed_forth } from './embed.js'   ///< embedded Forth listener
-export function Forth(fin, fout=console.log) {
-    if (!(this instanceof Forth)) return new Forth(fin, fout)
+export function Forth(fout=console.log) {
+    if (!(this instanceof Forth)) return new Forth(fout)
     
     io.init(fout)                          ///< initialize output port
-    fin.onkeydown = (e)=>{                 ///< add tib handler
-        if (e.keyCode!=13) return
-        exec(fin.value)
-        fin.value = ''; fin.focus()
-    }
     
     let vm   = new VM(io)                  ///< create VM instance
     let exec = (cmd)=>{                    ///< outer interpreter
+        console.log('cmd=>'+cmd)
         if (vm.dict.length==0) {           /// * lazy loading
             dict_setup(vm)                 /// * construct dict now
         }
         cmd.split('\n').forEach(r=>{       /// * multi-line input
-            vm.tib(r)                      /// * capture input stream into TIB
+            vm.tib(r)                      /// * feed input stream into VM's TIB
             for (let tok=vm.tok(); tok != null; tok=vm.tok()) {
                 vm.outer(tok)              /// * send token to outer intepreter
             }
