@@ -2,7 +2,7 @@
   <head><style>.bg { padding:8px; font-size:24px; margin:0; }</style></head>
   <body>
     <div style='padding:1%; font-size:20px'>
-      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'><h2>eForth.js - <em>Forth in Javascript</em></h2></pre>
+      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'></pre>
       <input id='tib' class='bg' style='height:36px; width:100%' value=''
         onkeydown='if (13===event.keyCode) { forth_eval(tib.value); tib.value="" }'/>
   	  <pre id='ss' class='bg' style='background-color:#eee'>[  ]</pre>
@@ -14,15 +14,17 @@
     const to_txt = (t)=>{                         ///< output to textarea
         txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
     }
+    const banner = ()=>{
+        txt.innerHTML = '<h2>eForth.js - <em>Forth in Javascript</em></h2>'
+    }
     const vm  = new ForthVM(to_txt)               ///< create Forth VM object
-    console.log(vm)                               /// * show VM on console
-
     const forth_eval = (cmd)=>{
         to_txt('<em style="color:#48f">'+cmd+'</em><br/>')
-        if (cmd=='clear') txt.innerHTML = '<h2>eForth.js 8.0</h2>'
-        else              vm.exec(cmd)
+        if (cmd=='clear') banner(); else vm.exec(cmd)
 		ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
     }
+    console.log(vm)                               /// * show VM on console
+    banner()      
     </script>
     <script type='application/forth'>
     .( <h3>\ it also can embed Forth in HTML</h3> )
