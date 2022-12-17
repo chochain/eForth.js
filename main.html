@@ -11,22 +11,20 @@
     const tib = document.getElementById('tib')    ///< terminal input buffer
     const txt = document.getElementById('txt')    ///< text console
     const ss  = document.getElementById('ss')     ///< data stack
-    const vm  = new Forth(tib, to_txt)                 ///< so, we can name it anything
-      
-    embed_forth(vm.exec)                          /// * enable embedded Forth
-    banner()                                      /// * display banner
-
-    function to_txt(t) {                          ///< output to textarea
+    const to_txt = (t)=>{                         ///< output to textarea
         txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
     }
-    function banner() {
+    const banner = ()=>{
         txt.innerHTML = '<h2>eForth.js - <em>Forth in Javascript</em></h2>'
     }
-    function forth_eval(cmd) {
+    const vm = new Forth(tib, to_txt)             ///< create ForthVM instance
+    const forth_eval = (cmd)=>{
         to_txt('<div style="color:#48f">'+cmd+'</div>')
         if (cmd=='clear') banner(); else vm.exec(cmd)
         ss.innerHTML = '[ ' + vm.ss.map(v=>v.toString(vm.base)).join(' ') + ' ]'
     }
+    embed_forth(vm.exec)                          /// * enable embedded Forth
+    banner()                                      /// * display banner
     </script>
     <script type='application/forth'>
     .( <h3>\ it also can embed Forth in HTML</h3> )
