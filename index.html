@@ -11,13 +11,13 @@
     <script>
     const txt = document.getElementById('txt')    ///< text console
     const ss  = document.getElementById('ss')     ///< data stack
+    const to_txt = (t)=>{                         ///< output to textarea
+        txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
+    }
     const vm  = new ForthVM(to_txt)               ///< create Forth VM object
     console.log(vm)                               /// * show VM on console
 
-    function to_txt(t) {                          ///< output to textarea
-        txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
-    }
-    function forth_eval(cmd) {
+    const forth_eval = (cmd)=>{
         to_txt('<em style="color:#48f">'+cmd+'</em><br/>')
         if (cmd=='clear') txt.innerHTML = '<h2>eForth.js 8.0</h2>'
         else              vm.exec(cmd)
@@ -28,8 +28,8 @@
     .( <h3>\ it also can embed Forth in HTML</h3> )
     .( <b>\ for example, listing dictionary here</b> ) cr
     words
-    cr .( <b>\ create a word xx</b><br/>: xx for r@ . next ; ) cr
-    : xx for r@ . next ;
+    cr .( <b>\ create a word xx</b><br/>: xx for i . next ; ) cr
+    : xx for i . next ;
     cr .( <b>\ see xx</b> ) cr
     see xx cr cr
     .( <b>\ run xx<b/><br/>5 xx ) cr
