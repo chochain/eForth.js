@@ -1,30 +1,33 @@
-///
-/// Module - eForth prototype interfaces
+/// @file
+/// @brief Module - eForth interface to Javascript
 ///
 /// Note: supported interface
 ///   > let vm = new Forth(), or
 ///   > let vm = Forth()
 ///
-/// interfaces to Javascript
-///
 export { default as embed_forth } from './embed.js'   ///< embedded Forth listener
-export function Forth(output=console.log) {
-    if (!(this instanceof Forth)) return new Forth(output);
+export function Forth(fin, fout=console.log) {
+    if (!(this instanceof Forth)) return new Forth(fin, fout)
     
-    io.init(output)                        ///< intialize output port
+    io.init(fout)                          ///< initialize output port
+    fin.onkeydown = (e)=>{                 ///< add tib handler
+        if (e.keyCode!=13) return
+        exec(fin.value)
+        fin.value = ''; fin.focus()
+    }
     
     let vm   = new VM(io)                  ///< create VM instance
     let exec = (cmd)=>{                    ///< outer interpreter
         if (vm.dict.length==0) {           /// * lazy loading
             dict_setup(vm)                 /// * construct dict now
         }
-        cmd.split("\n").forEach(r=>{       /// * multi-line input
+        cmd.split('\n').forEach(r=>{       /// * multi-line input
             vm.tib(r)                      /// * capture input stream into TIB
             for (let tok=vm.tok(); tok != null; tok=vm.tok()) {
                 vm.outer(tok)              /// * send token to outer intepreter
             }
         })
-        vm.log("ok\n")
+        vm.log('ok\n')
     }
     return {
         ss:   vm.ss,                       ///< data stack
@@ -57,8 +60,8 @@ const dict_setup = (vm)=>{           ///< dictionary constructor
     vm.extend(db.voc(vm))            /// * Debug
     vm.extend(os.voc(vm))            /// * OS
     vm.extend([                      /// * last fence
-        new Prim("boot", "os", c=>{  /// * purge all user words (i.e. upto 'boot')
-            let b = vm.find("boot")
+        new Prim('boot', c=>{        /// * purge all user words (i.e. upto 'boot')
+            let b = vm.find('boot')
             purge(vm.dict, b, b)
             vm.reset()
         })
