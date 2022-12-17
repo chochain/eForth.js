@@ -1,10 +1,11 @@
+/// @file
+/// @brief eForth - Debug functions (can be implemented in front-end)
+///
 import { Prim, purge } from './core.js'
 
 const DUMP_WIDTH = 54                              ///< dump control
 const CR = "\n"
 
-/// @defgroup Debug functions (can be implemented in front-end)
-/// @{
 export const voc = (vm) => {
     const log   = vm.log
     const push  = (v)=> vm.ss.push(v)
@@ -45,17 +46,12 @@ export const voc = (vm) => {
         _show_pf(w.pf1)                            /// * else.{pf1}.then, or .then.{pf1}.next
         _show_pf(w.pf2)                            /// * aft.{pf2}.next
     }
-    
     return [
-        /// @}
-        /// @defgroup Debugging ops
-        /// @{
-        new Prim("here",     "db", c=>push(vm.tail().token)),
-        new Prim(".s",       "db", c=>vm.log(JSON.stringify(vm.ss)+CR)),
-        new Prim("words",    "db", c=>words()),
-        new Prim("dump",     "db", c=>{ let n=pop(); dump(pop(), n) }),
-        new Prim("see",      "db", c=>{ let w=vm.tok2w(); console.log(w); see(w) }),
-        new Prim("forget",   "db", c=>purge(vm.dict, vm.tok2w(), vm.find("boot"))),
-        /// @}
+        new Prim('here',   c=>push(vm.tail().token)),
+        new Prim('.s',     c=>vm.log(JSON.stringify(vm.ss)+CR)),
+        new Prim('words',  c=>words()),
+        new Prim('dump',   c=>{ let n=pop(); dump(pop(), n) }),
+        new Prim('see',    c=>{ let w=vm.tok2w(); console.log(w); see(w) }),
+        new Prim('forget', c=>purge(vm.dict, vm.tok2w(), vm.find('boot'))),
     ]
 }
