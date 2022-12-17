@@ -96,7 +96,7 @@ export class VM {
             this.compi=false               ///>> restore interpret mode
         }
         else if (cc) {                     ///> in compile mode?
-            this.compile('dolit', null, n) ///>> compile the number
+            this.compile('_dolit', null, n)///>> compile the number
         }
         else this.ss.push(n)               ///>> or, push number onto stack top
     }
