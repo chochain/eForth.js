@@ -1,12 +1,13 @@
 ///
-/// Module - eForth Virtual Machine
+/// @file
+/// @brief Module - eForth Virtual Machine
 /// Note: supported interface
 ///   > let vm = new ForthVM(), or
 ///   > let vm = ForthVM()
 ///
 import { Code } from './core.js'
 
-const NA = (s)=>s+" not found! "           ///< exception handler
+const NA = (s)=>s+' not found! '           ///< exception handler
 
 export class VM {
     /// @defgroup Virtual Machine instance variables
@@ -52,8 +53,8 @@ export class VM {
     }
     nvar(xt, v) {
         this.compile("dovar", xt, v)
-        let t   = this.dict[this.dict.length - 1]
-        let w   = t.pf[0]                  ///< last work and its pf
+        let t   = this.tail()              ///< last dictionary word 
+        let w   = t.pf[0]                  ///< pf of last word
         t.val   = w.qf                     /// * create a val func
         w.xt    = xt                       /// * set internal func
         w.token = t.token                  /// * copy token
