@@ -21,18 +21,18 @@
         <pre id='dc' class='dict'></pre>
       </div>
       <div class='col' style='z-index:0; width:100%; padding:8px'>
-        <div class='title'>
-          <span style='float:left' onclick='(toggle("dir"),cm_refresh())'><i class='material-icons'>menu_open</i></span>
-          <span style='float:left' class='logo'>
-            <b>eForth 8.0</b> - <em>Forth in Javascript -&nbsp;</em><span style='position:fixed' id='fname'></span>
+        <cite>
+          <i class='material-icons' style='float:left' onclick='toggle("dir")'>menu_open</i>
+          <span style='float:left; position:fixed'>
+            <b>eForth 8.0</b> - <em>Forth in Javascript -</em><span id='fname'></span>
           </span>
-          <span style='float:right' onclick='toggle("gra")'><i class='material-icons'>perm_media</i></span>
-          <span style='float:right' onclick='(toggle("edt"),cm_refresh())'><i class='material-icons'>edit_square</i></span>
-        </div>
+          <i class='material-icons' style='float:right' onclick='toggle("gra")'>perm_media</i>
+          <i class='material-icons' style='float:right' onclick='(toggle("edt"),cm_refresh())'>edit_square</i>
+        </cite>
         <div id='edt' class='row' style='display:none'>
           <input id='fopen' type='file' onchange='file_load(this.files)' style='display:none'/>
           <a id='fsave' style='display:none'></a>
-          <div class='menu'>
+          <nav class='menu'>
             <i class='material-icons' onclick='forth("clear")'>home</i>
             <span></span>
             <i class='material-icons' onclick='file_new()'>create_new_folder</i>
@@ -42,7 +42,7 @@
             <i class='material-icons' onclick='(forth("clear"),forth("boot"))'>do_not_step</i>
             <i onclick='forth(cm.getSelection())' class='material-icons'>install_desktop</i>
             <i onclick='forth(cm.getValue())' class='material-icons'>directions_run</i>
-          </div>
+          </nav>
           <textarea id='cm'>\ highlight the code and hit <Ctrl-Enter> to run</textarea>
         </div>
         <div id='txt' class='txt'></div>

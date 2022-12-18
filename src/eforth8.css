@@ -14,7 +14,6 @@ body {
 }
 h2    { color: #c44; margin: 0; }
 h3    { color: #fc4; margin: 0; }
-.logo { color: black; padding-left:12px; font-family:monospace; }
 .col  { display:flex; flex-direction:column; font-size:20px; border:1px solid #ccc }
 .row  { display:flex; width:100%; }
 .hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
@@ -24,13 +23,15 @@ h3    { color: #fc4; margin: 0; }
 .txt  { display:block; padding:8px; width:auto; font-family:monospace; overflow-y:scroll; }
 .ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; width:auto; }
 .CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
-.title   { display:block; padding:6px; width:auto; background-color:#ec8; }
-.title i { padding:2px; }
-.title i:hover { background-color:#ff8; padding:2px; }
-.menu      { display: flex; flex-direction:column; width:28px; padding:4px; }
-.menu span { height:4px; background-color:#eee; margin: 3px 0 3px 0; }
-.menu i    { float:right; background-color:#fff; padding:2px; }
-.menu i:hover { background-color:#ddd; padding:2px; }
+cite      { display:block; padding:6px; width:auto; background-color:#ec8; }
+cite span { color: black; padding-left:12px; font-family:monospace; }
+cite i    { padding:2px; }
+cite i:hover  { background-color:#ff8; padding:2px; }
+cite em:hover { visibility: visible; opacity: 0.8; }
+nav      { display: flex; flex-direction:column; width:28px; padding:4px; }
+nav span { height:4px; background-color:#eee; margin: 3px 0 3px 0; }
+nav i    { float:right; background-color:#fff; padding:2px; }
+nav i:hover { background-color:#ddd; padding:2px; }
 
 /* tree */
 ul.colon li     { list-style-type: square; position: relative; }
@@ -47,8 +48,8 @@ ul.tree li > a:not(:last-child):before      { content: '+'; }
 ul.tree li.open > a:not(:last-child):before { content: '-'; }
 
 /* tooltip */
-.tip         { position: relative; display: inline-block; }
-.tip .tiptip {
+.tip    { position: relative; display: inline-block; }
+.tiptip {
     visibility: hidden;
     color: #fff; background-color: #555; text-align: center;
     padding: 0.1em 1em 0.1em 0.5em; border-radius: 6px;
