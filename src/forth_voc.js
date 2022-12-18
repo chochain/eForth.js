@@ -139,8 +139,8 @@ function _category(name) {
         br: "Branch", mm: "Memory", cm: "Compile", db: "Debug", os: "OS",
         ex: "Math Ext."
     }
-    const voc = _forth_voc[name] || null
-    return voc ? _cat[voc[0]] : 'User Def.'
+    const voc = _forth_voc[name] || _forth_voc[name.substring(1)] || null
+    return voc ? _cat[voc[0]] : 'Undef'
 }
 function _tooltip(name) {
     const voc = _forth_voc[name] || [ 'User', 'user defined' ]
