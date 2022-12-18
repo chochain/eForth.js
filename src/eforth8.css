@@ -22,16 +22,16 @@ h3    { color: #fc4; margin: 0; }
 .cmd  { color:#48f; margin: 2px; }
 .txt  { display:block; padding:8px; width:auto; font-family:monospace; overflow-y:scroll; }
 .ss   { padding:8px; color:#484; background-color:#eee; font-family:monospace; width:auto; }
-.CodeMirror { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
-cite      { display:block; padding:6px; width:auto; background-color:#ec8; }
-cite span { color: black; padding-left:12px; font-family:monospace; }
-cite i    { padding:2px; }
-cite i:hover  { background-color:#ff8; padding:2px; }
-cite em:hover { visibility: visible; opacity: 0.8; }
-nav      { display: flex; flex-direction:column; width:28px; padding:4px; }
-nav span { height:4px; background-color:#eee; margin: 3px 0 3px 0; }
-nav i    { float:right; background-color:#fff; padding:2px; }
-nav i:hover { background-color:#ddd; padding:2px; }
+.CodeMirror  { width:100%; border:1px solid #444; resize: vertical; overflow:auto; }
+/* title and menu bars */
+cite         { display:block; padding:6px; width:auto; background-color:#ec8; }
+cite span    { color:black; padding-left:12px; font-family:monospace; }
+cite i       { padding:2px; }
+cite i:hover { background-color:#ff8; padding:2px; }
+nav          { display: flex; flex-direction:column; width:28px; padding:4px; }
+nav p        { height:4px; background-color:#eee; margin: 3px 0 3px 0; }
+nav i        { float:right; background-color:#fff; padding:2px; }
+nav i:hover  { background-color:#ddd; padding:2px; }
 
 /* tree */
 ul.colon li     { list-style-type: square; position: relative; }
@@ -54,13 +54,13 @@ ul.tree li.open > a:not(:last-child):before { content: '-'; }
     color: #fff; background-color: #555; text-align: center;
     padding: 0.1em 1em 0.1em 0.5em; border-radius: 6px;
     position: absolute;                    /* position the tooltip text */
-    z-index: 999; bottom: 125%; left: 50%; margin-left: 0px;
+    z-index: 9; bottom: -20%; left: 100%; margin-left: 20px;
     opacity: 0; transition: opacity 0.6s;  /* fade in tooltip */
 }
-.tip:hover .tiptip  { visibility: visible; opacity: 0.8; }
+.tip:hover .tiptip  { visibility: visible; opacity: 0.95; }
 .tip .tiptip::after {                      /* tooltip arrow */
   content : "";
-  position: absolute; top: 100%; left: 1em;
+  position: absolute; top: 50%; left: 0px;
   margin-left: -5px; border-width: 5px; border-style: solid;
   border-color: #555 transparent transparent transparent;
 }

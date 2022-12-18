@@ -24,7 +24,7 @@
         <cite>
           <i class='material-icons' style='float:left' onclick='toggle("dir")'>menu_open</i>
           <span style='float:left; position:fixed'>
-            <b>eForth 8.0</b> - <em>Forth in Javascript -</em><span id='fname'></span>
+            <b>eForth 8.0</b> - Forth in Javascript -<span id='fname'></span>
           </span>
           <i class='material-icons' style='float:right' onclick='toggle("gra")'>perm_media</i>
           <i class='material-icons' style='float:right' onclick='(toggle("edt"),cm_refresh())'>edit_square</i>
@@ -33,12 +33,12 @@
           <input id='fopen' type='file' onchange='file_load(this.files)' style='display:none'/>
           <a id='fsave' style='display:none'></a>
           <nav class='menu'>
-            <i class='material-icons' onclick='forth("clear")'>home</i>
-            <span></span>
+            <i class='material-icons' onclick='forth("clear")'>home</i><span class='tiptip'>Home</span>
+            <p></p>
             <i class='material-icons' onclick='file_new()'>create_new_folder</i>
             <i class='material-icons' onclick='$("#fopen").click()'>folder</i>
             <i class='material-icons' onclick='file_save()'>drive_file_move_rtl</i>
-            <span></span>
+            <p></p>
             <i class='material-icons' onclick='(forth("clear"),forth("boot"))'>do_not_step</i>
             <i onclick='forth(cm.getSelection())' class='material-icons'>install_desktop</i>
             <i onclick='forth(cm.getValue())' class='material-icons'>directions_run</i>
