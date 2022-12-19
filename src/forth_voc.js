@@ -133,19 +133,31 @@ var _forth_voc = {
     'words'   : [ 'db', '( -- )',       'Display names of all words in dictionary' ],
     'xor'     : [ 'au', '( a b -- c )', 'Bitwise XOR of two tos items' ]
 }
+function _esc(e) {
+    return e
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+}
+function _voc(name) {
+    return _forth_voc[name] ||
+        _forth_voc[name.substring(1)] || 
+        [ 'us', 'user defined' ]
+}
 function _category(name) {
     const _cat = {                            ///< category desc lookup
-        ss: "Stack",  au: "ALU",    eq: "Compare", io: "IO",    li: "Literal",
-        br: "Branch", mm: "Memory", cm: "Compile", db: "Debug", os: "OS",
-        ex: "Math Ext."
+        ss: 'Stack',  au: 'ALU',    eq: 'Compare', io: 'IO',    li: 'Literal',
+        br: 'Branch', mm: 'Memory', cm: 'Compile', db: 'Debug', os: 'OS',
+        ex: 'Math Ext.', us: 'User'
     }
-    const voc = _forth_voc[name] || _forth_voc[name.substring(1)] || null
-    return voc ? _cat[voc[0]] : 'Undef'
+    return _cat[_voc(name)[0]]
 }
 function _tooltip(name) {
-    const voc = _forth_voc[name] || [ 'User', 'user defined' ]
-    return `<li><a href="#"><div class="tip">${name}` +
-        `<span class="tiptip">${voc[1]} ${voc[2]}</span></div></a></li>`
+    let voc = _voc(name)
+    return `<li><a href="#"><div class="tip">${_esc(name)}` +
+        `<span class="tiptip">${_esc(voc[1])} ${_esc(voc[2])}</span></div></a></li>`
 }
 function _voc_tree(dict) {
     const voc = dict.reduce((r,v)=>{
@@ -155,14 +167,14 @@ function _voc_tree(dict) {
     }, {})
     let div = ''
     Object.keys(voc).sort().forEach(k=>{
-        div += `<ul class="tree"><li><a href="#">${k}</a><ul>`
+        div += `<ul class="tree"><li><a href="#">${_esc(k)}</a><ul>`
         voc[k].forEach(v=>{ div += _tooltip(v.name) })
         div += '</ul></li></ul>'
     })
     return div
 }
-function show_voc(div) {
-    div.innerHTML = _voc_tree(vm.dict)
+function show_voc(dict, div) {
+    div.innerHTML = _voc_tree(dict)
     let tree = document.querySelectorAll('ul.tree a:not(:last-child)')
     tree.forEach(ul=>{
         ul.onclick = e=>{
@@ -179,11 +191,44 @@ function show_voc(div) {
         }
     })
 }
-function colon_words() {
+function _tooltip2(name) {
+    const voc = _voc(name)
+    return `<div>${_esc(name)}` +
+        `<div class="tiptip">${_esc(voc[1])} ${_esc(voc[2])}</div></div>`
+}
+function _voc_tree2(dict) {
+    const voc = dict.reduce((r,v)=>{
+        const c = _category(v.name)               ///< get category
+        if (r[c]) r[c].push(v); else r[c] = [ v ]
+        return r
+    }, {})
+    let keys= Object.keys(voc).sort()
+    let div = '<div id="menu" class="menu_pac"><div class="menu" id="root">'
+    keys.forEach(k=>{
+        div += '<div class="menu_icon icon_hover" onclick="menu_next(event)">' + k
+        div += '<i class="material-icons">arrow_right</i></div>'
+    })
+    div += '</div>'
+    keys.forEach(k=>{
+        div += `<div class="menu tip" id='${k}'>`
+        div += `<div class="menu_bottom menu_icon no_space narrow placeholder">${k}</div>`
+        voc[k].forEach(v=>{ div += _tooltip2(v.name) })
+        div += '<div class="menu_top menu_icon no_space" onclick="menu_prev(event)">'
+        div += '<i class="material-icons">arrow_back</i>Back</div></div>'
+    })
+    return div+'</div>'
+}
+function show_voc2(dict, div) {
+    div.innerHTML = _voc_tree2(dict)
+    menu_open(div.firstChild.id)
+}
+function colon_words(dict) {
     let div = '<ul class="colon">'
-    for (let i = vm.dict.length - 1;
-         i >= 0 && vm.dict[i].name != 'boot'; --i) {
-        div += `<li>${vm.dict[i].name}</li>`
+    for (let i = dict.length - 1;
+         i >= 0 && dict[i].name != 'boot'; --i) {
+        let xt = JSON.stringify(dict[i].pf)
+        div += `<li><a href="#"><div class="tip">${_esc(dict[i].name)}` +
+            `<span class="tiptip">${xt}</span></div></a></li>`
     }
     return div+'</ul>'
 }
