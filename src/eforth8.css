@@ -16,8 +16,14 @@ h2    { color: #c44; margin: 0; }
 h3    { color: #fc4; margin: 0; }
 .col  { display:flex; flex-direction:column; font-size:20px; border:1px solid #ccc }
 .row  { display:flex; width:100%; }
-.hdr  { text-align:center; background-color:#eee; margin:8px; padding:6px }
-.dict { text-align:left; color:#484; margin:4px; font-family:monospace; overflow-wrap:auto; }
+.hdr  { text-align:center; background-color:#eee; margin:8px 6px 2px 6px; padding:6px; border-radius:4px; }
+.usr  {
+    text-align:left; font-family:monospace; color:#484;
+    margin:2px 6px 2px 6px; height:40px; padding: 6px;
+    border:1px solid #eee; border-radius:6px;
+    overflow-wrap:auto;
+}
+.dict { text-align:left; margin:0 6px 0 6px; }
 .code { height:36px; width:100%; font-size:24px; padding:6px; margin-bottom:3px; }
 .cmd  { color:#48f; margin: 2px; }
 .txt  { display:block; padding:8px; width:auto; font-family:monospace; overflow-y:scroll; }
