@@ -17,8 +17,23 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
     <pre>> <em>python3 tests/serv.py</em> from root directory to start you web server
     > enter <em>http://localhost:8000/eforth_w_module.html</em> into your browser
     </pre>
-    
-## History - a project with interesting lineage.
+
+## Installation - <font size=-0.2>Simple as 1-2-3</font>.
+1. Save or cut-n-paste [eforth.js](https://raw.githubusercontent.com/chochain/eForth.js/master/eforth.js) and [index.html](https://raw.githubusercontent.com/chochain/eForth.js/master/index.html) to any of your local directory,
+2. Find the <em>**index.html**</em> we've just saved in your FileExplorer (Windows), iFile (Mac OS), or Files (Linux),
+3. Click it, and your favorate browser should open automatically with a page with eForth screen shown.
+It's that easy. Have fun!
+
+## Documentation - <font size=-0.2>It stays with Dr. Ting's explaination and word list mostly.</font>
+* download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021, or
+* view [ceforth_403.pdf](https://chochain.github.io/eForth.js/docs/ceforth_403.pdf), Dr. Ting's final work.
+
+## TODO List
+* 3D Turtle
+  + consult https://github.com/andonutts/donatello
+* ESP32 interface - add digital and analog IO (for LED, Servo,...)
+
+## History - <font size=-0.2>An interesting lineage</font>
 * It started back in 2011 when **Cheahshen Yap** from Taiwan FIG sent the 100-line kernel, named jeForth, to **Dr. Ting**.
 * **Sam Suan Chen**, took over the codebase (called project-k) and produced a graphic demo in SVFIG. The project took on its own path [here](https://github.com/hcchengithub/project-k) now.
 * **Brad Nelson**, introduced a web front-end to Dr. Ting sourcing from his ESP32Forth project.
@@ -31,18 +46,11 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
 
 Though I've never had the chance to meet him in person, the years of dedication and contribution he has to the Forth community is something I'll carry with me. As I told him once in the e-mail: "The name **eForth** will forever be associated with you, Dr. Ting".
 
-### TODO
-* 3D Turtle - https://github.com/andonutts/donatello
-
-### Documentation
-* view [ceforth_403.pdf](https://chochain.github.io/eForth.js/docs/ceforth_403.pdf) of Dr. Ting's final work.
-* download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021
-
-### Original jeForth live demo
+### Dr. Ting's Original jeForth live demo
 * [jeforth](https://github.com/yapcheahshen/jeforth) by Cheah Shen Yap and Sam Chen, 2012 [try jeforth_301 here](https://chochain.github.io/eForth.js/orig/index_301.html)
 * [try jeforth616 in your browser](https://chochain.github.io/eForth.js/orig/jeforth616.html) by Dr. Ting, 2021
 
-### Prior Art (on GitHub)
+### Prior Art (on GitHub) - Many others have the same idea as well, each with a little different implemenation. You see one!
 * [jorth](https://github.com/ramunas/jorth) by Ramunas Forsberg Gutkovas, 2012 (small and clean)
 * [FORTH-on-browser](https://github.com/nishio/FORTH-on-browser) by Nishio Hirokazu, 2012 (detailed with jQuery)
 * [fjs](https://github.com/mark-hahn/fjs) by Mark Hahn, 2013 (scoped beyond Forth, more like Factor)
