@@ -18,7 +18,7 @@
       <div id='dir' class='col' style='display:none; z-index:1; width:15%'>
         <pre class='hdr'>Dictionary</pre>
         <pre id='usr' class='usr'></pre>
-        <pre id='dc' class='dict'></pre>
+        <pre id='dc' class='usr'></pre>
       </div>
       <div class='col' style='z-index:0; width:100%; padding:8px'>
         <cite>
@@ -32,7 +32,7 @@
         <div id='edt' class='row' style='display:none'>
           <input id='fopen' type='file' onchange='file_load(this.files)' style='display:none'/>
           <a id='fsave' style='display:none'></a>
-          <nav class='menu'>
+          <nav>
             <i class='material-icons' onclick='forth("clear")'>home</i><span class='tiptip'>Home</span>
             <p></p>
             <i class='material-icons' onclick='file_new()'>create_new_folder</i>
@@ -123,7 +123,7 @@
     ///
     let vm = new ForthVM(to_txt)               ///< create Forth VM object
     clear_txt()                                /// * init console area
-    show_voc2(vm.dict, dc)                     /// * Forth word tree in sidebar
+    show_voc(vm.dict, dc)                     /// * Forth word tree in sidebar
 
     function forth(cmd) {                      ///< evaludate Forth command
         show_cmd(cmd)
@@ -131,7 +131,7 @@
         else {
             vm.exec(cmd)                       /// * can handle multi-line input
             ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
-            usr.innerHTML = colon_words(vm.dict)
+            colon_words(vm.dict, usr)
         }
     }
     </script>
