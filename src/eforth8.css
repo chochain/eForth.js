@@ -40,14 +40,15 @@ nav i        { float:right; background-color:#fff; padding:2px; }
 nav i:hover  { background-color:#ddd; padding:2px; }
 
 /* tree */
-ul.tree li      { list-style-type: none; position: relative; }
+ul.tree         { margin:8px; }
+ul.tree li      { list-style-type: none; position: relative; left:-1em; }
 ul.tree li ul   { display: none; }
-ul.tree li ul a { color: #444; }
-ul.tree li.open > ul { display: block; margin:0 -2em; }
-ul.tree li a    { color: #666; text-decoration: none; }
+ul.tree li ul a { color: #888; }
+ul.tree li.open > ul { display: block; margin:0 -1em; }
+ul.tree li a    { color: #444; text-decoration: none; }
 ul.tree li a:before {
     height: 1em; padding:0 .1em; font-size: .8em; display: block;
-    position: absolute; left: -1.5em; top: .2em;
+    position: absolute; left: -1em; top: .2em;
 }
 ul.tree li > a:not(:last-child):before      { content: '+'; }
 ul.tree li.open > a:not(:last-child):before { content: '-'; }
