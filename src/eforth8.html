@@ -9,15 +9,15 @@
   <script type='text/javascript' src='../tests/forth.min.js'></script>
   <link rel='stylesheet' href='../src/eforth8.css'></link>
   <script type='text/javascript' src='../src/forth_voc.js'></script>
-  <!--link rel='stylesheet' href='../src/menu.css'></link>
-  <script type='text/javascript' src='../src/menu.js'></script-->
+  <link rel='stylesheet' href='../src/menu.css'></link>
+  <script type='text/javascript' src='../src/menu.js'></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   </head>
   <body>
     <div class='row' style='height:100%'>
       <div id='dir' class='col' style='display:none; z-index:1; width:15%'>
-        <pre class='hdr'>dictionary</pre>
-        <pre id='usr' class='dict'></pre>
+        <pre class='hdr'>Dictionary</pre>
+        <pre id='usr' class='usr'></pre>
         <pre id='dc' class='dict'></pre>
       </div>
       <div class='col' style='z-index:0; width:100%; padding:8px'>
@@ -50,32 +50,6 @@
         <div id='ss' class='ss'>[ ]</div>
       </div>
       <div id='gra' class='col' style='display:none; width:100%'>
-        <!--button class="sec_btn" onclick="menu_open('menu');">Add to feature vector</button>
-        <div class="menu_pac" id='menu'>
-          <div class="menu" id="menu-0">
-            <div class="menu_bottom">New feature vector</div>
-            <div>Vector_01</div>
-            <div>myVector</div>
-            <div>featureVector</div>
-            <div class="menu_top menu_icon" onclick="menu_next(event);">Other projects<i class="material-icons">arrow_right</i></div>
-          </div>
-          <div class="menu" id="menu-1">
-            <div class="menu_bottom menu_icon no_space narrow placeholder"><i class="material-icons">search</i>Search</div>
-            <div class="menu_icon icon_hover" onclick="menu_next(event);">Project Example<i class="material-icons">arrow_right</i></div>
-            <div class="menu_icon icon_hover" onclick="menu_next(event);">David’s project<i class="material-icons">arrow_right</i></div>
-            <div class="menu_icon icon_hover" onclick="menu_next(event);">Project Idan<i class="material-icons">arrow_right</i></div>
-            <div class="menu_icon icon_hover" onclick="menu_next(event);">Manhattan<i class="material-icons">arrow_right</i></div>
-            <div class="menu_top menu_icon no_space" onclick="menu_prev(event);"><i class="material-icons">arrow_back</i>Back</div>
-          </div>
-          <div class="menu" id="menu-2">
-            <div class="menu_bottom menu_bold">Project Idan</div>
-            <div>Idan Vector</div>
-            <div>Testings</div>
-            <div>Features_120</div>
-            <div>Aggregators</div>
-            <div class="menu_top menu_icon no_space" onclick="menu_prev(event);"><i class="material-icons">arrow_back</i>Back</div>
-          </div>
-        </div-->
         <canvas id='can'></div>
       </div>
     <script src='../eforth.js'></script>
@@ -149,7 +123,7 @@
     ///
     let vm = new ForthVM(to_txt)               ///< create Forth VM object
     clear_txt()                                /// * init console area
-    show_voc(dc)                               /// * Forth word tree in sidebar
+    show_voc2(vm.dict, dc)                     /// * Forth word tree in sidebar
 
     function forth(cmd) {                      ///< evaludate Forth command
         show_cmd(cmd)
@@ -157,7 +131,7 @@
         else {
             vm.exec(cmd)                       /// * can handle multi-line input
             ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
-            usr.innerHTML = colon_words()
+            usr.innerHTML = colon_words(vm.dict)
         }
     }
     </script>
