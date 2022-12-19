@@ -191,10 +191,20 @@ function show_voc(dict, div) {
         }
     })
 }
+function colon_words(dict, div) {
+    let htm = '<ul class="tree"><li class="open"><a href="#">User</a><ul>'
+    for (let i = dict.length - 1;
+         i >= 0 && dict[i].name != 'boot'; --i) {
+        let xt = JSON.stringify(dict[i].pf)
+        htm += `<li><a href="#"><div class="tip">${_esc(dict[i].name)}` +
+            `<span>${xt}</span></div></a></li>`
+    }
+    div.innerHTML = htm+'</ul>'
+ }
 function _tooltip2(name) {
     const voc = _voc(name)
-    return `<div>${_esc(name)}` +
-        `<div class="tiptip">${_esc(voc[1])} ${_esc(voc[2])}</div></div>`
+    return `<div class="tip">${_esc(name)}` +
+        `<span>${_esc(voc[1])} ${_esc(voc[2])}</span></div>`
 }
 function _voc_tree2(dict) {
     const voc = dict.reduce((r,v)=>{
@@ -210,25 +220,27 @@ function _voc_tree2(dict) {
     })
     div += '</div>'
     keys.forEach(k=>{
-        div += `<div class="menu tip" id='${k}'>`
-        div += `<div class="menu_bottom menu_icon no_space narrow placeholder">${k}</div>`
+        div += `<div class="menu" id='${k}'>`
+        div += `<div class="menu_bottom menu_bold">${k}</div>`
         voc[k].forEach(v=>{ div += _tooltip2(v.name) })
         div += '<div class="menu_top menu_icon no_space" onclick="menu_prev(event)">'
         div += '<i class="material-icons">arrow_back</i>Back</div></div>'
     })
     return div+'</div>'
 }
-function show_voc2(dict, div) {
-    div.innerHTML = _voc_tree2(dict)
-    menu_open(div.firstChild.id)
-}
-function colon_words(dict) {
-    let div = '<ul class="colon">'
+function colon_words2(dict, div) {
+    let htm =
+        '<div class="menu_pac"><div class="menu">' +
+        '<div class="menu_bottom menu_bold">User</div>'
     for (let i = dict.length - 1;
          i >= 0 && dict[i].name != 'boot'; --i) {
         let xt = JSON.stringify(dict[i].pf)
-        div += `<li><a href="#"><div class="tip">${_esc(dict[i].name)}` +
-            `<span class="tiptip">${xt}</span></div></a></li>`
+        htm += `<div class="tip">${_esc(name)}` +
+        `<span>${xt}</span></div>`
     }
-    return div+'</ul>'
+    div.innerHTML = htm+'</div></div>'
+}
+function show_voc2(dict, div) {
+    div.innerHTML = _voc_tree2(dict)
+    menu_open(div.firstChild.id)
 }
