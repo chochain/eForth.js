@@ -142,27 +142,27 @@ function _esc(e) {
         .replace(/'/g, "&#039;")
 }
 function _voc(name) {
-    return _forth_voc[name] ||
-        _forth_voc[name.substring(1)] || 
-        [ 'us', 'user defined' ]
+    return _forth_voc[name] || _forth_voc[name.substring(1)] || null
 }
 function _category(name) {
     const _cat = {                            ///< category desc lookup
         ss: 'Stack',  au: 'ALU',    eq: 'Compare', io: 'IO',    li: 'Literal',
         br: 'Branch', mm: 'Memory', cm: 'Compile', db: 'Debug', os: 'OS',
-        ex: 'Math Ext.', us: 'User'
+        ex: 'Math Ext.'
     }
-    return _cat[_voc(name)[0]]
+    return _voc(name) && _cat[_voc(name)[0]]
 }
 function _tooltip(name) {
     let voc = _voc(name)
-    return `<li><a href="#"><div class="tip">${_esc(name)}` +
+    return voc && `<li><a href="#"><div class="tip">${_esc(name)}` +
         `<span class="tiptip">${_esc(voc[1])} ${_esc(voc[2])}</span></div></a></li>`
 }
 function _voc_tree(dict) {
     const voc = dict.reduce((r,v)=>{
         const c = _category(v.name)               ///< get category
-        if (r[c]) r[c].push(v); else r[c] = [ v ]
+        if (c) {
+            if (r[c]) r[c].push(v); else r[c] = [ v ]
+        }
         return r
     }, {})
     let div = ''
@@ -181,15 +181,15 @@ function _colon_words(dict) {
         div += `<li><a href="#"><div class="tip">${_esc(dict[i].name)}` +
             `<span>${xt}</span></div></a></li>`
     }
-    return div+'</ul>'
+    return div+'</li></ul>'
 }
-var _dict_len  = 0
+var _dict_len = 0
 function show_voc(dict, dc, usr) {
-    if (_dict_len == dict.length) return
+    if (_dict_len == dict.length) return  /* cached */
     
     _dict_len = dict.length
-    usr.innerHTML = _colon_words(dict)
     dc.innerHTML  = _voc_tree(dict)
+    usr.innerHTML = _colon_words(dict)
     
     let tree = document.querySelectorAll('ul.tree a:not(:last-child)')
     tree.forEach(ul=>{
