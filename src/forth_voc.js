@@ -134,7 +134,7 @@ var _forth_voc = {
     'xor'     : [ 'au', '( a b -- c )', 'Bitwise XOR of two tos items' ]
 }
 function _esc(e) {
-    return e
+    return e && e
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -173,8 +173,24 @@ function _voc_tree(dict) {
     })
     return div
 }
-function show_voc(dict, div) {
-    div.innerHTML = _voc_tree(dict)
+function _colon_words(dict) {
+    let div = '<ul class="tree"><li class="open"><a href="#">User</a><ul>'
+    for (let i = dict.length - 1;
+         i >= 0 && dict[i].name != 'boot'; --i) {
+        let xt = JSON.stringify(dict[i].pf)
+        div += `<li><a href="#"><div class="tip">${_esc(dict[i].name)}` +
+            `<span>${xt}</span></div></a></li>`
+    }
+    return div+'</ul>'
+}
+var _dict_len  = 0
+function show_voc(dict, dc, usr) {
+    if (_dict_len == dict.length) return
+    
+    _dict_len = dict.length
+    usr.innerHTML = _colon_words(dict)
+    dc.innerHTML  = _voc_tree(dict)
+    
     let tree = document.querySelectorAll('ul.tree a:not(:last-child)')
     tree.forEach(ul=>{
         ul.onclick = e=>{
@@ -191,16 +207,6 @@ function show_voc(dict, div) {
         }
     })
 }
-function colon_words(dict, div) {
-    let htm = '<ul class="tree"><li class="open"><a href="#">User</a><ul>'
-    for (let i = dict.length - 1;
-         i >= 0 && dict[i].name != 'boot'; --i) {
-        let xt = JSON.stringify(dict[i].pf)
-        htm += `<li><a href="#"><div class="tip">${_esc(dict[i].name)}` +
-            `<span>${xt}</span></div></a></li>`
-    }
-    div.innerHTML = htm+'</ul>'
- }
 function _tooltip2(name) {
     const voc = _voc(name)
     return `<div class="tip">${_esc(name)}` +
@@ -228,19 +234,20 @@ function _voc_tree2(dict) {
     })
     return div+'</div>'
 }
-function colon_words2(dict, div) {
-    let htm =
+function _colon_words2(dict) {
+    let div =
         '<div class="menu_pac"><div class="menu">' +
         '<div class="menu_bottom menu_bold">User</div>'
     for (let i = dict.length - 1;
          i >= 0 && dict[i].name != 'boot'; --i) {
         let xt = JSON.stringify(dict[i].pf)
-        htm += `<div class="tip">${_esc(name)}` +
+        div += `<div class="tip">${_esc(name)}` +
         `<span>${xt}</span></div>`
     }
-    div.innerHTML = htm+'</div></div>'
+    return div+'</div></div>'
 }
-function show_voc2(dict, div) {
-    div.innerHTML = _voc_tree2(dict)
+function show_voc2(dict, dc, usr) {
+    dc.innerHTML  = _voc_tree2(dict)
+    usr.innerHTML = _colon_words2(dict)
     menu_open(div.firstChild.id)
 }
