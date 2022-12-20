@@ -54,17 +54,17 @@ ul.tree li > a:not(:last-child):before      { content: '+'; }
 ul.tree li.open > a:not(:last-child):before { content: '-'; }
 
 /* tooltip */
-.tip      { position: relative; display:inline-block; }
-.tip span {
+.tip   { position: relative; display:inline-block; }
+.tip i {
     visibility: hidden;
     color: #fff; background-color: #555; text-align: center;
-    padding: 0.1em 1em 0.1em 0.5em; border-radius: 6px;
+    padding: 0.1em 1em 0.1em 1em; border-radius: 6px;
     position: absolute;                    /* position the tooltip text */
     z-index: 999; bottom: -20%; left: 100%; margin-left: 20px;
     opacity: 0; transition: opacity 0.6s;  /* fade in tooltip */
 }
-.tip:hover span  { visibility:visible; opacity: 0.95; }
-.tip span::after {                            /* clear tooltip arrow */
+.tip:hover i  { visibility:visible; opacity: 0.90; }
+.tip i::after {                            /* clear tooltip arrow */
   content : "";
   position: absolute; top: 50%; left: 0px;
   margin-left: -5px; border-width: 5px; border-style: solid;
