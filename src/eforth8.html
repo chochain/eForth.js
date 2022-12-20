@@ -4,14 +4,15 @@
   <!--link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js'></script>
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script-->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel='stylesheet' href='../tests/codemirror.min.css'></link>
   <script type='text/javascript' src='../tests/codemirror.min.js'></script>
   <script type='text/javascript' src='../tests/forth.min.js'></script>
   <link rel='stylesheet' href='../src/eforth8.css'></link>
   <script type='text/javascript' src='../src/forth_voc.js'></script>
-  <link rel='stylesheet' href='../src/menu.css'></link>
-  <script type='text/javascript' src='../src/menu.js'></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <script type='text/javascript' src='../src/file_io.js'></script>
+  <!--link rel='stylesheet' href='../src/menu.css'></link>
+  <script type='text/javascript' src='../src/menu.js'></script-->
   </head>
   <body>
     <div class='row' style='height:100%'>
@@ -22,7 +23,7 @@
       </div>
       <div class='col' style='z-index:0; width:100%; padding:8px'>
         <cite>
-          <i class='material-icons' style='float:left' onclick='toggle("dir")'>menu_open</i>
+          <i class='material-icons' style='float:left' onclick='(toggle("dir"),show_voc(vm.dict,dc,usr))'>menu_open</i>
           <span style='float:left; position:fixed'>
             <b>eForth 8.0</b> - Forth in Javascript -<span id='fname'></span>
           </span>
@@ -30,14 +31,14 @@
           <i class='material-icons' style='float:right' onclick='(toggle("edt"),cm_refresh())'>edit_square</i>
         </cite>
         <div id='edt' class='row' style='display:none'>
-          <input id='fopen' type='file' onchange='file_load(this.files)' style='display:none'/>
+          <input id='fopen' type='file' onchange='file_load(this.files, "#fname")' style='display:none'/>
           <a id='fsave' style='display:none'></a>
           <nav>
-            <i class='material-icons' onclick='forth("clear")'>home</i><span class='tiptip'>Home</span>
+            <i class='material-icons' onclick='forth("clear")'>home</i>
             <p></p>
-            <i class='material-icons' onclick='file_new()'>create_new_folder</i>
+            <i class='material-icons' onclick='file_new("#fname")'>create_new_folder</i>
             <i class='material-icons' onclick='$("#fopen").click()'>folder</i>
-            <i class='material-icons' onclick='file_save()'>drive_file_move_rtl</i>
+            <i class='material-icons' onclick='file_save("#fsave", cm.getValue(), "#fname")'>drive_file_move_rtl</i>
             <p></p>
             <i class='material-icons' onclick='(forth("clear"),forth("boot"))'>do_not_step</i>
             <i onclick='forth(cm.getSelection())' class='material-icons'>install_desktop</i>
@@ -83,29 +84,6 @@
     function cm_refresh() {                       /// * fix line number issue
         $('#edt > .CodeMirror').forEach(e=>e.CodeMirror.refresh())
     }
-    function file_new() {
-        let fn = prompt('Create new file', 'untitled.f')
-        if (fn) $('#fname').innerHTML = fn
-    }
-    function file_load(flst) {
-        if (flst.length != 1) return
-        let fn = flst[0]
-        $('#fname').innerHTML = fn.name
-        let rdr = new FileReader()
-        rdr.onload = (e)=>cm.setValue(e.target.result)
-        rdr.readAsText(fn);
-    }
-    function file_save() {
-        let blob = new Blob([ cm.getValue() ], { type: 'text/plain' })
-        let lnk  = $('#fsave')
-        let fn   = prompt('Save to file name', $('#fname').innerHTML)
-        if (!fn) return
-        lnk.download = fn
-        lnk.href = window.webkitURL ?
-            window.webkitURL.createObjectURL(blob) :
-            window.URL.createObjectURL(blob)
-        lnk.click()
-    }
     function to_txt(t, esc=true) {
         const escape = (s)=>{
             return s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;')
@@ -123,15 +101,14 @@
     ///
     let vm = new ForthVM(to_txt)               ///< create Forth VM object
     clear_txt()                                /// * init console area
-    show_voc(vm.dict, dc)                     /// * Forth word tree in sidebar
 
     function forth(cmd) {                      ///< evaludate Forth command
         show_cmd(cmd)
         if (cmd=='clear') clear_txt()
         else {
             vm.exec(cmd)                       /// * can handle multi-line input
+            show_voc(vm.dict, dc, usr)
             ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
-            colon_words(vm.dict, usr)
         }
     }
     </script>
