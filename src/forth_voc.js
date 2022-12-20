@@ -154,8 +154,10 @@ function _category(name) {
 }
 function _tooltip(name) {
     let voc = _voc(name)
-    return voc && `<li><a href="#"><div class="tip">${_esc(name)}` +
-        `<span class="tiptip">${_esc(voc[1])} ${_esc(voc[2])}</span></div></a></li>`
+    return voc && '<li><a href="#">' +
+        `<div class="tip">${_esc(name)}<i class="tiptip">` +
+        `${name.toUpperCase()} ${_esc(voc[1])} ${_esc(voc[2])}` +
+        '</i></div></a></li>'
 }
 function _voc_tree(dict) {
     const voc = dict.reduce((r,v)=>{
@@ -173,13 +175,31 @@ function _voc_tree(dict) {
     })
     return div
 }
+function _see(w, n=0) {
+    let div = ''
+    const _show_pf = (pf)=>{
+        if (pf == null || pf.length == 0) return
+        div += '[ '
+        pf.forEach(w1=>{ div += _see(w1, n+1) })   /// * recursive call
+        div += '] '                                /// * close section
+    }
+    div += w.name+' '                              /// * display word name
+    if (w.qf != null && w.qf.length > 0) {         /// * display qf array
+        div += '='+JSON.stringify(w.qf)+' '
+    }
+    _show_pf(w.pf)                             /// * if.{pf}, for.{pf}, or begin.{pf}
+    _show_pf(w.pf1)                            /// * else.{pf1}.then, or .then.{pf1}.next
+    _show_pf(w.pf2)                            /// * aft.{pf2}.next
+    return div
+}
 function _colon_words(dict) {
     let div = '<ul class="tree"><li class="open"><a href="#">User</a><ul>'
     for (let i = dict.length - 1;
          i >= 0 && dict[i].name != 'boot'; --i) {
-        let xt = JSON.stringify(dict[i].pf)
-        div += `<li><a href="#"><div class="tip">${_esc(dict[i].name)}` +
-            `<span>${xt}</span></div></a></li>`
+        let xt = _see(dict[i])
+        div += '<li><a href="#"><div class="tip">' +
+            `${_esc(dict[i].name)}<i>${xt}</i>` +
+            '</div></a></li>'
     }
     return div+'</li></ul>'
 }
