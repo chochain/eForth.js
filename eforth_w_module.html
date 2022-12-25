@@ -21,7 +21,7 @@
     const forth_eval = (cmd)=>{                   ///< Forth command processor
         to_txt('<div style="color:#48f">'+cmd+'</div>')
         if (cmd=='clear') banner(); else vm.exec(cmd)
-        ss.innerHTML = '[ ' + vm.ss.map(v=>v.toString(vm.base)).join(' ') + ' ]'
+        ss.innerHTML = '[ ' + vm.ss.map(v=>v.toString(vm.base())).join(' ') + ' ]'
     }
     tib.onkeydown = (e)=>{                        ///< add tib handler
         if (e.keyCode!=13) return

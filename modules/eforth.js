@@ -29,7 +29,8 @@ export function Forth(fout=console.log) {
         ss:   vm.ss,                       ///< data stack
         rs:   vm.rs,                       ///< return stack
         dict: vm.dict,                     ///< dictionary
-        exec: exec                         ///< outer interpreter
+        exec: exec,                        ///< outer interpreter
+        base: ()=>{ return vm.base }
     }
 }
 ///======================================================================
