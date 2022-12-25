@@ -120,6 +120,7 @@ window.ForthVM = function(output=console.log) {
     /// @defgroup data conversion functions
     /// @{
     const INT    = v=>(v | 0)                        ///< OR takes 32-bit integer
+    const UINT   = v=>(v & 0x7fffffff)               ///< unsigned int
     const BOOL   = t=>(t ? -1 : 0)                   ///< Forth true = -1 
     const ZERO   = v=>BOOL(Math.abs(v) < EPS)        ///< zero floating point
     /// @}
@@ -249,6 +250,7 @@ window.ForthVM = function(output=console.log) {
         new Prim('or',    c=>push(pop() | pop())),
         new Prim('xor',   c=>push(pop() ^ pop())),
         new Prim('negate',c=>push(-pop())),
+        new Prim('invert',c=>push(pop() ^ -1)),
         new Prim('abs',   c=>push(Math.abs(pop()))),
         new Prim('rshift',c=>{ let n=pop(); push(pop() >> n) }),
         new Prim('lshift',c=>{ let n=pop(); push(pop() << n) }),
@@ -262,6 +264,8 @@ window.ForthVM = function(output=console.log) {
         new Prim('<',     c=>{ let n=pop(); push(BOOL((pop() - n) < -EPS)) }),
         new Prim('>',     c=>{ let n=pop(); push(BOOL((pop() - n) >  EPS)) }),
         new Prim('<>',    c=>{ let n=pop(); push(BOOL(ZERO(pop() - n)==0)) }),
+        new Prim('u<',    c=>{ let n=pop(); push(BOOL(UINT(pop()) < UINT(n)))}),
+        new Prim('u>',    c=>{ let n=pop(); push(BOOL(UINT(pop()) > UINT(n)))}),
         /// @}
         /// @defgroup IO ops
         /// @{
@@ -271,10 +275,12 @@ window.ForthVM = function(output=console.log) {
         new Prim('binary',c=>_base=2),
         new Prim('decimal',c=>_base=10),
         new Prim('hex',   c=>_base=16),
+        new Prim('bl',    c=>log(SPC)),
         new Prim('cr',    c=>log(CR)),
         new Prim('.',     c=>log(pop().toString(_base)+SPC)),
+        new Prim('u.',    c=>log(UINT(pop()).toString(_base)+SPC)),
         new Prim('.r',    c=>{ let n=pop(); dot_r(n, pop()) }),
-        new Prim('u.r',   c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
+        new Prim('u.r',   c=>{ let n=pop(); dot_r(n, UINT(pop())) }),
         new Prim('key',   c=>push(nxtok()[0])),
         new Prim('emit',  c=>log(String.fromCharCode(pop()))),
         new Prim('space', c=>log(SPC)),
