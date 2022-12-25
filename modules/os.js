@@ -11,7 +11,7 @@ export const voc = (vm)=>{
     const push = (v)=>vm.ss.push(v)                /// macros
     const pop  = ()=>{ return vm.ss.pop() }
     return [
-        new Prim('clock', c=>push(clock())),
+        new Prim('ms',    c=>push(clock())),
         new Prim('delay', c=>sleep(pop())),
         new Prim('date',  c=>push((new Date()).toDateString())),
         new Prim('time',  c=>push((new Date()).toLocaleTimeString())),
