@@ -212,7 +212,6 @@ window.ForthVM = function(output=console.log) {
         new Prim('over',  c=>push(top(2))),
         new Prim('swap',  c=>push(remove(2))),
         new Prim('rot',   c=>push(remove(3))),
-        new Prim('-rot',  c=>_ss.splice(-2, 0, pop())),
         new Prim('pick',  c=>{ let i=pop(), n=top(i+1); push(n) }),
         new Prim('roll',  c=>{ let i=pop(), n=remove(i+1); push(n) }),
         new Prim('nip',   c=>remove(2)),
@@ -233,6 +232,15 @@ window.ForthVM = function(output=console.log) {
             let n=pop(), m=pop() * pop();
             push(m % n); push(INT(m / n))
         }),
+        new Prim('max',   c=>{ let a=pop(), b=pop(); push(a > b ? a : b) }),
+        new Prim('min',   c=>{ let a=pop(), b=pop(); push(a > b ? b : a) }),
+        new Prim('2*',    c=>push(pop() * 2)),
+        new Prim('2/',    c=>push(pop() / 2)),
+        new Prim('1+',    c=>push(pop() + 1)),
+        new Prim('1-',    c=>push(pop() - 1)),
+        /*
+          TODO: u., u<, u>
+        */
         /// @}
         /// @defgroup Bit-wise ops (auto convert to 32-bit by Javascript)
         /// @{
@@ -242,6 +250,8 @@ window.ForthVM = function(output=console.log) {
         new Prim('xor',   c=>push(pop() ^ pop())),
         new Prim('negate',c=>push(-pop())),
         new Prim('abs',   c=>push(Math.abs(pop()))),
+        new Prim('rshift',c=>{ let n=pop(); push(pop() >> n) }),
+        new Prim('lshift',c=>{ let n=pop(); push(pop() << n) }),
         /// @}
         /// @defgroup Logic ops
         /// @{
@@ -257,9 +267,10 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Prim('ucase!',c=>_ucase=BOOL(ZERO(pop()))),
         new Prim('base@', c=>push(INT(_base))),
-        new Prim('base!', c=>_base=INT(pop())),
-        new Prim('hex',   c=>_base=16),
+        new Prim('base!', c=>_base=INT(pop())),          /// * between 2~36
+        new Prim('binary',c=>_base=2),
         new Prim('decimal',c=>_base=10),
+        new Prim('hex',   c=>_base=16),
         new Prim('cr',    c=>log(CR)),
         new Prim('.',     c=>log(pop().toString(_base)+SPC)),
         new Prim('.r',    c=>{ let n=pop(); dot_r(n, pop()) }),
@@ -278,8 +289,8 @@ window.ForthVM = function(output=console.log) {
             if (_compi) compile(new Code('_dotstr', s))
             else log(s)
         }),
-        new Immd('"',     c=>_dostr()),        /// * push string as TOS
-//        new Immd('s"',   c=>_dostr()),      /// * deprecated
+        new Immd('s"',   c=>_dostr()),         /// * push string as TOS
+        new Immd('"',     c=>_dostr()),        /// * non-Forth standard
         new Immd('(',     c=>nxtok(')')),
         new Immd('.(',    c=>log(nxtok(')'))),
         new Immd('\\',    c=>_ntib=_tib.length),
@@ -361,6 +372,9 @@ window.ForthVM = function(output=console.log) {
             else            w.pf2.push(...tmp.pf)      /// .then.{pf2}.next
             dict.pop()
         }),
+        /*
+          TODO: do, loop, +loop, j
+        */
         new Prim('>r',    c=>_rs.push(pop())),         /// push into rstack
         new Prim('r>',    c=>push(_rs.pop())),         /// pop from rstack
         new Prim('r@',    c=>push(rtop())),            /// fetch from rstack
@@ -397,15 +411,15 @@ window.ForthVM = function(output=console.log) {
             nvar(_dovar, 0)                                    // create qf array
             for (let n=pop(), i=1; i<n; i++) w.val[i]=0        // fill all slot with 0
         }),
-        new Prim('does',     c=>{
+        new Prim('does>',     c=>{
             let w=dict.tail(), src=dict[_wp].pf
             for (var i=0; i < src.length; i++) {
-                if (src[i].name=='does') {
+                if (src[i].name=='does>') {
                     w.pf.push(...src.slice(i+1))
                     break
                 }
             }
-            throw 'does'                                       // break from inner interpreter
+            throw 'does>'                                      // break from inner interpreter
         }),
         new Prim('to',       c=>tok2w().val[0]=pop()),         // update constant
         new Prim('is',       c=>{                              // n -- alias a word
@@ -423,10 +437,11 @@ window.ForthVM = function(output=console.log) {
             _fence=Math.max(tok2w().token, find('boot').token+1)
             dict.splice(_fence)
         }),
+        new Prim('abort',    c=>{ _rs.length = _ss.length = 0 }),
         /// @}
         /// @defgroup System ops
         /// @{
-        new Prim('clock',    c=>{ let n = Date.now(); push(n) }),
+        new Prim('ms',       c=>{ let n = Date.now(); push(n) }),
         new Prim('delay',    c=>sleep(pop()).then(()=>{})),
         new Prim('date',     c=>push((new Date()).toDateString())),
         new Prim('time',     c=>push((new Date()).toLocaleTimeString())),
@@ -456,6 +471,7 @@ window.ForthVM = function(output=console.log) {
     this.ss    = _ss
     this.rs    = _rs
     this.dict  = dict
+    this.base  = ()=>{ return _base }
     ///
     /// outer interpreter method
     /// @param tok - one token (or idiom) from input buffer
