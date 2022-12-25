@@ -55,5 +55,6 @@ export const voc = (vm) => {
         new Prim('dump',   c=>{ let n=pop(); dump(pop(), n) }),
         new Prim('see',    c=>{ let w=vm.tok2w(); console.log(w); see(w) }),
         new Prim('forget', c=>purge(vm.dict, vm.tok2w(), vm.find('boot'))),
+        new Prim('abort',    c=>{ _rs.length = _ss.length = 0 }),
     ]
 }
