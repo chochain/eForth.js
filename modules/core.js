@@ -6,6 +6,7 @@ let _fence = 0                                   ///< dict length control
 /// @{
 export const EPS    = 1.0e-6                     ///< comparison epsilon
 export const INT    = v=>(v | 0)                 ///< OR takes 32-bit integer
+export const UINT   = v=>(v & 0x7fffffff)        ///< unsigned int
 export const BOOL   = t=>(t ? -1 : 0)            ///< Forth true = -1
 export const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
 /// @}
