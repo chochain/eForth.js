@@ -20,8 +20,8 @@ export const voc = (vm)=>{
         new Prim('_dotstr',c=>vm.log(c.qf[0])),         /// * display string
         new Prim('_dolit', c=>push(c.qf[0])),           /// * integer literal or string
         new Immd('."',     c=>lit('_dotstr', vm.log)),
-//        new Immd('s"',   c=>lit('_dolit', push)),     /// * deprecated
-        new Immd('"',      c=>lit('_dolit', push)),
+        new Immd('s"',     c=>lit('_dolit', push)),     /// * push string as TOS
+        new Immd('"',      c=>lit('_dolit', push)),     /// * non-Forth standard
         new Immd('(',      c=>vm.tok(')')),
         new Immd('.(',     c=>vm.log(vm.tok(')'))),
         new Immd('\\',     c=>vm.xtib()),
