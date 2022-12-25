@@ -20,7 +20,6 @@ export const voc = (vm)=>{
         new Prim('over',  c=>push(top(2))),
         new Prim('swap',  c=>push(remove(2))),
         new Prim('rot',   c=>push(remove(3))),
-        new Prim('-rot',  c=>vm.ss.splice(-2, 0, pop())),
         new Prim('pick',  c=>{ let i=pop(), n=top(i+1); push(n) }),
         new Prim('roll',  c=>{ let i=pop(), n=remove(i+1); push(n) }),
         new Prim('nip',   c=>remove(2)),
@@ -41,6 +40,12 @@ export const voc = (vm)=>{
             let n=pop(), m=pop() * pop();
             push(m % n); push(INT(m / n))
         }),
+        new Prim('max',   c=>{ let a=pop(), b=pop(); push(a > b ? a : b) }),
+        new Prim('min',   c=>{ let a=pop(), b=pop(); push(a > b ? b : a) }),
+        new Prim('2*',    c=>push(pop() * 2)),
+        new Prim('2/',    c=>push(pop() / 2)),
+        new Prim('1+',    c=>push(pop() + 1)),
+        new Prim('1-',    c=>push(pop() - 1)),
         /// @}
         /// @defgroup Bit-wise ops (auto convert to 32-bit by Javascript)
         /// @{
@@ -49,7 +54,10 @@ export const voc = (vm)=>{
         new Prim('or',    c=>push(pop() | pop())),
         new Prim('xor',   c=>push(pop() ^ pop())),
         new Prim('negate',c=>push(-pop())),
+        new Prim('invert',c=>push(pop() ^ -1)),
         new Prim('abs',   c=>push(Math.abs(pop()))),
+        new Prim('rshift',c=>{ let n=pop(); push(pop() >> n) }),
+        new Prim('lshift',c=>{ let n=pop(); push(pop() << n) }),
         /// @}
         /// @defgroup Logic ops
         /// @{
@@ -60,6 +68,8 @@ export const voc = (vm)=>{
         new Prim('<',     c=>{ let n=pop(); push(BOOL((pop() - n) < -EPS)) }),
         new Prim('>',     c=>{ let n=pop(); push(BOOL((pop() - n) >  EPS)) }),
         new Prim('<>',    c=>{ let n=pop(); push(BOOL(ZERO(pop() - n)==0)) }),
+        new Prim('u<',    c=>{ let n=pop(); push(BOOL(UINT(pop()) < UINT(n)))}),
+        new Prim('u>',    c=>{ let n=pop(); push(BOOL(UINT(pop()) > UINT(n)))})
         /// @}
     ]
 }
