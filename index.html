@@ -21,7 +21,7 @@
     const forth_eval = (cmd)=>{
         to_txt('<em style="color:#48f">'+cmd+'</em><br/>')
         if (cmd=='clear') banner(); else vm.exec(cmd)
-		ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
+		ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base())).join(' ')+' ]'
     }
     console.log(vm)                               /// * show VM on console
     banner()      
