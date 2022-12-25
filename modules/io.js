@@ -31,14 +31,20 @@ export const voc = (vm)=>{                                  ///< vocabulary
         new Prim('ucase!', c=>vm.ucase=BOOL(ZERO(pop()))),
         new Prim('base@',  c=>push(vm.base)),
         new Prim('base!',  c=>vm.base = pop() | 0),
-        new Prim('hex',    c=>vm.base = 16),
+        new Prim('binary',c=>_base=2),
         new Prim('decimal',c=>vm.base = 10),
+        new Prim('hex',    c=>vm.base = 16),
+        new Prim('bl',     c=>log(SPC)),
         new Prim('cr',     c=>log(CR)),
         new Prim('.',      c=>{
             let n = pop(), a = typeof(n)!='object' ? [ n ] : n
             log(a.map(v=>v.toString(vm.base)).join(SPC)+SPC)
         }),
         new Prim('.r',     c=>{ let n=pop(); dot_r(n, pop()) }),
+        new Prim('u.',     c=> {
+            let n = pop(), a = typeof(n)!='object' ? [ n ] : n
+            log(a.map(v=>Match(UINT(v)).toString(vm.base)).join(SPC)+SPC)
+        }),
         new Prim('u.r',    c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
         new Prim('key',    c=>push(nxtok()[0])),
         new Prim('emit',   c=>log(String.fromCharCode(pop()))),
