@@ -1,7 +1,7 @@
 /// @file
 /// @brief eForth - ALU words
 ///
-import { EPS, INT, BOOL, ZERO, Prim } from './core.js'
+import { EPS, INT, UINT, BOOL, ZERO, Prim } from './core.js'
 
 export const voc = (vm)=>{
     const push   = v    =>vm.ss.push(v)

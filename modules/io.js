@@ -1,7 +1,7 @@
 /// @file
 /// @brief eForth - IO functions
 ///
-import { BOOL, ZERO, Prim } from './core.js'
+import { BOOL, UINT, ZERO, Prim } from './core.js'
 const SPC  = ' ', CR='\n'                                   ///< string constants
 
 let _out   = console.log
@@ -31,7 +31,7 @@ export const voc = (vm)=>{                                  ///< vocabulary
         new Prim('ucase!', c=>vm.ucase=BOOL(ZERO(pop()))),
         new Prim('base@',  c=>push(vm.base)),
         new Prim('base!',  c=>vm.base = pop() | 0),
-        new Prim('binary',c=>_base=2),
+        new Prim('binary', c=>vm.base=2),
         new Prim('decimal',c=>vm.base = 10),
         new Prim('hex',    c=>vm.base = 16),
         new Prim('bl',     c=>log(SPC)),
@@ -43,7 +43,7 @@ export const voc = (vm)=>{                                  ///< vocabulary
         new Prim('.r',     c=>{ let n=pop(); dot_r(n, pop()) }),
         new Prim('u.',     c=> {
             let n = pop(), a = typeof(n)!='object' ? [ n ] : n
-            log(a.map(v=>Match(UINT(v)).toString(vm.base)).join(SPC)+SPC)
+            log(a.map(v=>UINT(v).toString(vm.base)).join(SPC)+SPC)
         }),
         new Prim('u.r',    c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
         new Prim('key',    c=>push(nxtok()[0])),
