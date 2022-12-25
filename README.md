@@ -29,8 +29,9 @@ It's that easy. Have fun!
 * view [ceforth_403.pdf](https://chochain.github.io/eForth.js/docs/ceforth_403.pdf), Dr. Ting's final work.
 
 ## TODO List
-* 3D Turtle
-  + consult https://github.com/andonutts/donatello
+* WebGL (refs)
+  + Turtle - https://github.com/andonutts/donatello
+  + A-Frame - https://aframe.io/docs/1.3.0/introduction/ (an Entity-Component-System framework)
 * ESP32 interface - add digital and analog IO (for LED, Servo,...)
 
 ## History - <font size=-0.2>An interesting lineage</font>
