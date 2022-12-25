@@ -108,7 +108,7 @@
         else {
             vm.exec(cmd)                       /// * can handle multi-line input
             show_voc(vm.dict, dc, usr)
-            ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base)).join(' ')+' ]'
+            ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base())).join(' ')+' ]'
         }
     }
     </script>
