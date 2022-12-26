@@ -31,7 +31,6 @@ export const voc = (vm)=>{                                  ///< vocabulary
         new Prim('ucase!', c=>vm.ucase=BOOL(ZERO(pop()))),
         new Prim('base@',  c=>push(vm.base)),
         new Prim('base!',  c=>vm.base = pop() | 0),
-        new Prim('binary', c=>vm.base=2),
         new Prim('decimal',c=>vm.base = 10),
         new Prim('hex',    c=>vm.base = 16),
         new Prim('bl',     c=>log(SPC)),
