@@ -272,7 +272,6 @@ window.ForthVM = function(output=console.log) {
         new Prim('ucase!',c=>_ucase=BOOL(ZERO(pop()))),
         new Prim('base@', c=>push(INT(_base))),
         new Prim('base!', c=>_base=INT(pop())),          /// * between 2~36
-        new Prim('binary',c=>_base=2),
         new Prim('decimal',c=>_base=10),
         new Prim('hex',   c=>_base=16),
         new Prim('bl',    c=>log(SPC)),
