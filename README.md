@@ -58,7 +58,7 @@ Though I've never had the chance to meet him in person, the years of dedication 
 * <a href="https://github.com/yapcheahshen/jeforth" target="_blank">[jeforth]</a> by Cheah Shen Yap and Sam Chen, 2012, <a href="https://chochain.github.io/eForth.js/orig/index_301.html" target="_blank">[try jeforth_301 here]</a>
 * <a href="https://chochain.github.io/eForth.js/orig/jeforth616.html" target="_blank">[try jeforth616 in your browser]</a> by Dr. Ting, 2021
 
-### Prior Art (on GitHub) - Many others have the same idea as well, each with a little different implemenation. Proof of the saying in the Forth community, instead of seen one seen them all, here you see many of the ones!
+### Prior Art (on GitHub) - <font size=-0.2>Many others have the same idea as well, each with a little different implemenation. Proof of the saying in the Forth community, instead of seen one seen them all, here you see many of the ones!</font>
 * [jorth](https://github.com/ramunas/jorth) by Ramunas Forsberg Gutkovas, 2012 (small and clean)
 * [FORTH-on-browser](https://github.com/nishio/FORTH-on-browser) by Nishio Hirokazu, 2012 (detailed with jQuery)
 * [fjs](https://github.com/mark-hahn/fjs) by Mark Hahn, 2013 (scoped beyond Forth, more like Factor)
