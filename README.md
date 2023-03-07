@@ -4,7 +4,7 @@ With a 100% Javascript implementation, Forth can be run from within just a singl
 
 Provided here is <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, if you insist, maybe an extra <em>**index.html**</em> to wrap it up or to customize to your heart's content. Simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a Forth engine ready to play. Without surprise, you should get something like the left hand side snip below.
 
-We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be more mordern! Checkout **src/eforth8.html** as a demo that I'm still working on. With the same <em style='color:#fc4'>**eforth.js**</em>, you can create whatever presentation you fancy...
+We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be more mordern! Checkout **src/eforth8.html** which is still work in progress. With the same <em style='color:#fc4'>**eforth.js**</em>, you can create whatever presentation you fancy...
  <pre><img
    width='24%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>.....<img
    width='36%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
@@ -50,7 +50,7 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
   > <img width="70%" src="https://chochain.github.io/eForth.js/docs/jeforth400_snip1.png">
 * Dr. Ting did not like the flashy front-end at all. He striped the sidebar, dropped dependency to CodeMirror, and renamed it jeforth615.js. He, however, did include it in the published document **ceforth_403.doc*** and was kind enough to put me along side with him as the authors. *(see ref. below)
 * After he merged html and js into one file <a href="./orig/jeforth616.html" target="_blank">[jeforth616.html]</a>, Dr. Ting and I switched focus onto upgrading **ceForth** (C-based Forth) for Windows and ESP32 <a href="https://github.com/chochain/eforth" target="_blank">[here]</a>, and finally targeting an FPGA with Don and Demitri of <a href="https://www.facebook.com/groups/1304548976637542" target="_blank">[AI & Robotics project]</a>. He worked tirelessly even from his sickbed and did not ever stop. Not until he finally succumb to the illness 2022/5/30.
-* A few months of head-down cranking on <a href="https://github.com/chochain/tensorForth" target="_blank">[tensorForth]</a>, it is finally taking shape. I decided to take a breather and came back to review all the projects I've worked with Dr. Ting for the past year. In Thanksgiving Day, after looking at jeforth615 again, I've decided to call it **eForth.js** in memory of Dr. Ting.
+* After a few months of head-down cranking on <a href="https://github.com/chochain/tensorForth" target="_blank">[tensorForth]</a>, I felt that it's time to take a look at all the projects I've worked with Dr. Ting before my memory starting to fade. In Thanksgiving Day, after reviewing jeforth615, I've decided to call it **eForth.js** in memory of Dr. Ting.
 
 Though I've never had the chance to meet him in person, the years of dedication and contribution he has to the Forth community is something I'll carry with me. As I told him once in the e-mail: "The name **eForth** will forever be associated with you, Dr. Ting".
 
@@ -58,7 +58,7 @@ Though I've never had the chance to meet him in person, the years of dedication 
 * <a href="https://github.com/yapcheahshen/jeforth" target="_blank">[jeforth]</a> by Cheah Shen Yap and Sam Chen, 2012, <a href="https://chochain.github.io/eForth.js/orig/index_301.html" target="_blank">[try jeforth_301 here]</a>
 * <a href="https://chochain.github.io/eForth.js/orig/jeforth616.html" target="_blank">[try jeforth616 in your browser]</a> by Dr. Ting, 2021
 
-### Prior Art (on GitHub) - Many others have the same idea as well, each with a little different implemenation. You see one!
+### Prior Art (on GitHub) - Many others have the same idea as well, each with a little different implemenation. Proof of the saying in the Forth community, instead of seen one seen them all, here you see many of the ones!
 * [jorth](https://github.com/ramunas/jorth) by Ramunas Forsberg Gutkovas, 2012 (small and clean)
 * [FORTH-on-browser](https://github.com/nishio/FORTH-on-browser) by Nishio Hirokazu, 2012 (detailed with jQuery)
 * [fjs](https://github.com/mark-hahn/fjs) by Mark Hahn, 2013 (scoped beyond Forth, more like Factor)
