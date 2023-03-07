@@ -6,8 +6,8 @@ Provided here is <em style='color:#fc4'>**eforth.js**</em>, the only file you ne
 
 We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be more mordern! Checkout **src/eforth8.html** which is still work in progress. With the same <em style='color:#fc4'>**eforth.js**</em>, you can create whatever presentation you fancy...
  <pre><img
-   width='24%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>.....<img
-   width='36%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
+   width='32%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>.....<img
+   width='48%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
 
 ## Installation - <font size=-0.2>Simple as 1-2-3</font>.
 1. From root directory shown above, download or cut-n-paste <em style='color:#fc4'>**eforth.js**</em> and <em style='color:#fc4'>**index.html**</em> to any of your local directory,
@@ -58,7 +58,8 @@ Though I've never had the chance to meet him in person, the years of dedication 
 * <a href="https://github.com/yapcheahshen/jeforth" target="_blank">[jeforth]</a> by Cheah Shen Yap and Sam Chen, 2012, <a href="https://chochain.github.io/eForth.js/orig/index_301.html" target="_blank">[try jeforth_301 here]</a>
 * <a href="https://chochain.github.io/eForth.js/orig/jeforth616.html" target="_blank">[try jeforth616 in your browser]</a> by Dr. Ting, 2021
 
-### Prior Art (on GitHub) - <font size=-0.2>Many others have the same idea as well, each with a little different implemenation. Proof of the saying in the Forth community, instead of seen one seen them all, here you see many of the ones!</font>
+### Prior Art (on GitHub)
+  Many others have the same idea as well, each with a little different implemenation. Proof of the saying in the Forth community, instead of seen one seen them all, here you see many of the ones!
 * [jorth](https://github.com/ramunas/jorth) by Ramunas Forsberg Gutkovas, 2012 (small and clean)
 * [FORTH-on-browser](https://github.com/nishio/FORTH-on-browser) by Nishio Hirokazu, 2012 (detailed with jQuery)
 * [fjs](https://github.com/mark-hahn/fjs) by Mark Hahn, 2013 (scoped beyond Forth, more like Factor)
