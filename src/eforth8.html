@@ -1,18 +1,17 @@
 ﻿<html>
   <head>    
   <title>eForth.js</title>
-  <!--link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
   <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js'></script>
-  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script-->
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel='stylesheet' href='../tests/codemirror.min.css'></link>
+  <!-- for local debugging 
+    link rel='stylesheet' href='../tests/codemirror.min.css'></link>
   <script type='text/javascript' src='../tests/codemirror.min.js'></script>
-  <script type='text/javascript' src='../tests/forth.min.js'></script>
+  <script type='text/javascript' src='../tests/forth.min.js'></script-->
   <link rel='stylesheet' href='../src/eforth8.css'></link>
   <script type='text/javascript' src='../src/forth_voc.js'></script>
   <script type='text/javascript' src='../src/file_io.js'></script>
-  <!--link rel='stylesheet' href='../src/menu.css'></link>
-  <script type='text/javascript' src='../src/menu.js'></script-->
   </head>
   <body>
     <div class='row' style='height:100%'>
@@ -108,7 +107,11 @@
         else {
             vm.exec(cmd)                       /// * can handle multi-line input
             show_voc(vm.dict, dc, usr)
-            ss.innerHTML = '[ '+vm.ss.map(v=>v.toString(vm.base())).join(' ')+' ]'
+            ss.innerHTML = '[ '+vm.ss.map(
+                v=> vm.base() != 10
+                    ? v.toString(vm.base())
+                    : v.toLocaleString(undefined,{minimumFractionDigits:0, maximumFractionDigits:6})
+            ).join(' ')+' ]'
         }
     }
     </script>
