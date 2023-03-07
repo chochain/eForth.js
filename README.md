@@ -15,12 +15,14 @@ We've come a long way from the good old green terminal days. So, with some HTML 
 3. Click it, and your favorate browser should open automatically with a page with eForth screen shown.
 It's that easy. Have fun!
 
-## Fancier UI - <font size=-0.2>(shown in the right-hand picture above) - with CodeMirror, tooltips, ...</font>
+## Fancier UI - with CodeMirror, tooltips, ...
+As shown in the right-hand side picture above
 1. Clone <em style='color:#fc4'>**https://github.com/chochain/eForth.js**</em> repository to your local directory,
 2. In your FileExplore, find <em style='color:#fc4'>**src/eforth8.html**</em> below the root directory,
 3. Click it, and there you have it. A nicer UI, and optionally, you can open browser's Web Developer Tools on the side to monitor console output.
 4. If you kick-off the **eforth8.html** page from a webserver (as described below), you can even load/edit/save/run your Forth source code files from that remote server directories.
 
+## Javascript Modules
 Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a larger project, or maybe you care for modulization in fashion of the ES6's new feature i.e. ease of source code maintenance
 * check the /modules directory for individual functional areas.
 * <em>eforth_w_module.html</em> in the root is provided as an example to import modules
@@ -30,10 +32,9 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
     > enter <em>http://localhost:8000/eforth_w_module.html</em> into your browser
     </pre>
 
-
-## Documentation - <font size=-0.2>It conforms to Dr. Ting's explaination and word list mostly.</font>
-* download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021, or
-* read Dr. Ting's final work <a href="https://chochain.github.io/eForth.js/docs/ceforth_403.pdf" target="_blank">[ceforth_403.pdf]</a>.
+## Documentation - <font size=-0.2>eForth.js conforms to Dr. Ting's explaination and word list mostly.</font>
+* Download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021, or
+* Read Dr. Ting's final work <a href="https://chochain.github.io/eForth.js/docs/ceforth_403.pdf" target="_blank">[ceforth_403.pdf]</a>.
 
 ## TODO List
 * WebGL (refs)
@@ -41,7 +42,7 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
   + A-Frame - https://aframe.io/docs/1.3.0/introduction/ (an Entity-Component-System framework)
 * ESP32 interface - add digital and analog IO (for LED, Servo,...)
 
-## History - <font size=-0.2>An interesting lineage</font>
+## History - <font size=-0.2>The lineage</font>
 * It started back in 2011 when **Cheahshen Yap** from Taiwan FIG sent the 100-line kernel, named **jeForth**, to **Dr. Chen-Hanson Ting**, the master of **eForth** family.
 * **Sam Suan Chen**, took over the codebase (called project-k) and produced a graphic demo in SVFIG. The project took on its own path <a href="https://github.com/hcchengithub/project-k" target="_blank">[here]</a> now.
 * **Brad Nelson**, introduced a web front-end to Dr. Ting sourcing from his ESP32Forth project.
