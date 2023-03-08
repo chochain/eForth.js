@@ -10,12 +10,10 @@ export const voc = (vm)=>{
     const dovar  = c=>push(c.token)                        ///< variable op
     const vm_add = ()=>{
         let s = vm.tok();                                  ///< fetch an input token
-        if (s==null) { log('name? '); return false }
-        if (vm.find(s) != null) log(s + ' reDef? ')
+        if (s==null) throw 'name? '
         vm.add(s)
-        return true
     }
-    const vm_var = (xt, v)=>{ vm_add() ? vm.nvar(xt, v) : null }   ///< new variable/constant
+    const vm_var = (xt, v)=>{ vm_add(); vm.nvar(xt, v) }   ///< new variable/constant
     
     return [
         new Immd('[',        c=>vm.compi=false ),          /// interpreter mode
@@ -25,7 +23,7 @@ export const voc = (vm)=>{
             push(w.token)                                  /// put found token on TOS
         }),
         new Immd('exec',     c=>vm.dict[pop()].exec()),    /// execute a word (by its token)
-        new Prim(':',        c=>vm.compi=vm_add()),        /// fetch an input token
+        new Prim(':',        c=>{ vm_add(); vm.compi=true }),  /// fetch an input token
         new Immd(';',        c=>vm.compi=false),           /// semicolon
         new Immd('variable', c=>vm_var(dovar, 0)),
         new Immd('constant', c=>vm_var(docon, pop())),
@@ -52,7 +50,8 @@ export const voc = (vm)=>{
         }),
         new Prim('to',       c=>vm.tok2w().val[0]=pop()),  ///< update constant
         new Prim('is',       c=>{                          ///< alias a word
-            if (vm_add()) vm.tail().pf = vm.dict[pop()].pf
+            vm_add()
+            vm.tail().pf = vm.dict[pop()].pf
         })
     ]
 }

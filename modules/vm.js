@@ -43,7 +43,10 @@ export class VM {
     }
 	tail(i=1) { return this.dict[this.dict.length - i] }        ///< last entry
 	last()    { return this.tail(2).pf.tail() }                 ///< pf of last word created
-    add(s)    { this.dict.push(new Code(s, null, true)) }       ///< add a colon word to dictionary
+    add(s)    {                                                 ///< add a colon word to dictionary
+        if (this.find(s) != null) this.log(s + ' reDef? ')
+        this.dict.push(new Code(s, null, true))
+    }
     extend(d) { d.forEach(c=>this.dict.push(c)) }               ///< extending dictionary
     comma(w)  { this.tail().pf.push(w) }                        ///< add w into pf[] 
     compile(s, xt=null, v=false) {                              ///< compile a word
