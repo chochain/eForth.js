@@ -8,23 +8,24 @@ export const voc = (vm)=>{
     const pop    = ()=>{ return vm.ss.pop() }              ///< ss.pop macro
     const docon  = c=>push(c.qf[0])                        ///< constant op
     const dovar  = c=>push(c.token)                        ///< variable op
-    const vm_add = (compi=false)=>{
+    const vm_add = ()=>{
         let s = vm.tok();                                  ///< fetch an input token
-        if (s==null) { vm.compi=false; throw "more input" }
+        if (s==null) { log('name? '); return false }
+        if (vm.find(s) != null) log(s + ' reDef? ')
         vm.add(s)
-        vm.compi = compi
+        return true
     }
-    const vm_var = (xt, v)=>{ vm_add(); vm.nvar(xt, v) }   ///< new variable/constant
+    const vm_var = (xt, v)=>{ vm_add() ? vm.nvar(xt, v) : null }   ///< new variable/constant
     
     return [
         new Immd('[',        c=>vm.compi=false ),          /// interpreter mode
         new Prim(']',        c=>vm.compi=true ),           /// compiler mode
         new Prim("'",        c=>{                          /// get token of a word
             let w = vm.tok2w()
-            if (w!=null) push(w.token)
+            push(w.token)                                  /// put found token on TOS
         }),
         new Immd('exec',     c=>vm.dict[pop()].exec()),    /// execute a word (by its token)
-        new Prim(':',        c=>vm_add(true)),             /// fetch an input token
+        new Prim(':',        c=>vm.compi=vm_add()),        /// fetch an input token
         new Immd(';',        c=>vm.compi=false),           /// semicolon
         new Immd('variable', c=>vm_var(dovar, 0)),
         new Immd('constant', c=>vm_var(docon, pop())),
@@ -51,8 +52,7 @@ export const voc = (vm)=>{
         }),
         new Prim('to',       c=>vm.tok2w().val[0]=pop()),  ///< update constant
         new Prim('is',       c=>{                          ///< alias a word
-            vm_add()
-            vm.tail().pf = vm.dict[pop()].pf
+            if (vm_add()) vm.tail().pf = vm.dict[pop()].pf
         })
     ]
 }

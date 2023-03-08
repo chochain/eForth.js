@@ -14,7 +14,7 @@ export const nxtok   = (d=SPC)=>{                           ///< fetch next idio
     while (d==SPC &&                                        /// * assumes tib ends with a blank
            (_tib[_ntib]==SPC || _tib[_ntib]=='\t')) _ntib++ /// * skip leading blanks and tabs
     let i = _tib.indexOf(d, _ntib)
-    let s = (i==-1) ? null : _tib.substring(_ntib, i)
+    let s = (i==-1) ? (_tib='',null) : _tib.substring(_ntib, i)
     _ntib = i+1                                             /// * advance or reset _ntib
     return s
 }
