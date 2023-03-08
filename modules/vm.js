@@ -77,6 +77,13 @@ export class VM {
         if (w==null) throw NA(s);          /// * error: if token not found
         return w
     }
+    isNum(s) {
+        const mx = (c)=>c+'-'+String.fromCharCode(c.charCodeAt() + (this.base - 11))
+        const st = this.base > 10
+              ? '^[0-9|'+mx('a')+'|'+mx('A')+']+$'
+              : '^[0-'+(this.base-1).toString()+']+$'
+        return new RegExp(st).test(s)
+    }
     /// @defgroup Outer Interpreter
     /// @{
     outer(tok) {                           ///< outer interperter
@@ -93,7 +100,7 @@ export class VM {
         let n = this.base!=10              ///> not word, try as number
             ? parseInt(tok, this.base)
             : parseFloat(tok)
-        if (isNaN(n)) {                    ///> * not a number?
+        if (isNaN(n) || !this.isNum(tok)) {///> * is a number?
             this.log(tok + '? ')           ///>> display prompt
             this.compi=false               ///>> restore interpret mode
         }
