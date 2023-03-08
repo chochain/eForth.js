@@ -72,7 +72,7 @@ export class VM {
     }
     tok2w() {                              ///< convert token to word
         let s = this.tok()
-        if (s==null) { log('name? '); throw 'need name' }
+        if (s==null) { this.log('name? '); throw 'need name' }
         let w = this.find(s)               /// * search thru dictionary
         if (w==null) throw NA(s);          /// * error: if token not found
         return w
