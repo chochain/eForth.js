@@ -483,6 +483,14 @@ window.ForthVM = function(output=console.log) {
     this.rs    = _rs
     this.dict  = dict
     this.base  = ()=>{ return _base }
+    this.isNum = (s)=>{                       ///> check number in range
+        const mx = (c)=>c+'-'+String.fromCharCode(c.charCodeAt() + (_base - 11))
+        const st = _base > 10
+              ? '^[0-9|'+mx('a')+'|'+mx('A')+']+$'
+              : '^[0-'+(_base-1).toString()+']+$'
+        let r = new RegExp(st).test(s)
+        return r
+    }
     ///
     /// outer interpreter method
     /// @param tok - one token (or idiom) from input buffer
@@ -500,7 +508,7 @@ window.ForthVM = function(output=console.log) {
         let n = _base!=10                     ///> not word, try as number
             ? parseInt(tok, _base)
             : parseFloat(tok)
-        if (isNaN(n)) {                       ///> * not a number?
+        if (isNaN(n) || !this.isNum(tok)) {   ///> * is it a number?
             log(tok + '? ')                   ///>> display prompt
             _compi=false                      ///>> restore interpret mode
         }
