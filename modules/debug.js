@@ -41,6 +41,10 @@ export const voc = (vm) => {
             log('] ')                              /// * close section
         }
         log(w.name+' ')                            /// * display word name
+        if (w.xt) {                                /// * show built-in words
+            log('[ ' + w.xt + ' ] ')
+            return
+        }
         if (w.qf != null && w.qf.length > 0) {     /// * display qf array
             log('='+JSON.stringify(w.qf)+' ')
         }
