@@ -17,7 +17,7 @@ window.ForthVM = function(output=console.log) {
     ///
     let _compi = false                    ///< compile flag
     let _ucase = false                    ///< case sensitive find
-    let _tib   ='', _ntib = 0             ///< input buffer
+    let _tib   = '', _ntib = 0            ///< input buffer
     let _fence = 0                        ///< dict length control
     /// @}
     ///==============================================================
@@ -74,12 +74,13 @@ window.ForthVM = function(output=console.log) {
     /// @{
     const log    = (s)=>output(s)
     const NA     = (s)=>s+' not found! '
-    const nxtok  = (d=SPC)=>{             /// assumes tib ends with a blank
-        while (d==SPC &&
-               (_tib[_ntib]==SPC || _tib[_ntib]=='\t')) _ntib++ /// skip leading blanks and tabs
+    const nxtok  = (d=SPC)=>{            /// assumes tib ends with a blank
+        while (d==SPC &&                 /// skip leading blanks and tabs
+               (_tib[_ntib]==SPC || _tib[_ntib]=='\t')) _ntib++
         let i = _tib.indexOf(d, _ntib)
-        let s = (i==-1) ? null : _tib.substring(_ntib, i); _ntib=i+1
-        return s
+        let s = (i==-1) ? (_tib='',null) : _tib.substring(_ntib, i)
+        _ntib = i+1
+         return s
     }
     const dot_r = (n, v)=>{
         let s = v.toString(_base)
@@ -112,7 +113,9 @@ window.ForthVM = function(output=console.log) {
         return null                                 /// * not found
     }
     const tok2w  = ()=>{                            ///< convert token to word
-        let s=nxtok(), w=find(s)
+        let s=nxtok()
+        if (s==null) { log('name? '); throw 'need name' }
+        let w = find(s)
         if (w==null) throw NA(s);
         return w
     }
@@ -139,6 +142,7 @@ window.ForthVM = function(output=console.log) {
     const _dovar = c=>push(c.token)
     const _dostr = c=>{
         let s = nxtok('"')
+        if (s==null) { log('one quote? '); return }
         if (_compi) compile(new Code('_dolit', s))
         else push(s)                               /// push string object
     }
@@ -294,7 +298,7 @@ window.ForthVM = function(output=console.log) {
             if (_compi) compile(new Code('_dotstr', s))
             else log(s)
         }),
-        new Immd('s"',   c=>_dostr()),         /// * push string as TOS
+        new Immd('s"',    c=>_dostr()),        /// * push string as TOS
         new Immd('"',     c=>_dostr()),        /// * non-Forth standard
         new Immd('(',     c=>nxtok(')')),
         new Immd('.(',    c=>log(nxtok(')'))),
@@ -401,10 +405,10 @@ window.ForthVM = function(output=console.log) {
         new Prim(']',        c=>_compi=true ),
         new Prim("'",        c=>{ let w=tok2w(); push(w.token) }),
         new Immd('exec',     c=>dict[pop()].exec()),
-        new Prim(':',        c=>{ dict.add(); _compi=true }),  // new colon word
+        new Prim(':',        c=>_compi=dict.add()),            // new colon word
         new Immd(';',        c=>_compi=false),                 // semicolon
-        new Immd('variable', c=>(dict.add(), nvar(_dovar, 0))),
-        new Immd('constant', c=>(dict.add(), nvar(_docon, pop()))),
+        new Immd('variable', c=>dict.add() ? nvar(_dovar, 0) : null),
+        new Immd('constant', c=>dict.add() ? nvar(_docon, pop()) : null),
         new Prim("create",   c=>dict.add()),                   // create new word
         new Prim(',',        c=>{                              // push TOS into qf
             let pf = dict.tail().pf
@@ -428,7 +432,7 @@ window.ForthVM = function(output=console.log) {
         }),
         new Prim('to',       c=>tok2w().val[0]=pop()),         // update constant
         new Prim('is',       c=>{                              // n -- alias a word
-            dict.add(); dict.tail().pf = dict[pop()].pf
+            if (dict.add()) dict.tail().pf = dict[pop()].pf
         }),
         /// @}
         /// @defgroup Debugging ops
@@ -464,8 +468,10 @@ window.ForthVM = function(output=console.log) {
     /// @{
     dict.add  = function()    {                        ///< create a new word
         let s = nxtok();                               ///< fetch an input token
-        if (s==null) { _compi=false; throw 'more input' }
+        if (s==null) { log('name? '); return false }
+        if (find(s) != null) log(s + ' reDef? ')       /// * warning
         dict.push(new Code(s, true))
+        return true                                    /// * success
     }
     dict.tail = function(i=1) { return this[this.length-i]    }
     dict.last = function()    { return dict.tail(2).pf.tail() }
