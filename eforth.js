@@ -205,12 +205,12 @@ window.ForthVM = function(output=console.log) {
             log('] ')                              /// * close section
         }
         log(w.name+' ')                            /// * display word name
-        if (w.xt) {                                /// * show built-in words
-            log('[ '+w.xt+' ] ')
-            return
-        }
         if (w.qf != null && w.qf.length > 0) {     /// * display qf array
             log('='+JSON.stringify(w.qf)+' ')
+        }
+        if (w.xt && n==0) {                        /// * show built-in words
+            log('[ '+w.xt+' ] ')
+            return
         }
         _show_pf(w.pf)                             /// * if.{pf}, for.{pf}, or begin.{pf}
         _show_pf(w.pf1)                            /// * else.{pf1}.then, or .then.{pf1}.next
