@@ -83,8 +83,8 @@ export class VM {
     isNum(s) {
         const mx = (c)=>c+'-'+String.fromCharCode(c.charCodeAt() + (this.base - 11))
         const st = this.base > 10
-              ? '^[0-9|'+mx('a')+'|'+mx('A')+']+$'
-              : '^[0-'+(this.base-1).toString()+']+$'
+              ? '^-?[0-9|'+mx('a')+'|'+mx('A')+']+$'
+              : '^-?[\.|0-'+(this.base-1).toString()+']+$'
         return new RegExp(st).test(s)
     }
     /// @defgroup Outer Interpreter
