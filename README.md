@@ -20,7 +20,7 @@ As shown in the right-hand side picture above
 1. Clone <em style='color:#fc4'>**https://github.com/chochain/eForth.js**</em> repository to your local directory,
 2. In your FileExplore, find <em style='color:#fc4'>**src/eforth8.html**</em> below the root directory,
 3. Click it, and there you have it. A nicer UI, and optionally, you can open browser's Web Developer Tools on the side to monitor console output. The editor shows up once you click the 'pencil icon' in the function bar atop.
-> |icon| description|
+  |icon|description|
   |---|---|
   |home|clear text|
   |file+|create new file in your local directory|
