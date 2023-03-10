@@ -123,7 +123,7 @@ window.ForthVM = function(output=console.log) {
         const mx = (c)=>c+'-'+String.fromCharCode(c.charCodeAt() + (_base - 11))
         const st = _base > 10
               ? '^-?[0-9|'+mx('a')+'|'+mx('A')+']+$'
-              : '^-?[\.|0-'+(_base-1).toString()+']+$'
+              : '^-?([0-'+(_base-1).toString()+']*[.])?[0-'+(_base-1).toString()+']+$'
         return new RegExp(st).test(s)
     }
     /// @}
