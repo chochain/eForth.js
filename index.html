@@ -19,7 +19,7 @@
     }
     const vm  = new ForthVM(to_txt)               ///< create Forth VM object
     const forth_eval = (cmd)=>{
-        to_txt('<em style="color:#48f">'+cmd+'</em><br/>')
+        to_txt('<b>'+cmd+'</b><br/>')
         if (cmd=='clear') banner(); else vm.exec(cmd)
 		ss.innerHTML = '[ '+vm.ss.map(
             v=>vm.base() != 10
