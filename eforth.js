@@ -66,6 +66,16 @@ window.ForthVM = function(output=console.log) {
             else this.xt(this);          /// * build-it words
         }
     }
+	const free_pf = p=>{ if (p!=null) p.forEach(c=>free(c)) }
+	const free    = c=>{
+		log('free '+c.name+' ')
+		free_pf(c.pf); free_pf(c.p1); free_pf(c.p2);
+		if (c.q!=null) c.q.length=0
+	}
+	const merge = (dst, src)=>{
+		log('\nmerge('+JSON.stringify(src)+')')
+		if (src.length>0) { dst.push(...src); src.length=0 }
+	}
     ///================================================================
     /// @defgroup IO functions
     /// @{
@@ -94,7 +104,7 @@ window.ForthVM = function(output=console.log) {
     const nvar   = (xt, v)=>{
         compile(new Code('', v, xt))
         let t = dict.at(-1), w = t.pf[0]            ///< last work and its pf
-        t.val   = w.q                               /// * create a val func
+        t.val   = w.q                               /// * val as q[]'s sysnomym
         w.xt    = xt                                /// * set internal func
         w.token = t.token                           /// * copy token
     }
@@ -133,11 +143,10 @@ window.ForthVM = function(output=console.log) {
     /// @}
     /// @defgroup Stack op short-hand functions (macros)
     /// @{
-    const top    = (n=1)=>_ss[_ss.length - INT(n)]
+    const top    = (n=1)=>_ss.at(-INT(n))
     const push   = v    =>_ss.push(v)
     const pop    = ()   =>_ss.pop()
-    const remove = n    =>{ let v=top(n); _ss.splice(length - n, 1); return v }
-    const rtop   = (n=1)=>_rs[_rs.length - INT(n)]
+    const remove = n    =>{ let v=top(n); _ss.splice(length - INT(n), 1); return v }
     const dec_i  = ()   =>_rs[_rs.length - 1] -= 1
     /// @}
     /// @defgroup Built-in (branching, looping) functions
@@ -193,10 +202,11 @@ window.ForthVM = function(output=console.log) {
         }
     }
     const _see = (w, n=0)=>{
-        const _show = (hdr, pf)=>{
+		const iden = (n, s)=>{ log(CR); _spaces(2*n); log(s) }
+        const show = (hdr, pf)=>{
             if (pf == null || pf.length == 0) return
-            if (hdr!='') { log(CR); _spaces(2*n); log(hdr) }
-            log(CR); _spaces(2*(n+1))           /// * indent section
+            if (hdr!='') iden(n, hdr)
+            iden(n+1, '')
             pf.forEach(w1=>_see(w1, n+1))       /// * recursive call
         }
         log(w.name+' ')                         /// * display word name
@@ -208,13 +218,13 @@ window.ForthVM = function(output=console.log) {
                 log(typeof(w.q[0])=='string' ? '"' : ' ')
             }
         }
-        if (w.xt && n==0) {           /// * show built-in words
+        if (w.xt && n==0) {      /// * show built-in words
             log('{ '+w.xt+' } ')
             return
         }
-        _show('', w.pf)        /// * if.{pf}, for.{pf}, or begin.{pf}
-        _show('( 2 )', w.p2)   /// * aft.{p2}.next
-        _show('( 1 )', w.p1);  /// * else.{p1}.then, aft.{p1}.then
+        show('', w.pf)           /// * if.{pf}, for.{pf}, or begin.{pf}
+        show('( 2 )', w.p2)      /// * aft.{p2}.next
+        show('( 1 )', w.p1);     /// * else.{p1}.then, aft.{p1}.then
     }
     /// @}
     ///======================================================================
@@ -223,7 +233,7 @@ window.ForthVM = function(output=console.log) {
     let dict = [
         /// @defgroup Stack ops
         /// @{
-        new Prim('dup',   c=>push(top())),
+        new Prim('dup',   c=>push(top(1))),
         new Prim('drop',  c=>pop()),
         new Prim('over',  c=>push(top(2))),
         new Prim('swap',  c=>push(remove(2))),
@@ -312,7 +322,7 @@ window.ForthVM = function(output=console.log) {
             let s = nxtok('"')
             if (s==null) { log('one quote? '); return }
             if (_compi) compile(new Code('s"', s, _dostr))
-            else { push(s); push(s.length) }    /// push string object
+            else { push(s); push(s.length) }         /// push string object
         }),
         new Immd('(',     c=>nxtok(')')),
         new Immd('.(',    c=>log(nxtok(')'))),
@@ -322,25 +332,24 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Immd('if',    c=>{
             let w = new Code('if', false, _bran)     // encode branch opcode
-            w.p1=[]; w.stage=0                       // stage for branching
-            compile(w)
+            compile(w); w.p1=[]; w.stage=0           // stage for branching
             dict.push(new Code(' tmp'))              // as dict.at(-1)
         }),
         new Immd('else',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            w.pf.push(...tmp.pf); w.stage=1
-            tmp.pf.length = 0
+			w.pf.push(...tmp.pf); tmp.pf.length=0
+			w.stage=1
         }),
         new Immd('then',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
             if (w.stage==0) {
-                w.pf.push(...tmp.pf)                 // copy tmp.pf into branch
-                dict.pop();                          // drop tmp
+				w.pf.push(...tmp.pf)                 // copy tmp.pf into branch
+                dict.pop()                           // drop tmp
             }
             else {
-                w.p1.push(...tmp.pf)
+                w.p1.push(...tmp.pf)                 // else.{p1}.then, or then.{p1}.next
                 if (w.stage==1) dict.pop()           // drop tmp
-                else tmp.pf.length=0                 // for...aft...then
+				else tmp.pf.length = 0
             }
         }),
         /// @}
@@ -355,8 +364,8 @@ window.ForthVM = function(output=console.log) {
         }),
         new Immd('while', c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            w.pf.push(...tmp.pf); w.stage=2            /// begin.{pf}.f.while
-            tmp.pf.length = 0
+            w.pf.push(...tmp.pf); tmp.pf.length=0      /// begin.{pf}.f.while
+			w.stage=2
         }),
         new Immd('repeat', c=>{
             let w=dict.last(), tmp=dict.at(-1)
@@ -365,8 +374,8 @@ window.ForthVM = function(output=console.log) {
         }),
         new Immd('again', c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            w.pf.push(...tmp.pf); w.stage=1            /// begin.{pf}.again
-            dict.pop()
+            w.pf.push(...tmp.pf)                       /// begin.{pf}.again
+			dict.pop(); w.stage=1            
         }),
         new Immd('until', c=>{
             let w=dict.last(), tmp=dict.at(-1)
@@ -381,18 +390,17 @@ window.ForthVM = function(output=console.log) {
             compile(new Code('( >r )', false, _tor));  /// push I onto rstack
             compile(new Code('for', false, _dofor))    /// encode _for opcode
             dict.push(new Code(' tmp'))                /// create tmp holder
-            let w=dict.last()
-            w.stage=0; w.p1=[]
+            let w=dict.last(); w.p1=[]; w.stage=0
         }),
         new Immd('aft',   c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            w.pf.push(...tmp.pf); w.stage=3; w.p2=[]   /// for.{pf}.aft
-            tmp.pf.length=0
+            w.pf.push(...tmp.pf); tmp.pf.length=0      /// for.{pf}.aft
+			w.p2=[]; w.stage=3
         }),
         new Immd('next',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
             if (w.stage==0) w.pf.push(...tmp.pf)       /// for.{pf}.next
-            else            w.p2.push(...tmp.pf)       /// .then.{p2}.next
+            else 			w.p2.push(...tmp.pf)       /// .then.{p2}.next
             dict.pop()                                 /// drop tmp node
         }),
         /*
@@ -400,8 +408,8 @@ window.ForthVM = function(output=console.log) {
         */
         new Prim('>r',    c=>_rs.push(pop())),         /// push into rstack
         new Prim('r>',    c=>push(_rs.pop())),         /// pop from rstack
-        new Prim('r@',    c=>push(rtop())),            /// fetch from rstack
-        new Prim('i',     c=>push(rtop())),            /// same as r@
+        new Prim('r@',    c=>push(_rs.at(-1))),        /// fetch from rstack
+        new Prim('i',     c=>push(_rs.at(-1))),        /// same as r@
         new Prim('exit',  c=>{ throw 'exit' }),        /// exit inner interpreter
         /// @}
         /// @defgroup Memory Access ops
@@ -433,8 +441,8 @@ window.ForthVM = function(output=console.log) {
             let w = dict.at(-1); nvar(_dovar, 0)
             for (let n=pop(), i=1; i<n; i++) w.val[i]=0        // fill all slot with 0
         }),
-        new Prim('does>',     c=>{
-            let w=dict.at(-1), src=dict[_wp].pf
+        new Prim('does>',    c=>{
+            let w = dict.at(-1), src=dict[_wp].pf
             for (var i=0; i < src.length; i++) {
                 if (src[i].name=='does>') {
                     w.pf.push(...src.slice(i+1))
