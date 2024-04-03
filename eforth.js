@@ -146,7 +146,7 @@ window.ForthVM = function(output=console.log) {
     const top    = (n=1)=>_ss.at(-INT(n))
     const push   = v    =>_ss.push(v)
     const pop    = ()   =>_ss.pop()
-    const remove = n    =>{ let v=top(n); _ss.splice(length - INT(n), 1); return v }
+    const grab   = n    =>{ let v=top(n); _ss.splice(length - INT(n), 1); return v }
     const dec_i  = ()   =>_rs[_rs.length - 1] -= 1
     /// @}
     /// @defgroup Built-in (branching, looping) functions
@@ -236,15 +236,15 @@ window.ForthVM = function(output=console.log) {
         new Prim('dup',   c=>push(top(1))),
         new Prim('drop',  c=>pop()),
         new Prim('over',  c=>push(top(2))),
-        new Prim('swap',  c=>push(remove(2))),
-        new Prim('rot',   c=>push(remove(3))),
+        new Prim('swap',  c=>push(grab(2))),
+        new Prim('rot',   c=>push(grab(3))),
         new Prim('pick',  c=>{ let i=pop(), n=top(i+1); push(n) }),
-        new Prim('roll',  c=>{ let i=pop(), n=remove(i+1); push(n) }),
-        new Prim('nip',   c=>remove(2)),
+        new Prim('roll',  c=>{ let i=pop(), n=grab(i+1); push(n) }),
+        new Prim('nip',   c=>grab(2)),
         new Prim('2dup',  c=>{ push(top(2)); push(top(2)) }),
         new Prim('2drop', c=>_ss.splice(-2)),
         new Prim('2over', c=>{ push(top(4)); push(top(4)) }),
-        new Prim('2swap', c=>{ push(remove(4)); push(remove(4)) }),
+        new Prim('2swap', c=>{ push(grab(4)); push(grab(4)) }),
         /// @}
         /// @defgroup Arithmetic ops
         /// @{
