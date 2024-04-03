@@ -155,7 +155,10 @@ window.ForthVM = function(output=console.log) {
     const _dovar = c=>push(c.token)
     const _dolit = c=>push(c.q[0])                 /// literal or string
     const _dotstr= c=>log(c.q[0])                  /// display string
-    const _dostr = c=>{ push(c.q[0].length); push(c.token) }
+    const _dostr = c=>{
+        let s = dict[c.token >> 16].pf[c.token & 0xffff].q[0]
+        push(s); push(s.length)
+    }
     const _tor   = c=>_rs.push(pop())              /// push into rs
     const _bran  = c=>_run(ZERO(pop()) ? c.p1 : c.pf)
     const _cycle = c=>{
@@ -215,7 +218,7 @@ window.ForthVM = function(output=console.log) {
             if (n > 1) log(JSON.stringify(w.q)+' ')
             else {
                 log(w.q[0].toString())
-                log(typeof(w.q[0])=='string' ? '"' : ' ')
+                log(typeof(w.q[0])=='string' ? '" ' : ' ')
             }
         }
         if (w.xt && n==0) {      /// * show built-in words
@@ -227,7 +230,7 @@ window.ForthVM = function(output=console.log) {
         show('( 1 )', w.p1);     /// * else.{p1}.then, aft.{p1}.then
     }
     /// @}
-    ///======================================================================
+    ///================================================================
     /// dictionary intialized with primitive words
     ///
     let dict = [
@@ -258,8 +261,8 @@ window.ForthVM = function(output=console.log) {
             let n=pop(), m=pop() * pop();
             push(m % n); push(INT(m / n))
         }),
-        new Prim('max',   c=>{ let a=pop(), b=pop(); push(a > b ? a : b) }),
-        new Prim('min',   c=>{ let a=pop(), b=pop(); push(a > b ? b : a) }),
+        new Prim('max',   c=>push(Math.max(pop(), pop()))),
+        new Prim('min',   c=>push(Math.min(pop(), pop()))),
         new Prim('2*',    c=>push(pop() * 2)),
         new Prim('2/',    c=>push(pop() / 2)),
         new Prim('1+',    c=>push(pop() + 1)),
@@ -321,8 +324,13 @@ window.ForthVM = function(output=console.log) {
         new Immd('s"',    c=>{
             let s = nxtok('"')
             if (s==null) { log('one quote? '); return }
-            if (_compi) compile(new Code('s"', s, _dostr))
-            else { push(s); push(s.length) }         /// push string object
+            if (_compi) {
+                let w = new Code('s"', s, _dostr)     /// create string
+                let n = dict.at(-1)                   /// current word
+                w.token = (n.token<<16) | n.pf.length /// dict[n].pf[i]
+                compile(w)
+            }
+            else { push(s); push(s.length) }          /// push string object
         }),
         new Immd('(',     c=>nxtok(')')),
         new Immd('.(',    c=>log(nxtok(')'))),
