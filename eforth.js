@@ -66,16 +66,16 @@ window.ForthVM = function(output=console.log) {
             else this.xt(this);          /// * build-it words
         }
     }
-	const free_pf = p=>{ if (p!=null) p.forEach(c=>free(c)) }
-	const free    = c=>{
-		log('free '+c.name+' ')
-		free_pf(c.pf); free_pf(c.p1); free_pf(c.p2);
-		if (c.q!=null) c.q.length=0
-	}
-	const merge = (dst, src)=>{
-		log('\nmerge('+JSON.stringify(src)+')')
-		if (src.length>0) { dst.push(...src); src.length=0 }
-	}
+    const free_pf = p=>{ if (p!=null) p.forEach(c=>free(c)) }
+    const free    = c=>{
+        log('free '+c.name+' ')
+        free_pf(c.pf); free_pf(c.p1); free_pf(c.p2);
+        if (c.q!=null) c.q.length=0
+    }
+    const merge = (dst, src)=>{
+        log('\nmerge('+JSON.stringify(src)+')')
+        if (src.length>0) { dst.push(...src); src.length=0 }
+    }
     ///================================================================
     /// @defgroup IO functions
     /// @{
@@ -202,7 +202,7 @@ window.ForthVM = function(output=console.log) {
         }
     }
     const _see = (w, n=0)=>{
-		const iden = (n, s)=>{ log(CR); _spaces(2*n); log(s) }
+        const iden = (n, s)=>{ log(CR); _spaces(2*n); log(s) }
         const show = (hdr, pf)=>{
             if (pf == null || pf.length == 0) return
             if (hdr!='') iden(n, hdr)
@@ -337,19 +337,19 @@ window.ForthVM = function(output=console.log) {
         }),
         new Immd('else',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
-			w.pf.push(...tmp.pf); tmp.pf.length=0
-			w.stage=1
+            w.pf.push(...tmp.pf); tmp.pf.length=0
+            w.stage=1
         }),
         new Immd('then',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
             if (w.stage==0) {
-				w.pf.push(...tmp.pf)                 // copy tmp.pf into branch
+                w.pf.push(...tmp.pf)                 // copy tmp.pf into branch
                 dict.pop()                           // drop tmp
             }
             else {
                 w.p1.push(...tmp.pf)                 // else.{p1}.then, or then.{p1}.next
                 if (w.stage==1) dict.pop()           // drop tmp
-				else tmp.pf.length = 0
+                else tmp.pf.length = 0
             }
         }),
         /// @}
@@ -365,7 +365,7 @@ window.ForthVM = function(output=console.log) {
         new Immd('while', c=>{
             let w=dict.last(), tmp=dict.at(-1)
             w.pf.push(...tmp.pf); tmp.pf.length=0      /// begin.{pf}.f.while
-			w.stage=2
+            w.stage=2
         }),
         new Immd('repeat', c=>{
             let w=dict.last(), tmp=dict.at(-1)
@@ -375,7 +375,7 @@ window.ForthVM = function(output=console.log) {
         new Immd('again', c=>{
             let w=dict.last(), tmp=dict.at(-1)
             w.pf.push(...tmp.pf)                       /// begin.{pf}.again
-			dict.pop(); w.stage=1            
+            dict.pop(); w.stage=1            
         }),
         new Immd('until', c=>{
             let w=dict.last(), tmp=dict.at(-1)
@@ -395,12 +395,12 @@ window.ForthVM = function(output=console.log) {
         new Immd('aft',   c=>{
             let w=dict.last(), tmp=dict.at(-1)
             w.pf.push(...tmp.pf); tmp.pf.length=0      /// for.{pf}.aft
-			w.p2=[]; w.stage=3
+            w.p2=[]; w.stage=3
         }),
         new Immd('next',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
             if (w.stage==0) w.pf.push(...tmp.pf)       /// for.{pf}.next
-            else 			w.p2.push(...tmp.pf)       /// .then.{p2}.next
+            else            w.p2.push(...tmp.pf)       /// .then.{p2}.next
             dict.pop()                                 /// drop tmp node
         }),
         /*
