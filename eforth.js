@@ -195,9 +195,10 @@ window.ForthVM = function(output=console.log) {
         })
         log(CR)
     }
-    const _dump = (n0, sz)=>{
-        for (let i = n0; i <= n0+sz; i++) {
-            let w = dict[i]
+    const _dump = (idx, n)=>{
+		for (let i=INT(idx); i < INT(idx+n); i++) {
+			if (i >= dict.length) break
+			let w = dict[i]
             log('['+i+(w.immd ? ']*=' : ']="') + w.name + '", ')
             if (w.xt) log(w.xt)
             else      log('pf='+JSON.stringify(w.pf))   /// * user defined word
@@ -461,7 +462,9 @@ window.ForthVM = function(output=console.log) {
         }),
         new Prim('to',       c=>tok2w().val[0]=pop()),         // update constant
         new Prim('is',       c=>{                              // n -- alias a word
-            if (dict.add()) dict.at(-1).pf = dict[pop()].pf
+			if (!dict.add()) return                            // 
+			let w = dict.at(-1), n = INT(pop())
+			w.pf = dict[n].pf; w.xt = dict[n].xt
         }),
         /// @}
         /// @defgroup Debugging ops
