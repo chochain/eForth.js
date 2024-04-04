@@ -1,10 +1,10 @@
 # eForth.js - <em>Forth in Javascript</em>
 
-With a 100% Javascript implementation, Forth can be run from within just a single web page on your desktop or even cellphone.
+eForth implementated in 100% Javascript. It can be run from within just a single web page on your desktop or even cellphone.
 
 Provided here is <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, if you insist, maybe an extra <em>**index.html**</em> to wrap it up or to customize to your heart's content. Simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a Forth engine ready to play. Without surprise, you should get something like the left hand side snip below.
 
-We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be more mordern! Checkout **src/eforth8.html** which is still work in progress. With the same <em style='color:#fc4'>**eforth.js**</em>, you can create whatever presentation you fancy...
+We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be more mordern! Checkout **src/eforth8.html** is quite usable though work still in progress. With the same <em style='color:#fc4'>**eforth.js**</em>, you can create whatever presentation you fancy...
  <pre><img
    width='32%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>.....<img
    width='48%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
@@ -12,8 +12,9 @@ We've come a long way from the good old green terminal days. So, with some HTML 
 ## Installation - <font size=-0.2>Simple as 1-2-3</font>.
 1. From root directory shown above, download or cut-n-paste <em style='color:#fc4'>**eforth.js**</em> and <em style='color:#fc4'>**index.html**</em> to any of your local directory,
 2. Find the <em style='color:#fc4'>**index.html**</em> we've just saved in your FileExplorer (Windows), iFile (Mac OS), or Files (Linux),
-3. Click it, and your favorate browser should open automatically with a page with eForth screen shown.
-It's that easy. Have fun!
+3. Open it with your favorate browser. It should bring on the eForth page like the left-hand snip shown above.
+
+<b>It's that easy. Have fun!</b>
 
 ## Fancier UI - with CodeMirror, tooltips, ...
 As shown in the right-hand side picture above
@@ -38,20 +39,15 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
 * check the /modules directory for individual functional areas.
 * <em>eforth_w_module.html</em> in the root is provided as an example to import modules
 * note that, without a bundler (i.g. Webpack, Browsify, ...) to tie modules together, one will need a web server to push all the modules to your web-browser
-  * a script serv.py in /tests directory is provided to kick off a Python3's simple server for the purpose. i.e.
-    <pre>> <em>python3 tests/serv.py</em> from root directory to start you web server
+  * Python3 has a simple built-in http server that you can use. i.e.
+    <pre>> <em>python3 -m http.server</em> from root directory to start you web server
     > enter <em>http://localhost:8000/eforth_w_module.html</em> into your browser
     </pre>
 
-## Documentation - <font size=-0.2>eForth.js conforms to Dr. Ting's explaination and word list mostly.</font>
+## Documentation
+* The genesis and philosophy of eForth, [eForth and Zen](https://chochain.github.io/eforth/docs/eForthAndZen.pdf) by Dr. Ting
 * Download [jeforth614.ppt](https://chochain.github.io/eForth.js/docs/jeforth614.ppt) or [jeforth614.doc](https://chochain.github.io/eForth.js/docs/jeforth614.doc) by Dr. Ting, 2021, or
-* Read Dr. Ting's final work <a href="https://chochain.github.io/eForth.js/docs/ceforth_403.pdf" target="_blank">[ceforth_403.pdf]</a>.
-
-## TODO List
-* WebGL (refs)
-  + Turtle - https://github.com/andonutts/donatello
-  + A-Frame - https://aframe.io/docs/1.3.0/introduction/ (an Entity-Component-System framework)
-* ESP32 interface - add digital and analog IO (for LED, Servo,...)
+* Read Dr. Ting's final work [ceforth_403.pdf](https://chochain.github.io/eforth/docs/ceforth_403.pdf)
 
 ## History - <font size=-0.2>The lineage</font>
 * It started back in 2011 when **Cheahshen Yap** from Taiwan FIG sent the 100-line kernel, named **jeForth**, to **Dr. Chen-Hanson Ting**, the master of **eForth** family.
