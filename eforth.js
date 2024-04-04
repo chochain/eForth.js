@@ -10,7 +10,6 @@ window.ForthVM = function(output=console.log) {
     ///
     let _ss    = []                       ///< data stack
     let _rs    = []                       ///< return stack
-    let _wp    = 0                        ///< word pointer
     let _base  = 10                       ///< numeric radix
     ///
     /// VM state control
@@ -56,14 +55,9 @@ window.ForthVM = function(output=console.log) {
             else if (typeof(v)=='string')  this.q = [ v ]
             else if (typeof(v)=='number')  this.q = [ v ]
         }
-        exec() {                         /// run colon word
-            if (this.xt == null) {       /// * user define word
-                _rs.push(_wp)            /// * setup call frame
-                _wp = this.token
-                _run(this.pf)
-                _wp = _rs.pop()          /// * restore call frame
-            }
-            else this.xt(this);          /// * build-it words
+        exec() {                                /// run colon word
+            if (this.xt == null) _run(this.pf)  /// * user define word
+            else this.xt(this);                 /// * build-it words
         }
     }
     const free_pf = p=>{ if (p!=null) p.forEach(c=>free(c)) }
@@ -180,6 +174,14 @@ window.ForthVM = function(output=console.log) {
         }
         _rs.pop()                                  /// pop off I
     }
+    const _does  = c=>{
+        let hit = false
+        dict[c.token].pf.forEach(w=>{
+            if (hit) dict.at(-1).pf.push(w)
+            if (w.name=='does>') hit = true
+        })
+        throw 'does>'
+    }
     /// @}
     /// @defgroup Debug functions (can be implemented in front-end)
     /// @{
@@ -196,9 +198,9 @@ window.ForthVM = function(output=console.log) {
         log(CR)
     }
     const _dump = (idx, n)=>{
-		for (let i=INT(idx); i < INT(idx+n); i++) {
-			if (i >= dict.length) break
-			let w = dict[i]
+        for (let i=INT(idx); i < INT(idx+n); i++) {
+            if (i >= dict.length) break
+            let w = dict[i]
             log('['+i+(w.immd ? ']*=' : ']="') + w.name + '", ')
             if (w.xt) log(w.xt)
             else      log('pf='+JSON.stringify(w.pf))   /// * user defined word
@@ -450,21 +452,16 @@ window.ForthVM = function(output=console.log) {
             let w = dict.at(-1); nvar(_dovar, 0)
             for (let n=pop(), i=1; i<n; i++) w.val[i]=0        // fill all slot with 0
         }),
-        new Prim('does>',    c=>{
-            let w = dict.at(-1), src=dict[_wp].pf
-            for (var i=0; i < src.length; i++) {
-                if (src[i].name=='does>') {
-                    w.pf.push(...src.slice(i+1))
-                    break
-                }
-            }
-            throw 'does>'                                      // break from inner interpreter
+        new Immd('does>',    c=>{
+            let w = new Code("does>", false, _does)
+            w.token = dict.at(-1).token;
+            compile(w)
         }),
         new Prim('to',       c=>tok2w().val[0]=pop()),         // update constant
         new Prim('is',       c=>{                              // n -- alias a word
-			if (!dict.add()) return                            // 
-			let w = dict.at(-1), n = INT(pop())
-			w.pf = dict[n].pf; w.xt = dict[n].xt
+            if (!dict.add()) return                            // 
+            let w = dict.at(-1), n = INT(pop())
+            w.pf = dict[n].pf; w.xt = dict[n].xt               // alias xt and pf
         }),
         /// @}
         /// @defgroup Debugging ops
@@ -493,7 +490,7 @@ window.ForthVM = function(output=console.log) {
         /// @}
         new Prim('boot',     c=>{
             dict.splice(_fence=find('boot').token+1)
-            _wp   = _rs.length = _ss.length = 0
+            _rs.length = _ss.length = 0
             _base = 10
         })
         /// @}
