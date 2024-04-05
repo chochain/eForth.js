@@ -22,7 +22,7 @@ window.ForthVM = function(output=console.log) {
     ///==============================================================
     /// Inner interpreter (use catch for does and exit)
     ///
-    const _run = (p)=>{ try { p.forEach(w=>w.exec()) } catch {} }
+    const _run = p=>{ try { p.forEach(w=>w.exec()) } catch {} }
     ///
     /// Primitive and Immediate word classes (to simplify Dr. Ting's)
     ///
@@ -85,11 +85,11 @@ window.ForthVM = function(output=console.log) {
     /// @{
     const compile= (w)=>dict.at(-1).pf.push(w)      ///< add word to pf[]
     const nvar   = (xt, v)=>{
-        compile(new Code('', xt, v))
-        let t = dict.at(-1), w = t.pf[0]            ///< last work and its pf
+        let t = dict.at(-1)                         ///< last colon word
+        let w = new Code('', xt, v)                 ///< new var node
         t.val   = w.q                               /// * val as q[]'s sysnomym
-        w.xt    = xt                                /// * set internal func
         w.token = t.token                           /// * copy token
+        compile(w)                                  /// * add to pf
     }
     const find   = (s)=>{                           ///< search through dictionary
         for (let i=dict.length-1; i>=0; --i) {      /// * search reversely
