@@ -60,10 +60,27 @@ window.ForthVM = function(output=console.log) {
         }
     }
     ///================================================================
-    /// @defgroup IO functions
-    /// @{
-    const log    = (s)=>output(s)
-    const NA     = (s)=>s+' not found! '
+=======
+            if (xt==null) {
+                let w = find(name);
+                if (w != null) this.xt = w.xt
+            }
+            if (typeof(v)=='boolean' && v) this.token = _fence++  // new user defined word
+            else if (typeof(v)=='string')  this.qf = [ v ]
+            else if (typeof(v)=='number')  this.qf = [ v ]
+
+            this.pf.tail = function() { return this[this.length-1] }
+        }
+        exec() {                         /// run colon word
+            if (this.xt == null) {       /// * user define word
+                _rs.push(_wp)            /// * setup call frame
+                _wp = this.token
+                _run(this.pf)
+                _wp = _rs.pop()          /// * restore call frame
+            }
+            else this.xt(this);          /// * build-it words
+        }
+    }
     const nxtok  = (d=SPC)=>{            /// assumes tib ends with a blank
         while (d==SPC &&                 /// skip leading blanks and tabs
                (_tib[_ntib]==SPC || _tib[_ntib]=='\t')) _ntib++
@@ -71,6 +88,14 @@ window.ForthVM = function(output=console.log) {
         let s = (i==-1) ? (_tib='',null) : _tib.substring(_ntib, i)
         _ntib = i+1
          return s
+    }
+    const dot_r = (n, v)=>{
+        let s = v.toString(_base)
+        for(let i=0; i+s.length < n; i++) log(SPC)
+        log(s)
+    }
+    const sleep  = (ms)=>{
+        return new Promise(rst=>setTimeout(rst,ms))
     }
     const dot_r = (n, v)=>{
         let s = v.toString(_base)
