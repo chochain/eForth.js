@@ -6,7 +6,7 @@ import { Prim } from './core.js'
 export const voc = (vm)=>{
     const val  = i=>vm.dict[i].val
     const push = v=>vm.ss.push(v)
-    const pop  = ()=>{ return vm.ss.pop() }
+    const pop  = ()=>vm.ss.pop()
     
     return [
         new Prim('?',  c=>vm.log(val(pop())[0])),

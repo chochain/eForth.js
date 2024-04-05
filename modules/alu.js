@@ -6,8 +6,8 @@ import { EPS, INT, UINT, BOOL, ZERO, Prim } from './core.js'
 export const voc = (vm)=>{
     const push   = v    =>vm.ss.push(v)
     const pop    = ()   =>vm.ss.pop()
-    const top    = (n=1)=>vm.ss[vm.ss.length - INT(n)]
-    const remove = n    =>{
+    const top    = (n=1)=>vm.ss.at(-INT(n))
+    const grab   = n    =>{
         let v=top(n)
         vm.ss.splice(vm.ss.length - n, 1)
         return v
@@ -18,15 +18,15 @@ export const voc = (vm)=>{
         new Prim('dup',   c=>push(top())),
         new Prim('drop',  c=>pop()),
         new Prim('over',  c=>push(top(2))),
-        new Prim('swap',  c=>push(remove(2))),
-        new Prim('rot',   c=>push(remove(3))),
+        new Prim('swap',  c=>push(grab(2))),
+        new Prim('rot',   c=>push(grab(3))),
         new Prim('pick',  c=>{ let i=pop(), n=top(i+1); push(n) }),
-        new Prim('roll',  c=>{ let i=pop(), n=remove(i+1); push(n) }),
-        new Prim('nip',   c=>remove(2)),
+        new Prim('roll',  c=>{ let i=pop(), n=grab(i+1); push(n) }),
+        new Prim('nip',   c=>grab(2)),
         new Prim('2dup',  c=>{ push(top(2)); push(top(2)) }),
         new Prim('2drop', c=>vm.ss.splice(-2)),
         new Prim('2over', c=>{ push(top(4)); push(top(4)) }),
-        new Prim('2swap', c=>{ push(remove(4)); push(remove(4)) }),
+        new Prim('2swap', c=>{ push(grab(4)); push(grab(4)) }),
         /// @}
         /// @defgroup Arithmetic ops
         /// @{

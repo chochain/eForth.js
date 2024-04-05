@@ -5,9 +5,17 @@ import { Prim, Immd } from './core.js'
 
 export const voc = (vm)=>{
     const push   = v=>vm.ss.push(v)                        ///< ss.push macro
-    const pop    = ()=>{ return vm.ss.pop() }              ///< ss.pop macro
+    const pop    = ()=>vm.ss.pop()                         ///< ss.pop macro
     const docon  = c=>push(c.qf[0])                        ///< constant op
     const dovar  = c=>push(c.token)                        ///< variable op
+    const does   = c=>{
+        let hit = false
+        vm.dict[c.token].pf.forEach(w=>{
+            if (hit) vm.dict.last().pf.push(w)
+            if (w.name=='_does') hit = true
+        })
+        throw '_does'
+    }
     const vm_add = ()=>{
         let s = vm.tok();                                  ///< fetch an input token
         if (s==null) throw 'name? '
@@ -34,24 +42,20 @@ export const voc = (vm)=>{
             else                t.val.push(pop())          /// append more values
         }),
         new Prim('allot',    c=>{                          ///< allocate cells
-            let t = vm.tail()
-            vm.nvar(dovar, 0)                              /// * create qf array
+            let t = vm.tail(); vm.nvar(dovar, 0)           /// * create qf array
             for (let n=pop(), i=1; i<n; i++) t.val[i]=0    /// * fill all slot with 0
         }),
         new Prim('does>',    c=>{                          ///< handle create..does..
-            let w=vm.tail(), src=vm.dict[vm.wp].pf
-            for (var i=0; i < src.length; i++) {
-                if (src[i].name=='does>') {
-                    w.pf.push(...src.slice(i+1))
-                    break
-                }
-            }
-            throw 'does>'                                  /// skip inner interpreter
+            let w = new Code('_does', does, false)
+            w.token = vm.tail().token;
+            vm.compile(w)
         }),
         new Prim('to',       c=>vm.tok2w().val[0]=pop()),  ///< update constant
         new Prim('is',       c=>{                          ///< alias a word
             vm_add()
-            vm.tail().pf = vm.dict[pop()].pf
+            let n = pop() | 1
+            let w = vm.tail(), s = vm.dict[n]
+            w.pf = s.pf; w.xt = s.xt
         })
     ]
 }

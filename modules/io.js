@@ -21,7 +21,7 @@ export const nxtok   = (d=SPC)=>{                           ///< fetch next idio
 export const log = (s)=>_out(s)                             ///< output port
 export const voc = (vm)=>{                                  ///< vocabulary
     const push  = v=>vm.ss.push(v)
-    const pop   = ()=>{ return vm.ss.pop() }
+    const pop   = ()=>vm.ss.pop()
     const dot_r = (n, v)=>{
         let s = v.toString(vm.base)
         for(let i=0; i+s.length < n; i++) log(SPC)
@@ -49,5 +49,6 @@ export const voc = (vm)=>{                                  ///< vocabulary
         new Prim('emit',   c=>log(String.fromCharCode(pop()))),
         new Prim('space',  c=>log(SPC)),
         new Prim('spaces', c=>{ for (let n=pop(), i=0; i<n; i++) log(SPC) }),
+        new Prim('type',  c=>{ pop(); log(pop()) }),
     ]
 }

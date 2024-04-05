@@ -10,7 +10,7 @@ export const UINT   = v=>(v & 0x7fffffff)        ///< unsigned int
 export const BOOL   = t=>(t ? -1 : 0)            ///< Forth true = -1
 export const ZERO   = v=>BOOL(Math.abs(v) < EPS) ///< zero floating point
 /// @}
-///=========================================================================
+///====================================================================
 /// Primitive and Immediate word classes
 ///
 export class Prim {
@@ -29,7 +29,7 @@ export class Immd extends Prim {
 /// Colon word class
 ///
 export class Code {
-    constructor(name, xt=null, v=false) {
+    constructor(name, v=false, xt=null) {
         this.name  = name                 ///< name of the word
         this.xt    = xt                   ///< function pointer
         this.immd  = false                ///< immediate flag
@@ -39,17 +39,14 @@ export class Code {
         else if (typeof(v)=='string')  this.qf = [ v ]
         else if (typeof(v)=='number')  this.qf = [ v ]
         
-        this.pf.tail = function() { return this[this.length-1] }
+        this.pf.tail = function() { return this.at(-1) }
     }
     exec(vm) {                            ///< execute a word (recursively)
         if (this.xt == null) {            /// * user define word
-            vm.rs.push(vm.wp)             /// * setup call frame
-            vm.wp = this.token
             try {                         /// * inner interpreter
                 this.pf.forEach(w=>w.exec(vm))
             }
             catch {}                      /// * catch 'does' and 'exit'
-            vm.wp = vm.rs.pop()           /// * restore call frame
         }
         else this.xt(this);               /// * build-in words
     }

@@ -19,7 +19,6 @@ export class VM {
     dict   = []                            ///< dictionary
     ss     = []                            ///< data stack
     rs     = []                            ///< return stack
-    wp     = 0                             ///< current word pointer
     /// @}
     /// @defgroup VM states
     /// @{
@@ -41,20 +40,20 @@ export class VM {
         this.compi = this.ucase = false
         this.base = 10
     }
-	tail(i=1) { return this.dict[this.dict.length - i] }        ///< last entry
-	last()    { return this.tail(2).pf.tail() }                 ///< pf of last word created
-    add(s)    {                                                 ///< add a colon word to dictionary
+	tail(i=1) { return this.dict.at(-INT(i)) }    ///< last entry
+	last()    { return this.tail(2).pf.tail() }   ///< pf of last word created
+    add(s)    {                                   ///< add a colon word to dictionary
         if (this.find(s) != null) this.log(s + ' reDef? ')
         this.dict.push(new Code(s, null, true))
     }
-    extend(d) { d.forEach(c=>this.dict.push(c)) }               ///< extending dictionary
-    comma(w)  { this.tail().pf.push(w) }                        ///< add w into pf[] 
-    compile(s, xt=null, v=false) {                              ///< compile a word
+    extend(d) { d.forEach(c=>this.dict.push(c)) } ///< extending dictionary
+    comma(w)  { this.tail().pf.push(w) }          ///< add w into pf[] 
+    compile(s, v=false, xt=null) {                ///< compile a word
         let w = new Code(s, xt!=null ? xt : this.find(s).xt, v)
         this.comma(w)
     }
     nvar(xt, v) {
-        this.compile('dovar', xt, v)
+        this.compile('', v, xt)
         let t   = this.tail()              ///< last dictionary word 
         let w   = t.pf[0]                  ///< pf of last word
         t.val   = w.qf                     /// * create a val func
