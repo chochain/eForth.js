@@ -20,7 +20,7 @@ export const voc = (vm) => {
         log(CR)
     }
     const dump = (idx, sz)=>{                      ///< memory dump op
-        for (let i = INT(idx); i <= INT(idx+sz); i++) {
+        for (let i = (idx | 1); i <= ((idx+sz) | 1); i++) {
             if (i >= vm.dict.length) break
             let w = vm.dict[i]
             log('['+i+(w.immd ? ']*=' : ']="') + w.name + '", ')
@@ -30,12 +30,13 @@ export const voc = (vm) => {
         }
     }
     const see = (w, n=0)=>{                     ///< see op
-        const iden = (n, s)=>{ log(CR); _spaces(2*n); log(s) }
+        const spcs = (n)=>{ for (let i=0; i<n; i++) log(' ') }
+        const iden = (n, s)=>{ log(CR); spcs(2*n); log(s) }
         const show = (hdr, pf)=>{
             if (pf == null || pf.length == 0) return
             if (hdr!='') iden(n, hdr)
             iden(n+1, '')
-            pf.forEach(w1=>_see(w1, n+1))       /// * recursive call
+            pf.forEach(w1=>see(w1, n+1))        /// * recursive call
         }
         let cn = w.pf!=null && w.pf.length>0
         log(' '+w.name+(cn ? ' {' : ''))        /// * display word name
@@ -65,6 +66,6 @@ export const voc = (vm) => {
         new Prim('dump',   c=>{ let n=pop(); dump(pop(), n) }),
         new Prim('see',    c=>{ let w=vm.tok2w(); console.log(w); see(w) }),
         new Prim('forget', c=>purge(vm.dict, vm.tok2w(), vm.find('boot'))),
-        new Prim('abort',  c=>{ _rs.length = _ss.length = 0 }),
+        new Prim('abort',  c=>{ vm.rs.length = vm.ss.length = 0 }),
     ]
 }
