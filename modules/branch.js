@@ -45,7 +45,7 @@ export const voc = (vm)=>{
         /// @{
         new Immd('if',   c=>{
             let w = new Code('_if', bran, false)  /// * encode branch opcode
-            vm.comma(w); w.p1=[]; w.stage=0       /// * stage for branching
+            vm.compile(w); w.p1=[]; w.stage=0     /// * stage for branching
             vm.dict.push(new Code(' tmp'))        /// * as dict.at(-1)
         }),
         new Immd('else', c=>{
@@ -69,7 +69,7 @@ export const voc = (vm)=>{
         /// @{
         new Immd('begin', c=>{
             let w = new Code('_begin', cycle, false)
-            vm.comma(w); w.p1=[]; w.stage=0         /// * encode cycle function
+            vm.compile(w); w.p1=[]; w.stage=0       /// * encode cycle function
             vm.dict.push(new Code(' tmp'))          /// * create a tmp holder
         }),
         new Immd('while', c=>{
@@ -95,9 +95,9 @@ export const voc = (vm)=>{
         /// @brief for.{pf}.next, for.{pf}.aft.{p1}.then.{p2}.next
         /// @{
         new Immd('for',   c=>{
-            vm.compile('>r', tor, false)             /// * push I onto rstack
+            vm.compile(new Code('>r', tor, false))   /// * push I onto rstack
             let w = new Code('_for', dofor, false)   /// encode _for opcode
-            vm.comma(w); w.p1=[]; w.stage=0
+            vm.compile(w); w.p1=[]; w.stage=0
             vm.dict.push(new Code(' tmp'))           /// * create tmp holder
         }),
         new Immd('aft',   c=>{
