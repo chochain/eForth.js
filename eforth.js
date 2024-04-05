@@ -423,11 +423,11 @@ window.ForthVM = function(output=console.log) {
         new Prim(']',        c=>_compi=true ),
         new Prim("'",        c=>{ let w=tok2w(); push(w.token) }),
         new Immd('exec',     c=>dict[pop()].exec()),
-        new Prim(':',        c=>_compi=dict.add()),            // new colon word
+        new Prim(':',        c=>_compi=dict.colon()),          // new colon word
         new Immd(';',        c=>_compi=false),                 // semicolon
-        new Immd('variable', c=>dict.add() ? nvar(_dovar, 0) : null),
-        new Immd('constant', c=>dict.add() ? nvar(_docon, pop()) : null),
-        new Prim("create",   c=>dict.add()),                   // create new word
+        new Immd('variable', c=>dict.colon() ? nvar(_dovar, 0) : null),
+        new Immd('constant', c=>dict.colon() ? nvar(_docon, pop()) : null),
+        new Prim("create",   c=>dict.colon()),                 // create new word
         new Prim(',',        c=>{                              // push TOS into q
             let pf = dict.at(-1).pf
             if (pf.length) pf[0].q.push(pop())                 // append more values
@@ -444,7 +444,7 @@ window.ForthVM = function(output=console.log) {
         }),
         new Prim('to',       c=>tok2w().val[0]=pop()),         // update constant
         new Prim('is',       c=>{                              // n -- alias a word
-            if (!dict.add()) return                            //
+            if (!dict.colon()) return                          //
             let n = INT(pop()), w = dict.at(-1), s = dict[n]
             w.pf = s.pf; w.xt = s.xt                           // alias xt and pf
         }),
@@ -483,7 +483,7 @@ window.ForthVM = function(output=console.log) {
     ///
     /// @defgroup add dictionary access methods
     /// @{
-    dict.add  = function() {                           ///< create a new word
+    dict.colon = function() {                          ///< create a new word
         let s = nxtok();                               ///< fetch an input token
         if (s==null) { log('name? '); return false }
         if (find(s) != null) log(s + ' reDef? ')       /// * warning
