@@ -36,8 +36,8 @@ export class Code {
         this.pf    = []                   ///< parameter field
 
         if (typeof(v)=='boolean' && v) this.token = _fence++  // new user defined word
-        else if (typeof(v)=='string')  this.qf = [ v ]
-        else if (typeof(v)=='number')  this.qf = [ v ]
+        else if (typeof(v)=='string')  this.q = [ v ]
+        else if (typeof(v)=='number')  this.q = [ v ]
         
         this.pf.tail = function() { return this.at(-1) }
     }
