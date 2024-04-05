@@ -29,7 +29,7 @@ export class Immd extends Prim {
 /// Colon word class
 ///
 export class Code {
-    constructor(name, v=false, xt=null) {
+    constructor(name, xt=null, v=false) {
         this.name  = name                 ///< name of the word
         this.xt    = xt                   ///< function pointer
         this.immd  = false                ///< immediate flag
@@ -42,7 +42,7 @@ export class Code {
         this.pf.tail = function() { return this.at(-1) }
     }
     exec(vm) {                            ///< execute a word (recursively)
-        if (this.xt == null) {            /// * user define word
+        if (this.xt==null) {              /// * user define word
             try {                         /// * inner interpreter
                 this.pf.forEach(w=>w.exec(vm))
             }
