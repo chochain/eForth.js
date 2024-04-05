@@ -42,15 +42,14 @@ window.ForthVM = function(output=console.log) {
     /// Colon word class
     ///
     class Code {
-        constructor(name, v=false, xt=null) {
+        constructor(name, xt, v=false) {
             this.name  = name             ///< name of the word
             this.xt    = xt               ///< function pointer
             this.immd  = false            ///< immediate flag
             this.pf    = []               ///< parameter field
 
             if (typeof(v)=='boolean' && v) {
-                log(name+'=>'+_fence.toString())
-                this.token = _fence++     // new user defined word
+                this.token = _fence++     /// new user defined word
             }
             else if (typeof(v)=='string')  this.q = [ v ]
             else if (typeof(v)=='number')  this.q = [ v ]
@@ -86,7 +85,7 @@ window.ForthVM = function(output=console.log) {
     /// @{
     const compile= (w)=>dict.at(-1).pf.push(w)      ///< add word to pf[]
     const nvar   = (xt, v)=>{
-        compile(new Code('', v, xt))
+        compile(new Code('', xt, v))
         let t = dict.at(-1), w = t.pf[0]            ///< last work and its pf
         t.val   = w.q                               /// * val as q[]'s sysnomym
         w.xt    = xt                                /// * set internal func
@@ -180,11 +179,9 @@ window.ForthVM = function(output=console.log) {
     const _words = ()=>{
         let sz = 0
         dict.forEach((w,i)=>{
-            if (w.name[0] != '_') {                 /// * skip hidden words
-                log(w.name+SPC)
-                sz += w.name.length + 1
-                if (sz > 52) { log(CR); sz = 0 }
-            }
+            log(w.name+SPC)
+            sz += w.name.length + 1
+            if (sz > 52) { log(CR); sz = 0 }
         })
         log(CR)
     }
@@ -316,14 +313,15 @@ window.ForthVM = function(output=console.log) {
         /// @{
         new Immd('."',    c=>{
             let s = nxtok('"')
-            if (_compi) compile(new Code('." ', s, _dotstr))
+            if (s==null) { log('one quote? '); return }
+            if (_compi) compile(new Code('." ', _dotstr, s))
             else log(s)
         }),
         new Immd('s"',    c=>{
             let s = nxtok('"')
             if (s==null) { log('one quote? '); return }
             if (_compi) {
-                let w = new Code('s" ', s, _dostr)    /// create string
+                let w = new Code('s" ', _dostr, s)    /// create string
                 let n = dict.at(-1)                   /// current word
                 w.token = (n.token<<16) | n.pf.length /// dict[n].pf[i]
                 compile(w)
@@ -337,14 +335,13 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{p1}.then
         /// @{
         new Immd('if',    c=>{
-            let w = new Code('_if', false, _bran)    // encode branch opcode
+            let w = new Code('_if', _bran, false)    // encode branch opcode
             compile(w); w.p1=[]; w.stage=0           // stage for branching
             dict.push(new Code(' tmp'))              // as dict.at(-1)
         }),
         new Immd('else',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            merge(w.pf, tmp.pf)
-            w.stage=1
+            merge(w.pf, tmp.pf); w.stage=1
         }),
         new Immd('then',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
@@ -362,45 +359,39 @@ window.ForthVM = function(output=console.log) {
         /// @brief begin.{pf}.again, begin.{pf}.until, begin.{pf}.while.{p1}.repeat
         /// @{
         new Immd('begin', c=>{
-            compile(new Code('_begin', false, _cycle)) /// encode _again opcode
+            let w = new Code('_begin', _cycle, false)  /// encode _again opcode
+            compile(w); w.p1=[]; w.stage=0             /// create branching pf
             dict.push(new Code(' tmp'))                /// create a tmp holder
-            let w = dict.last()
-            w.p1=[]; w.stage=0                         /// create branching pf
         }),
         new Immd('while', c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            merge(w.pf, tmp.pf)                        /// begin.{pf}.f.while
-            w.stage=2
+            merge(w.pf, tmp.pf); w.stage=2             /// begin.{pf}.f.while
         }),
         new Immd('repeat', c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            merge(w.p1, tmp.pf)                        /// while.{p1}.repeat
-            dict.pop()
+            merge(w.p1, tmp.pf); dict.pop()            /// while.{p1}.repeat
         }),
         new Immd('again', c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            merge(w.pf, tmp.pf)                        /// begin.{pf}.again
-            dict.pop(); w.stage=1            
+            merge(w.pf, tmp.pf); dict.pop(); w.stage=1 /// begin.{pf}.again
         }),
         new Immd('until', c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            merge(w.pf, tmp.pf)                        /// begin.{pf}.f.until
-            dict.pop()
+            merge(w.pf, tmp.pf); dict.pop()            /// begin.{pf}.f.until
         }),
         /// @}
         /// @defgroup Loop ops
         /// @brief for.{pf}.next, for.{pf}.aft.{p1}.then.{p2}.next
         /// @{
         new Immd('for',   c=>{                         /// for...next
-            compile(new Code('>r', false, _tor));      /// push I onto rstack
-            compile(new Code('_for', false, _dofor))   /// encode _for opcode
+            compile(new Code('>r', _tor, false));      /// push I onto rstack
+            let w = new Code('_for', _dofor, false)    /// encode _for opcode
+            compile(w); w.p1=[]; w.stage=0
             dict.push(new Code(' tmp'))                /// create tmp holder
-            let w=dict.last(); w.p1=[]; w.stage=0
         }),
         new Immd('aft',   c=>{
             let w=dict.last(), tmp=dict.at(-1)
-            merge(w.pf, tmp.pf)                        /// for.{pf}.aft
-            w.p2=[]; w.stage=3
+            merge(w.pf, tmp.pf); w.p2=[]; w.stage=3    /// for.{pf}.aft
         }),
         new Immd('next',  c=>{
             let w=dict.last(), tmp=dict.at(-1)
@@ -447,15 +438,15 @@ window.ForthVM = function(output=console.log) {
             for (let n=pop(), i=1; i<n; i++) w.val[i]=0        // fill all slot with 0
         }),
         new Immd('does>',    c=>{
-            let w = new Code('_does', false, _does)
+            let w = new Code('_does', _does, false)
             w.token = dict.at(-1).token;
             compile(w)
         }),
         new Prim('to',       c=>tok2w().val[0]=pop()),         // update constant
         new Prim('is',       c=>{                              // n -- alias a word
-            if (!dict.add()) return                            // 
-            let w = dict.at(-1), n = INT(pop())
-            w.pf = dict[n].pf; w.xt = dict[n].xt               // alias xt and pf
+            if (!dict.add()) return                            //
+            let n = INT(pop()), w = dict.at(-1), s = dict[n]
+            w.pf = s.pf; w.xt = s.xt                           // alias xt and pf
         }),
         /// @}
         /// @defgroup Debugging ops
@@ -496,7 +487,7 @@ window.ForthVM = function(output=console.log) {
         let s = nxtok();                               ///< fetch an input token
         if (s==null) { log('name? '); return false }
         if (find(s) != null) log(s + ' reDef? ')       /// * warning
-        dict.push(new Code(s, true))
+        dict.push(new Code(s, null, true))
         return true                                    /// * success
     }
     dict.last = function() { return dict.at(-2).pf.at(-1) }
@@ -530,7 +521,7 @@ window.ForthVM = function(output=console.log) {
             _compi=false                      ///>> restore interpret mode
         }
         else if (_compi) {                    ///> in compile mode?
-            compile(new Code('', n, _dolit))  ///>> compile the number
+            compile(new Code('', _dolit, n))  ///>> compile the number
         }
         else push(n)                          ///>> or, push number onto stack top
     }
