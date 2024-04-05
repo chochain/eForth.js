@@ -1,10 +1,10 @@
 # eForth.js - <em>Forth in Javascript</em>
 
-eForth implementated in 100% Javascript. It can be run from within just a single web page on your desktop or even cellphone.
+eForth implemented in 100% Javascript. An interfactive Forth shell can be run from within a single web page on your desktop or even cellphone.
 
-Provided here is <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, if you insist, maybe an extra <em>**index.html**</em> to wrap it up or to customize to your heart's content. Simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a Forth engine ready to play. Without surprise, you should get something like the left hand side snip below.
+There are a good collection of prior art (at the bottom of this page). But from my own work, here is the <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, maybe an extra <em>**index.html**</em> to wrap it up or to customize to your heart's content is nicer. Simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a Forth engine ready to play. Without surprise, you should get something like the left hand side snip below.
 
-We've come a long way from the good old green terminal days. So, with some HTML stuffs, it can certainly be more mordern! Checkout **src/eforth8.html** is quite usable though work still in progress. With the same <em style='color:#fc4'>**eforth.js**</em>, you can create whatever presentation you fancy...
+The good old green terminal days are long gone, add some HTML stuffs and your work looks better! Checkout **src/eforth8.html**, my work in progress but is quite usable as a template. Just point your <script> tag to <em style='color:#fc4'>**eforth.js**</em> and you can create whatever presentation you fancy...
  <pre><img
    width='32%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_0.png'>.....<img
    width='48%' src='https://chochain.github.io/eForth.js/docs/eforth8_snip_1.png'></pre>
@@ -12,7 +12,7 @@ We've come a long way from the good old green terminal days. So, with some HTML 
 ## Installation - <font size=-0.2>Simple as 1-2-3</font>.
 1. From root directory shown above, download or cut-n-paste <em style='color:#fc4'>**eforth.js**</em> and <em style='color:#fc4'>**index.html**</em> to any of your local directory,
 2. Find the <em style='color:#fc4'>**index.html**</em> we've just saved in your FileExplorer (Windows), iFile (Mac OS), or Files (Linux),
-3. Open it with your favorate browser. It should bring on the eForth page like the left-hand snip shown above.
+3. Open it with your favorite browser. It should bring on the eForth page like the left-hand snip shown above.
 
 <b>It's that easy. Have fun!</b>
 
@@ -32,7 +32,7 @@ As shown in the right-hand side picture above
   |down arrow|execute selected/high-lighted section of Forth code|
   |run|execute entire file shown|
 
-Note if you kick-off the **eforth8.html** page from a webserver (as described below), the embeded Forth in the page also can be executed.
+Note if you kick-off the **eforth8.html** page from a webserver (as described below), the embedded Forth in the page also can be executed.
 
 ## Javascript Modules
 Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a larger project, or maybe you care for modulization in fashion of the ES6's new feature i.e. ease of source code maintenance
@@ -46,7 +46,7 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
 
 ## Performance
 Javascript brings us the simplicity. Just point the web page to your *eforth.js* and that's it. Open the DevTool in your browser, you can trace, benchmark, even single-step the code.
-But what about the performance compared to WASM transcoded from pure C implementation? Well, it's slow! Running at about 1/5 of WASM, and about 1/10 to raw C executable. I think it's OK to have a shell that one can interact with on the browser. However, only you know what you need the best. So, if a faster eForth on the web is required, check my <b>weForth</b> [here](https://github.io/chochain/weForth)
+But what about the performance compared to WASM trans-coded from pure C implementation? Well, it's slow! Running at about 1/5 of WASM, and about 1/10 to raw C executable. I think it's OK to have a shell that one can interact with on the browser. However, only you know what you need the best. So, if a faster eForth on the web is required, check my <b>weForth</b> [here](https://github.io/chochain/weForth)
 
 ## Documentation
 * The genesis and philosophy of eForth, [eForth and Zen](https://chochain.github.io/eforth/docs/eForthAndZen.pdf) by Dr. Ting
