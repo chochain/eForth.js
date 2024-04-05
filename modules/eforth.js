@@ -19,7 +19,7 @@ export function Forth(fout=console.log) {
         }
         cmd.split('\n').forEach(r=>{       /// * multi-line input
             vm.tib(r)                      /// * feed input stream into VM's TIB
-            for (let tok=vm.tok(); tok != null; tok=vm.tok()) {
+            for (let tok=vm.word(); tok != null; tok=vm.word()) {
                 vm.outer(tok)              /// * send token to outer intepreter
             }
         })

@@ -10,7 +10,7 @@ let _tib   = '', _ntib = 0                                  ///< input buffer
 export const init    = (output=console.log)=>_out=output    ///< initialize output port
 export const set_tib = (r)=>{ _tib=r + SPC; _ntib=0 }       ///< capture into TIB
 export const clear   = () =>_ntib=_tib.length               ///< clear input buffer
-export const nxtok   = (d=SPC)=>{                           ///< fetch next idiom/token
+export const word    = (d=SPC)=>{                           ///< fetch next idiom/token
     while (d==SPC &&                                        /// * assumes tib ends with a blank
            (_tib[_ntib]==SPC || _tib[_ntib]=='\t')) _ntib++ /// * skip leading blanks and tabs
     let i = _tib.indexOf(d, _ntib)
@@ -45,7 +45,7 @@ export const voc = (vm)=>{                                  ///< vocabulary
             log(a.map(v=>UINT(v).toString(vm.base)).join(SPC)+SPC)
         }),
         new Prim('u.r',    c=>{ let n=pop(); dot_r(n, pop()&0x7fffffff) }),
-        new Prim('key',    c=>push(nxtok()[0])),
+        new Prim('key',    c=>push(word()[0])),
         new Prim('emit',   c=>log(String.fromCharCode(pop()))),
         new Prim('space',  c=>log(SPC)),
         new Prim('spaces', c=>{ for (let n=pop(), i=0; i<n; i++) log(SPC) }),
