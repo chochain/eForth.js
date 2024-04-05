@@ -6,7 +6,7 @@ import { Prim, Immd, Code } from './core.js'
 export const voc = (vm)=>{
     const push   = v=>vm.ss.push(v)                        ///< ss.push macro
     const pop    = ()=>vm.ss.pop()                         ///< ss.pop macro
-    const docon  = c=>push(c.qf[0])                        ///< constant op
+    const docon  = c=>push(c.q[0])                         ///< constant op
     const dovar  = c=>push(c.token)                        ///< variable op
     const does   = c=>{
         let hit = false
@@ -16,12 +16,11 @@ export const voc = (vm)=>{
         })
         throw '_does'
     }
-    const vm_add = ()=>{
-        let s = vm.tok();                                  ///< fetch an input token
-        if (s==null) throw 'name? '
-        vm.add(s)
+    const colon = ()=>{
+        let s = vm.word(); if (s==null) throw 'name? '      ///< fetch an input token
+        vm.colon(s)
     }
-    const vm_var = (xt, v)=>{ vm_add(); vm.nvar(xt, v) }   ///< new variable/constant
+    const vm_var = (xt, v)=>{ colon(); vm.nvar(xt, v) }    ///< new variable/constant
     
     return [
         new Immd('[',        c=>vm.compi=false ),          /// interpreter mode
@@ -31,11 +30,11 @@ export const voc = (vm)=>{
             push(w.token)                                  /// put found token on TOS
         }),
         new Immd('exec',     c=>vm.dict[pop()].exec()),    /// execute a word (by its token)
-        new Prim(':',        c=>{ vm_add(); vm.compi=true }),  /// fetch an input token
+        new Prim(':',        c=>{ colon(); vm.compi=true }),  /// fetch an input token
         new Immd(';',        c=>vm.compi=false),           /// semicolon
         new Immd('variable', c=>vm_var(dovar, 0)),
         new Immd('constant', c=>vm_var(docon, pop())),
-        new Prim('create',   c=>vm_add()),                 ///< create new word
+        new Prim('create',   c=>colon()),                  ///< create new word
         new Prim(',',        c=>{                          ///< push TOS into qf
             let t = vm.tail()
             if (t.pf.length==0) vm.nvar(dovar, pop())      /// 1st value in qf
@@ -48,11 +47,11 @@ export const voc = (vm)=>{
         new Prim('does>',    c=>{                          ///< handle create..does..
             let w = new Code('_does', does, false)
             w.token = vm.tail().token;
-            vm.comma(w)
+            vm.compile(w)
         }),
         new Prim('to',       c=>vm.tok2w().val[0]=pop()),  ///< update constant
         new Prim('is',       c=>{                          ///< alias a word
-            vm_add()
+            colon()
             let n = pop() | 1
             let w = vm.tail(), s = vm.dict[n]
             w.pf = s.pf; w.xt = s.xt
