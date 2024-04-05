@@ -1,7 +1,7 @@
 /// @file
 /// @brief eForth - Word Defining ops
 ///
-import { Prim, Immd } from './core.js'
+import { Prim, Immd, Code } from './core.js'
 
 export const voc = (vm)=>{
     const push   = v=>vm.ss.push(v)                        ///< ss.push macro
@@ -48,7 +48,7 @@ export const voc = (vm)=>{
         new Prim('does>',    c=>{                          ///< handle create..does..
             let w = new Code('_does', does, false)
             w.token = vm.tail().token;
-            vm.compile(w)
+            vm.comma(w)
         }),
         new Prim('to',       c=>vm.tok2w().val[0]=pop()),  ///< update constant
         new Prim('is',       c=>{                          ///< alias a word
