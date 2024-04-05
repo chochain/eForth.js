@@ -40,20 +40,20 @@ export class VM {
         this.compi = this.ucase = false
         this.base = 10
     }
-	tail(i=1) { return this.dict.at(-INT(i)) }    ///< last entry
-	last()    { return this.tail(2).pf.tail() }   ///< pf of last word created
+    tail(i=1) { return this.dict.at(-(i | 0)) }   ///< last entry
+    last()    { return this.tail(2).pf.tail() }   ///< pf of last word created
     add(s)    {                                   ///< add a colon word to dictionary
         if (this.find(s) != null) this.log(s + ' reDef? ')
         this.dict.push(new Code(s, null, true))
     }
     extend(d) { d.forEach(c=>this.dict.push(c)) } ///< extending dictionary
     comma(w)  { this.tail().pf.push(w) }          ///< add w into pf[] 
-    compile(s, v=false, xt=null) {                ///< compile a word
-        let w = new Code(s, xt!=null ? xt : this.find(s).xt, v)
+    compile(s, xt=null, v=false) {                ///< compile a word
+        let w = new Code(s, xt, v)
         this.comma(w)
     }
     nvar(xt, v) {
-        this.compile('', v, xt)
+        this.compile('', xt, v)
         let t   = this.tail()              ///< last dictionary word 
         let w   = t.pf[0]                  ///< pf of last word
         t.val   = w.qf                     /// * create a val func
@@ -83,7 +83,7 @@ export class VM {
         const mx = (c)=>c+'-'+String.fromCharCode(c.charCodeAt() + (this.base - 11))
         const st = this.base > 10
               ? '^-?[0-9|'+mx('a')+'|'+mx('A')+']+$'
-              : '^-?([0-'+(_base-1).toString()+']*[.])?[0-'+(_base-1).toString()+']+$'
+              : '^-?([0-'+(this.base-1).toString()+']*[.])?[0-'+(this.base-1).toString()+']+$'
         return new RegExp(st).test(s)
     }
     /// @defgroup Outer Interpreter
@@ -107,7 +107,7 @@ export class VM {
             this.compi=false               ///>> restore interpret mode
         }
         else if (cc) {                     ///> in compile mode?
-            this.compile('_dolit', null, n)///>> compile the number
+            this.compile('', null, n)      ///>> compile the number
         }
         else this.ss.push(n)               ///>> or, push number onto stack top
     }
