@@ -62,9 +62,9 @@ window.ForthVM = function(output=console.log) {
     ///================================================================
     /// @defgroup IO functions
     /// @{
-    const log    = (s)=>output(s)
-    const NA     = (s)=>s+' not found! '
-    const nxtok  = (d=SPC)=>{            /// assumes tib ends with a blank
+    const log = (s)=>output(s)
+    const NA  = (s)=>s+' not found! '
+    const word= (d=SPC)=>{               /// assumes tib ends with a blank
         while (d==SPC &&                 /// skip leading blanks and tabs
                (_tib[_ntib]==SPC || _tib[_ntib]=='\t')) _ntib++
         let i = _tib.indexOf(d, _ntib)
@@ -103,7 +103,7 @@ window.ForthVM = function(output=console.log) {
         return null                                 /// * not found
     }
     const tok2w  = ()=>{                            ///< convert token to word
-        let s=nxtok()
+        let s=word()
         if (s==null) { log('name? '); throw 'need name' }
         let w = find(s)
         if (w==null) throw NA(s);
@@ -303,7 +303,7 @@ window.ForthVM = function(output=console.log) {
         new Prim('u.',    c=>log(UINT(pop()).toString(_base)+SPC)),
         new Prim('.r',    c=>{ let n=pop(); dot_r(n, pop()) }),
         new Prim('u.r',   c=>{ let n=pop(); dot_r(n, UINT(pop())) }),
-        new Prim('key',   c=>push(nxtok()[0])),
+        new Prim('key',   c=>push(word()[0])),
         new Prim('emit',  c=>log(String.fromCharCode(pop()))),
         new Prim('space', c=>log(SPC)),
         new Prim('spaces',c=>_spaces(pop())),
@@ -312,13 +312,13 @@ window.ForthVM = function(output=console.log) {
         /// @defgroup Literal ops
         /// @{
         new Immd('."',    c=>{
-            let s = nxtok('"')
+            let s = word('"')
             if (s==null) { log('one quote? '); return }
             if (_compi) compile(new Code('." ', _dotstr, s))
             else log(s)
         }),
         new Immd('s"',    c=>{
-            let s = nxtok('"')
+            let s = word('"')
             if (s==null) { log('one quote? '); return }
             if (_compi) {
                 let w = new Code('s" ', _dostr, s)    /// create string
@@ -328,8 +328,8 @@ window.ForthVM = function(output=console.log) {
             }
             else { push(s); push(s.length) }          /// push string object
         }),
-        new Immd('(',     c=>nxtok(')')),
-        new Immd('.(',    c=>log(nxtok(')'))),
+        new Immd('(',     c=>word(')')),
+        new Immd('.(',    c=>log(word(')'))),
         new Immd('\\',    c=>_ntib=_tib.length),
         /// @}
         /// @defgroup Branching - if.{pf}.then, if.{pf}.else.{p1}.then
@@ -484,7 +484,7 @@ window.ForthVM = function(output=console.log) {
     /// @defgroup add dictionary access methods
     /// @{
     dict.colon = function() {                          ///< create a new word
-        let s = nxtok();                               ///< fetch an input token
+        let s = word();                                ///< fetch an input token
         if (s==null) { log('name? '); return false }
         if (find(s) != null) log(s + ' reDef? ')       /// * warning
         dict.push(new Code(s, null, true))
@@ -529,7 +529,7 @@ window.ForthVM = function(output=console.log) {
         cmd.split('\n').forEach(r=>{          /// * multi-line input
             _tib=r + SPC; _ntib=0             /// * capture into TIB
             let tok = ''                      ///< input idiom
-            while ((tok=nxtok()) != null) {   /// * loop thru all idioms
+            while ((tok=word()) != null) {    /// * loop thru all idioms
                 this.outer(tok)
             }
         })
