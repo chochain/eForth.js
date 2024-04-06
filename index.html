@@ -1,11 +1,11 @@
 ﻿<html>
-  <head><style>.bg { padding:8px; font-size:24px; margin:0; }</style></head>
+    <head><style>h4{ margin: 0 } .bg{ padding:8px; font-size:24px; margin:0 }</style></head>
   <body>
-    <div style='padding:1%; font-size:20px'>
-      <pre id='txt' style='display:block; height:80%; overflow-y:scroll'></pre>
+    <div style='margin-left:8px; font-size:20px'>
+      <pre id='txt' style='display:block; height:85%; padding-top:0px; overflow-y:scroll'></pre>
       <input id='tib' class='bg' style='height:36px; width:100%' value=''
         onkeydown='if (13===event.keyCode) { forth_eval(tib.value); tib.value="" }'/>
-  	  <pre id='ss' class='bg' style='background-color:#eee'>[  ]</pre>
+      <pre id='ss' class='bg' style='background-color:#eee'>[  ]</pre>
     </div>
     <script src='eforth.js'></script>
     <script>
@@ -15,28 +15,28 @@
         txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
     }
     const banner = ()=>{
-        txt.innerHTML = '<h3>eForth.js - <em>Forth in Javascript</em></h3>'
+        txt.innerHTML = '<h4>eForth.js - <em>Forth in Javascript</em></h4>'
     }
     const vm  = new ForthVM(to_txt)               ///< create Forth VM object
     const forth_eval = (cmd)=>{
         to_txt('<b>'+cmd+'</b><br/>')
         if (cmd=='clear') banner(); else vm.exec(cmd)
-		ss.innerHTML = '[ '+vm.ss.map(
+        ss.innerHTML = '[ '+vm.ss.map(
             v=>vm.base() != 10
                 ? v.toString(vm.base())           /// * i.e. display hex
                 : v.toLocaleString(undefined,{minimumFractionDigits:0, maximumFractionDigits:6})
         ).join(' ')+' ]'
     }
     console.log(vm)                               /// * show VM on console
-    banner()      
+    banner()
     </script>
     <script type='application/forth'>
-    .( <h4>\ can also embed Forth in HTML, for example</h4> )
-    .( : tk for i . next ; <em>\ create a for-loop word tk</em> ) cr
-    : tk for i . next ;
-    .(  5 tk                <em>\ and execute tk<em/>) cr
+    .( \ can also embed Forth in HTML, for example ) cr cr
+    .( <b>: tk for i . next ." hello!" ;</b> \ create a word tk) cr
+    : tk for i . next ." hello!" ;
+    .( <b>5 tk                          </b> \ and execute tk) cr
     5 tk cr cr
-    .( <b>\ so your Forth 'app' can start as a turn-key system</b> ) cr
+    .( <b>\ so your Forth 'app' becomes a turn-key system</b>) cr
     </script>
   </body>
 </html>
