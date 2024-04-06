@@ -179,8 +179,8 @@ window.ForthVM = function(output=console.log) {
     const _words = ()=>{
         let sz = 0
         dict.forEach((w,i)=>{
-            log(w.name+SPC)
-            sz += w.name.length + 1
+            log(w.name+SPC+SPC)
+            sz += w.name.length + 2
             if (sz > 52) { log(CR); sz = 0 }
         })
         log(CR)

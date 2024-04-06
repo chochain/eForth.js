@@ -15,7 +15,7 @@
         txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
     }
     const banner = ()=>{
-        txt.innerHTML = '<h2>eForth.js - <em>Forth in Javascript</em></h2>'
+        txt.innerHTML = '<h3>eForth.js - <em>Forth in Javascript</em></h3>'
     }
     const vm  = new ForthVM(to_txt)               ///< create Forth VM object
     const forth_eval = (cmd)=>{
@@ -31,16 +31,12 @@
     banner()      
     </script>
     <script type='application/forth'>
-    .( <h3>\ it also can embed Forth in HTML</h3> )
-    .( <b>\ for example, listing dictionary here</b> ) cr
-    words
-    cr .( <b>\ create a word tk</b><br/>: tk for i . next ; ) cr
+    .( <h4>\ can also embed Forth in HTML, for example</h4> )
+    .( : tk for i . next ; <em>\ create a for-loop word tk</em> ) cr
     : tk for i . next ;
-    cr .( <b>\ see tk</b> ) cr
-    see tk cr cr
-    .( <b>\ run tk<b/><br/>5 tk ) cr
+    .(  5 tk                <em>\ and execute tk<em/>) cr
     5 tk cr cr
-    .( <b>\ so your Forth 'app' can start on-load</b> ) cr
+    .( <b>\ so your Forth 'app' can start as a turn-key system</b> ) cr
     </script>
   </body>
 </html>
