@@ -2,7 +2,7 @@
 
 eForth implemented in 100% Javascript. An interfactive Forth shell can be run from within a single web page on your desktop or even cellphone.
 
-There is a good collection of prior art (at the bottom of this page). From my own work, here is <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, maybe an extra <em>**index.html**</em> to wrap it up is nicer. So, simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a live Forth engine ready to play with. Without surprise, you should get something like the left hand side snip below. Here's a [live demo](https://chochain.github.io/eForth.js)
+There is a good collection of prior art (at the bottom of this page). Here is my version of a new wheel, <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, maybe an extra <em>**index.html**</em> to wrap it up is nicer. So, simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a live Forth engine ready to play with. Without surprise, you should get something like the left hand side snip below. Here's a [live demo](https://chochain.github.io/eForth.js)
 
 The good old green terminal days are long gone, add some HTML stuffs and your work looks better! Checkout **src/eforth8.html**, my work in progress but is quite usable as a template. Just point your <script> tag to <em style='color:#fc4'>**eforth.js**</em> and you can create whatever presentation you fancy...
  <pre><img
