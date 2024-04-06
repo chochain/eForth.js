@@ -2,7 +2,7 @@
 
 eForth implemented in 100% Javascript. An interfactive Forth shell can be run from within a single web page on your desktop or even cellphone.
 
-There is a good collection of prior art (at the bottom of this page). But from my own work, here is the <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, maybe an extra <em>**index.html**</em> to wrap it up is nicer. So, simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a live Forth engine ready to play with. Without surprise, you should get something like the left hand side snip below.
+There is a good collection of prior art (at the bottom of this page). From my own work, here is <em style='color:#fc4'>**eforth.js**</em>, the only file you need! Well, maybe an extra <em>**index.html**</em> to wrap it up is nicer. So, simply copy both of them from the root directory shown above to your local directory. Click on <em>**index.html**</em> and you have a live Forth engine ready to play with. Without surprise, you should get something like the left hand side snip below. Here's a [live demo](https://chochain.github.io/eForth.js)
 
 The good old green terminal days are long gone, add some HTML stuffs and your work looks better! Checkout **src/eforth8.html**, my work in progress but is quite usable as a template. Just point your <script> tag to <em style='color:#fc4'>**eforth.js**</em> and you can create whatever presentation you fancy...
  <pre><img
@@ -40,13 +40,13 @@ Should you plan to incorporate <em style='color:#fc4'>**eforth.js**</em> in a la
 * <em>eforth_w_module.html</em> in the root is provided as an example to import modules
 * note that, without a bundler (i.g. Webpack, Browsify, ...) to tie modules together, one will need a web server to push all the modules to your web-browser
   * Python3 has a simple built-in http server that you can use. i.e.
-    <pre>> <em>python3 -m http.server</em> from root directory to start you web server
+  <pre>> <em>python3 -m http.server</em> from root directory to start you web server
     > enter <em>http://localhost:8000/eforth_w_module.html</em> into your browser
     </pre>
 
 ## Performance
 Javascript brings us the simplicity. Just point the web page to your *eforth.js* and that's it. Open the DevTool in your browser, you can trace, benchmark, even single-step the code.
-But what about the performance compared to WASM trans-coded from pure C implementation? Well, it's slow! Running at about 1/5 of WASM, and about 1/10 to raw C executable. I think it's OK to have a shell that one can interact with on the browser. However, only you know what you need the best. So, if a faster eForth on the web is required, check my <b>weForth</b> [here](https://github.io/chochain/weForth)
+But what about the performance compared to WASM trans-coded from pure C implementation? Well, it's slow! Running at about 1/5 of WASM, and about 1/10 to raw C executable. I think it's OK to have a shell that one can interact with on the browser. However, only you know what you need the best. So, if a faster eForth on the web is required, check my <b>weForth</b> [here](https://github.com/chochain/weForth)
 
 ## Documentation
 * The genesis and philosophy of eForth, [eForth and Zen](https://chochain.github.io/eforth/docs/eForthAndZen.pdf) by Dr. Ting
