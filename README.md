@@ -51,7 +51,7 @@ On you browser, enter
 
 ## Performance
 Javascript brings us the simplicity. Just point the web page to your *eforth.js* and that's it. Open the DevTool in your browser, you can trace, benchmark, even single-step the code.
-But what about the performance compared to WASM trans-coded from pure C implementation? Well, it's slow! Running at about 1/5 of WASM, and about 1/10 to raw C executable. I think it's OK to have a shell that one can interact with on the browser. However, only you know what you need the best. So, if a faster eForth on the web is required, check my <b>weForth</b> [here](https://github.com/chochain/weForth)
+But what about the performance compared to native C? Well, it's slow! Running at about 1/10 of the speed. For an interfactive Forth shell on the browser to play with or learn, I think it works OK. But if you want to see a WASM eForth that runs a tad faster, check my <b>weForth</b> [here](https://github.com/chochain/weForth)
 
 ## Documentation
 * The genesis and philosophy of eForth, [eForth and Zen](https://chochain.github.io/eforth/docs/eForthAndZen.pdf) by Dr. Ting
