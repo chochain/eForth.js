@@ -259,6 +259,7 @@ window.ForthVM = function(output=console.log) {
         new Prim('2drop', c=>_ss.splice(-2)),
         new Prim('2over', c=>{ push(top(4)); push(top(4)) }),
         new Prim('2swap', c=>{ push(grab(4)); push(grab(4)) }),
+        new Prim('?dup',  c=>{ if (top() != 0) push(top()) }),
         /// @}
         /// @defgroup Arithmetic ops
         /// @{
@@ -453,6 +454,7 @@ window.ForthVM = function(output=console.log) {
         new Immd('exec',     c=>dict[pop()].exec()),
         new Prim(':',        c=>_compi=dict.colon()),          // new colon word
         new Immd(';',        c=>_compi=false),                 // semicolon
+        new Immd('immediate',c=>dict.at(-1).immd = 1),
         new Immd('variable', c=>dict.colon() ? nvar(_dovar, 0) : null),
         new Immd('constant', c=>dict.colon() ? nvar(_docon, pop()) : null),
         new Prim("create",   c=>dict.colon()),                 // create new word
