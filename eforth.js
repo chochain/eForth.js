@@ -22,7 +22,7 @@ window.ForthVM = function(output=console.log) {
     ///==============================================================
     /// Inner interpreter (use catch for does and exit)
     ///
-    const _run = p=>{ try { p.forEach(w=>w.exec()) } catch {} }
+    const _run = p=>{ p.forEach(w=>w.exec()) }
     ///
     /// Primitive and Immediate word classes (to simplify Dr. Ting's)
     ///
@@ -54,9 +54,12 @@ window.ForthVM = function(output=console.log) {
             else if (typeof(v)=='string')  this.q = [ v ]
             else if (typeof(v)=='number')  this.q = [ v ]
         }
-        exec() {                                /// run colon word
-            if (this.xt == null) _run(this.pf)  /// * user define word
-            else this.xt(this);                 /// * build-it words
+        exec() {                          /// run colon word
+            if (this.xt != null) this.xt(this)     /// primitive word
+            else {
+                try { _run(this.pf) }     /// * colon word recursively
+                catch {}                  /// handle DOES>, EXIT
+            }
         }
     }
     ///================================================================
@@ -131,6 +134,7 @@ window.ForthVM = function(output=console.log) {
     const push   = v    =>_ss.push(v)
     const pop    = ()   =>_ss.pop()
     const grab   = n    =>{ let v=top(n); _ss.splice(length - INT(n), 1); return v }
+    const inc_i  = ()   =>_rs[_rs.length - 1] += 1
     const dec_i  = ()   =>_rs[_rs.length - 1] -= 1
     /// @}
     /// @defgroup Built-in (branching, looping) functions
@@ -144,6 +148,9 @@ window.ForthVM = function(output=console.log) {
         push(s); push(s.length)
     }
     const _tor   = c=>_rs.push(pop())              /// push into rs
+    const _dor   = c=>{                            /// push fisrt, limit into rs
+        let n = pop(); _rs.push(pop()); _rs.push(n);
+    }  
     const _bran  = c=>_run(ZERO(pop()) ? c.p1 : c.pf)
     const _cycle = c=>{
         while (true) {
@@ -155,14 +162,23 @@ window.ForthVM = function(output=console.log) {
         }
     }
     const _dofor = c=>{
-        do { _run(c.pf) } while (
-            c.stage==0 && dec_i() >= 0)            /// for.{pf}.next only
-        while (c.stage>0) {                        /// aft
-            _run(c.p2)                             /// aft.{p2}.next
-            if (dec_i() < 0) break
-            _run(c.p1)                             /// then.{p1}.next
+        try {
+            do { _run(c.pf) } while(
+                c.stage==0 && dec_i() >=0)         /// for.{pf}.next only
+            while (c.stage>0) {                    /// aft
+                _run(c.p2)                         /// aft.{p2}.next
+                if (dec_i() < 0) break
+                _run(c.p1)                         /// then.{p1}.next
+            }
         }
-        _rs.pop()                                  /// pop off I
+        catch {} finally { _rs.pop() }             /// pop off I
+    }
+    const _doloop = c=>{
+        try {
+            do { _run(c.pf) } while (
+                inc_i() < _rs.at(-2))              /// do.{pf}.loop
+        }
+        catch {} finally { _rs.pop(); _rs.pop() }
     }
     const _does  = c=>{
         let hit = false
@@ -231,7 +247,7 @@ window.ForthVM = function(output=console.log) {
     let dict = [
         /// @defgroup Stack ops
         /// @{
-        new Prim('dup',   c=>push(top(1))),
+        new Prim('dup',   c=>push(top())),
         new Prim('drop',  c=>pop()),
         new Prim('over',  c=>push(top(2))),
         new Prim('swap',  c=>push(grab(2))),
@@ -380,11 +396,11 @@ window.ForthVM = function(output=console.log) {
             merge(w.pf, tmp.pf); dict.pop()            /// begin.{pf}.f.until
         }),
         /// @}
-        /// @defgroup Loop ops
+        /// @defgroup FOR...NEXT ops
         /// @brief for.{pf}.next, for.{pf}.aft.{p1}.then.{p2}.next
         /// @{
         new Immd('for',   c=>{                         /// for...next
-            compile(new Code('>r', _tor, false));      /// push I onto rstack
+            compile(new Code('', _tor, false));        /// push I onto rstack
             let w = new Code('_for', _dofor, false)    /// encode _for opcode
             compile(w); w.p1=[]; w.stage=0
             dict.push(new Code(' tmp'))                /// create tmp holder
@@ -399,13 +415,25 @@ window.ForthVM = function(output=console.log) {
             else            merge(w.p2, tmp.pf)        /// .then.{p2}.next
             dict.pop()                                 /// drop tmp node
         }),
-        /*
-          TODO: do, loop, +loop, j
-        */
+        /// @}
+        /// @defgroup DO...LOOP ops
+        /// @brief do.{pf}.loop
+        /// @{
+        new Immd('do',    c=>{                         /// for...next
+            compile(new Code('', _dor, false))         /// push I onto rstack
+            compile(new Code('_do', _doloop, false))   /// encode _for opcode
+            dict.push(new Code(' tmp'))                /// create tmp holder
+        }),
+        new Prim('i',     c=>push(_rs.at(-1))),        /// same as r@
+        new Prim('leave', c=>{ throw 'loop' }),        /// bail loop
+        new Immd('loop',c=>{
+            let w=dict.last(), tmp=dict.at(-1)
+            merge(w.pf, tmp.pf)                        /// do.{pf}.loop
+            dict.pop()                                 /// drop tmp node
+        }),
         new Prim('>r',    c=>_rs.push(pop())),         /// push into rstack
         new Prim('r>',    c=>push(_rs.pop())),         /// pop from rstack
         new Prim('r@',    c=>push(_rs.at(-1))),        /// fetch from rstack
-        new Prim('i',     c=>push(_rs.at(-1))),        /// same as r@
         new Prim('exit',  c=>{ throw 'exit' }),        /// exit inner interpreter
         /// @}
         /// @defgroup Memory Access ops
@@ -458,6 +486,7 @@ window.ForthVM = function(output=console.log) {
         new Prim('see',      c=>{
             let w=tok2w(); console.log(w); _see(w); log(CR)
         }),
+        new Prim('depth',    c=>push(_ss.length)),
         new Prim('forget',   c=>{
             _fence=Math.max(tok2w().token, find('boot').token+1)
             console.log("_fence"+_fence.toString())
@@ -506,10 +535,7 @@ window.ForthVM = function(output=console.log) {
     this.outer = (tok)=>{
         let w = find(tok)                     /// * search throug dictionary
         if (w != null) {                      /// * word found?
-            if(!_compi || w.immd) {           /// * in interpret mode?
-                try       { w.exec()   }      ///> execute word
-                catch (e) { log(e+' ') }
-            }
+            if(!_compi || w.immd) w.exec()    /// * in interpret mode?
             else compile(w)                   ///> or compile word
             return
         }
