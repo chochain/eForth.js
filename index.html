@@ -1,42 +1,125 @@
 ﻿<html>
-    <head><style>h4{ margin: 0 } .bg{ padding:8px; font-size:24px; margin:0 }</style></head>
+  <head>    
+  <title>eForth.js</title>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css'></link>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js'></script>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/forth/forth.min.js'></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <!-- for local debugging 
+    link rel='stylesheet' href='../tests/codemirror.min.css'></link>
+  <script type='text/javascript' src='../tests/codemirror.min.js'></script>
+  <script type='text/javascript' src='../tests/forth.min.js'></script-->
+  <link rel='stylesheet' href='./index.css'></link>
+  <script type='text/javascript' src='./forth_voc.js'></script>
+  <script type='text/javascript' src='./src/file_io.js'></script>
+  </head>
   <body>
-    <div style='margin-left:8px; font-size:20px'>
-      <pre id='txt' style='display:block; height:85%; padding-top:0px; overflow-y:scroll'></pre>
-      <input id='tib' class='bg' style='height:36px; width:100%' value=''
-        onkeydown='if (13===event.keyCode) { forth_eval(tib.value); tib.value="" }'/>
-      <pre id='ss' class='bg' style='background-color:#eee'>[  ]</pre>
-    </div>
-    <script src='eforth.js'></script>
+    <div class='row' style='height:100%'>
+      <div id='dir' class='col' style='display:none; z-index:1; width:15%'>
+        <pre class='hdr'>Dictionary</pre>
+        <pre id='usr' class='usr'></pre>
+        <pre id='dc' class='usr'></pre>
+      </div>
+      <div class='col' style='z-index:0; width:100%; padding:8px'>
+        <cite>
+          <i class='material-icons' style='float:left' onclick='(toggle("dir"),show_voc(vm.dict,dc,usr))'>menu_open</i>
+          <span style='float:left; position:fixed'>
+            <b>eForth 4.2</b> - Forth in Javascript -<span id='fname'></span>
+          </span>
+          <i class='material-icons' style='float:right' onclick='toggle("gra")'>perm_media</i>
+          <i class='material-icons' style='float:right' onclick='(toggle("edt"),cm_refresh())'>edit_square</i>
+        </cite>
+        <div id='edt' class='row' style='display:none'>
+          <input id='fopen' type='file' onchange='file_load(this.files, "#fname")' style='display:none'/>
+          <a id='fsave' style='display:none'></a>
+          <nav>
+            <i class='material-icons' onclick='forth("clear")'>home</i>
+            <p></p>
+            <i class='material-icons' onclick='file_new("#fname")'>create_new_folder</i>
+            <i class='material-icons' onclick='$("#fopen").click()'>folder</i>
+            <i class='material-icons' onclick='file_save("#fsave", cm.getValue(), "#fname")'>drive_file_move_rtl</i>
+            <p></p>
+            <i class='material-icons' onclick='(forth("clear"),forth("boot"))'>do_not_step</i>
+            <i onclick='forth(cm.getSelection())' class='material-icons'>install_desktop</i>
+            <i onclick='forth(cm.getValue())' class='material-icons'>directions_run</i>
+          </nav>
+          <textarea id='cm'>\ highlight the code and hit <Ctrl-Enter> to run</textarea>
+        </div>
+        <div id='txt' class='txt'></div>
+        <div style='width:auto'><input id='tib' class='code' value='' /></div>
+        <div id='ss' class='ss'>[ ]</div>
+      </div>
+      <div id='gra' class='col' style='display:none; width:100%'>
+        <canvas id='can'></div>
+      </div>
+    <script src='./eforth.js'></script>
     <script>
-    const txt = document.getElementById('txt')    ///< text console
-    const ss  = document.getElementById('ss')     ///< data stack
-    const to_txt = (t)=>{                         ///< output to textarea
-        txt.innerHTML += t; txt.scrollTop = txt.scrollHeight
+    const $ = (s)=>s[0]=='#' && !s.includes(' ') ?      /* ala jQuery */
+        document.querySelector(s) : document.querySelectorAll(s)
+    const dir = $('#dir'), usr = $('#usr'), dc = $('#dc')
+    const tib = $('#tib'), txt = $('#txt'), ss = $('#ss')
+    const run = (doc)=>forth(doc.getSelection())
+    const cm  = CodeMirror.fromTextArea($('#cm'), {
+        lineNumbers: true, styleActiveLine: true,
+        mode: 'forth',                            /// * Forth language
+        extraKeys: { 'Ctrl-Enter': (e)=>forth(e.getSelection()) }
+    })
+    const rz  = new ResizeObserver(e=>{           ///< adjust console height
+        edt.style.height = cm.innerHeight
+        txt.scrollTop    = txt.scrollHeight
+    }).observe($('#cm'))
+      
+    tib.onkeydown = (e)=>{                        ///< console input
+        if (13!=e.keyCode) return
+        forth(tib.value)
+        tib.value = ''
+        txt.scrollTop = txt.scrollHeight          /// * scroll down
+        tib.focus()
     }
-    const banner = ()=>{
-        txt.innerHTML = '<h4>eForth.js - <em>Forth in Javascript</em></h4>'
+    function toggle(id) {
+        let sty = $('#'+id).style
+        sty.display = sty.display=='none' ? 'flex' : 'none'
     }
-    const vm  = new ForthVM(to_txt)               ///< create Forth VM object
-    const forth_eval = (cmd)=>{
-        to_txt('<b>'+cmd+'</b><br/>')
-        if (cmd=='clear') banner(); else vm.exec(cmd)
-        ss.innerHTML = '[ '+vm.ss.map(
-            v=>vm.base() != 10
-                ? v.toString(vm.base())           /// * i.e. display hex
-                : v.toLocaleString(undefined,{minimumFractionDigits:0, maximumFractionDigits:6})
-        ).join(' ')+' ]'
+    function cm_refresh() {                       /// * fix line number issue
+        $('#edt > .CodeMirror').forEach(e=>e.CodeMirror.refresh())
     }
-    console.log(vm)                               /// * show VM on console
-    banner()
+    function to_txt(t, esc=true) {
+        const escape = (s)=>{
+            return s.replace(/\n/g,'<br/>').replace(/\s/g, '&nbsp;')
+        }
+        txt.innerHTML += esc && typeof(t)=='string' ? escape(t) : t
+    }
+    function clear_txt() { txt.innerHTML='' }
+    function show_cmd(cmd) {
+        let htm = cmd.replace(/:/g,'<br/>:')                  /// * show on a new line
+        if (htm.indexOf('<br/>')==0) htm.replace('<br/>','')  /// * remove blank lines
+        to_txt(`<pre class="cmd"><em>${htm}</em></pre>`, false)
+    }
+    ///
+    /// Forth section
+    ///
+    let vm = new ForthVM(to_txt)               ///< create Forth VM object
+    clear_txt()                                /// * init console area
+
+    function forth(cmd) {                      ///< evaludate Forth command
+        show_cmd(cmd)
+        if (cmd=='clear') clear_txt()
+        else {
+            vm.exec(cmd)                       /// * can handle multi-line input
+            show_voc(vm.dict, dc, usr)
+            ss.innerHTML = '[ '+vm.ss.map(
+                v=> vm.base() != 10
+                    ? v.toString(vm.base())
+                    : v.toLocaleString(undefined,{minimumFractionDigits:0, maximumFractionDigits:6})
+            ).join(' ')+' ]'
+        }
+    }
     </script>
     <script type='application/forth'>
-    .( \ can also embed Forth in HTML, for example ) cr cr
-    .( <b>: tk for i . next ." hello!" ;</b> \ create a word tk) cr
-    : tk for i . next ." hello!" ;
-    .( <b>5 tk                          </b> \ and execute tk) cr
-    5 tk cr cr
-    .( <b>\ so your Forth 'app' becomes a turn-key system</b>) cr
+      cr .( <h3>\ this demo shows embedded Forth here</h3> ) cr
+      .( <b>\ list dictionary</b> ) cr
+      words
     </script>
+    <script type='application/forth' src='../tests/embed.f'/>
   </body>
 </html>
